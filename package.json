@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.16.2",
+    "mongodb": "^3.0.0-rc0",
     "nodemon": "^1.13.3"
   },
   "devDependencies": {},
