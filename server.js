@@ -4,6 +4,10 @@ var db = undefined;
 var app = express();
 var dir = __dirname;
 
+// Used to make the server look in our directory for 
+  // our javascript, css, and other files
+app.use(express.static(dir));
+
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
   if(err) {
     return console.log(err);
