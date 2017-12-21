@@ -4,8 +4,11 @@ function onSignIn(googleUser) {
   console.log('Name: ' + profile.getName());
   console.log('Image URL: ' + profile.getImageUrl());
   console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  if(googleUser) {
+    $.get("/authenticate", {email: profile.getEmail()}, test);
+  }
 }
 
-function printUser() {
-  console.log(GoogleAuth.currentUser.get());
+function test(data) {
+  window.location = data.redirect;
 }
