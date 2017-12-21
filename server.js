@@ -30,7 +30,7 @@ app.get("/authenticate", (req, res) => {
   var email = req.query.email;
   db.collection("users").find({user: email}).toArray((err, result) => {
     if(result.length) {
-      res.send({redirect: "/dashboard"});
+      res.send({redirect: "/register"});
     }
     else {
       db.collection("users").insert({user: email}, (err, doc) => {
@@ -40,6 +40,9 @@ app.get("/authenticate", (req, res) => {
 })
 
 app.get("/dashboard", (req, res) => {
-  console.log("here");
   res.sendFile(dir + "/views/dashboard.html");
+})
+
+app.get("/register", (req, res) => {
+  res.sendFile(dir + "/views/register.html");
 })

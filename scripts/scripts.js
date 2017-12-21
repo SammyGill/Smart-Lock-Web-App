@@ -5,10 +5,10 @@ function onSignIn(googleUser) {
   console.log('Image URL: ' + profile.getImageUrl());
   console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
   if(googleUser) {
-    $.get("/authenticate", {email: profile.getEmail()}, test);
+    $.get("/authenticate", {email: profile.getEmail()}, redirect);
   }
 }
 
-function test(data) {
+function redirect(data) {
   window.location = data.redirect;
 }
