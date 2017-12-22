@@ -36,14 +36,18 @@ app.get("/authenticate", (req, res) => {
   var email = req.query.email;
   var req = req;
   db.collection("users").find({user: email}).toArray((err, result) => {
+    req.smartlocksession.username = email;
     if(result.length) {
-      req.smartlocksession.user = email;
-      res.send({redirect: "/register"});
+      if(result[0].lockId === null) {
+        res.send({redirect: "/register"});
+      }
+      else {
+        res.send({redirect: "/dashboard"});
+      }
     }
     else {
       db.collection("users").insert({user: email, lockId: null, role: null}, (err, doc) => {
-      req.smartlocksession.user = email;
-      res.send({redirect: "/register"});
+        res.send({redirect: "/register"});
       })
     }
   })
@@ -55,4 +59,13 @@ app.get("/dashboard", (req, res) => {
 
 app.get("/register", (req, res) => {
   res.sendFile(dir + "/views/register.html");
+})
+
+app.post("/registerLock", (req, res) => {
+  var username = req.smartlocksession.username;
+  var id = req.body.id;
+  db.collection("users").update({user: username}, {$set: {lockId: id, role: "owner"}}, 
+                                (err, count, status) => {
+    res.redirect("/dashboard");
+  });
 })
