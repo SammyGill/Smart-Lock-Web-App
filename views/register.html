@@ -5,12 +5,14 @@
 
   <body>
     <h1> Register Your Smart Lock </h1>
-    <form action="registerLock" method="POST">
-      <input type="text" name="id" placeholder="Lock ID">
-      <button type="submit"> Submit </button>
-    </form>
+    <h2 class="lockTaken"></h2>
 
+      <input type="text" id="id" name="id" placeholder="Lock ID">
+      <button type="submit" id="submit" onclick="registerLock()"> Submit </button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="scripts/scripts.js"></script>
   </body>
 
 </html>

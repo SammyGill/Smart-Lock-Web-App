@@ -70,12 +70,22 @@ app.get("/register", (req, res) => {
 })
 
 
+app.get("/dashboardInformation", (req, res) => {
+  res.send(req.smartlocksession.username);
+})
+
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
   var username = req.smartlocksession.username;
-  var id = req.body.id;
-  db.collection("users").update({user: username}, {$set: {lockId: id, role: "owner"}}, 
-                                (err, count, status) => {
-    res.redirect("/dashboard");
-  });
+  var id = parseInt(req.body.id);
+  db.collection("locks").find({lockid:  id}).toArray((err, result) => {
+    if(result[0].owner == null) {
+      db.collection("locks").update({lockid: id}, {$set: {owner: req.smartlocksession.username}});
+      db.collection("users").update({user: req.smartlocksession.username}, {$set: {lockId: id}});
+      res.send({redirect: "/dashboard"});
+    }
+    else {
+      res.send({redirect: false});
+    }
+  })
 })

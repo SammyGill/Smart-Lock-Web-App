@@ -12,3 +12,21 @@ function onSignIn(googleUser) {
 function redirect(data) {
   window.location = data.redirect;
 }
+
+function loadDashboard() {
+  $.get("/dashboardInformation", function(data) {
+    $(".username").text("Welcome to the dashboard, " + data + "!");
+    console.log(data);
+  })
+}
+
+function registerLock() {
+  $.post("/registerLock", {id: document.getElementById("id").value}, function(data) {
+    if(typeof(data.redirect) == "boolean") {
+      $(".lockTaken").text("Taken");
+    }
+    else {
+      redirect(data);
+    }
+  }) 
+}
