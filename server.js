@@ -28,10 +28,14 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
   })
 })
 
+
+// Route for accessing the site
 app.get("/", (req, res) => {
   res.sendFile(dir + "/views/index.html");
 })
 
+
+// Route for authenticating users after they log in via Google
 app.get("/authenticate", (req, res) => {
   var email = req.query.email;
   var req = req;
@@ -53,14 +57,20 @@ app.get("/authenticate", (req, res) => {
   })
 })
 
+
+// Route that redirects users to their lock dashboard
 app.get("/dashboard", (req, res) => {
   res.sendFile(dir + "/views/dashboard.html");
 })
 
+
+// Route that redirects users to register their lock
 app.get("/register", (req, res) => {
   res.sendFile(dir + "/views/register.html");
 })
 
+
+// Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
   var username = req.smartlocksession.username;
   var id = req.body.id;
