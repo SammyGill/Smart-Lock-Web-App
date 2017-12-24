@@ -6,6 +6,10 @@ var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
 
+function isLoggedIn(user) {
+  return((user != undefined));
+} 
+
 // Used to make the server look in our directory for 
   // our javascript, css, and other files
 app.use(express.static(dir));
@@ -29,16 +33,28 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 })
 
 
-// Route for accessing the site
+// Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
   res.sendFile(dir + "/views/index.html");
 })
 
 
 // Route for authenticating users after they log in via Google
+  // Determines whether or not the user has a lock associated with them
 app.get("/authenticate", (req, res) => {
+  // User email is obtained from the Javascript function after user has logged 
+    // in viga Google
   var email = req.query.email;
-  var req = req;
+
+  /**
+   * Determines whether or not the user has a lock associated through steps
+   * - Attempt to see if the user is in the database with their email
+   *    - If the resulting array != 0, then we found a user in the database
+   *      - If the lock id associated is null, then the user needs to register their lock
+   *      - Else the user has a lock associated and we can send them to the dashboard
+   *    - Else the resulting array size == 0, then we must first add the user to the 
+   *      database before redirecting them to register their lock
+   */
   db.collection("users").find({user: email}).toArray((err, result) => {
     req.smartlocksession.username = email;
     if(result.length) {
@@ -58,18 +74,31 @@ app.get("/authenticate", (req, res) => {
 })
 
 
-// Route that redirects users to their lock dashboard
+// Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
+  if(!isLoggedIn(req.smartlocksession.username)) {
+    res.redirect("/");
+    return;
+  }
   res.sendFile(dir + "/views/dashboard.html");
 })
 
 
-// Route that redirects users to register their lock
+// Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
+  if(!isLoggedIn(req.smartlocksession.username)) {
+    res.redirect("/");
+    return;
+  }
   res.sendFile(dir + "/views/register.html");
 })
 
-
+/**
+ * This route is only used to send back the personal data of the user
+ * back to the Javascript function that loads the dashboard. This
+ * is because the dashboard will contain some information personalized
+ * to the user.
+ */
 app.get("/dashboardInformation", (req, res) => {
   res.send(req.smartlocksession.username);
 })
@@ -77,15 +106,20 @@ app.get("/dashboardInformation", (req, res) => {
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
   var username = req.smartlocksession.username;
+
+  // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
   db.collection("locks").find({lockid:  id}).toArray((err, result) => {
     if(result[0].owner == null) {
+
+      // lock does not have an owner? Then set the username and the owner properly
       db.collection("locks").update({lockid: id}, {$set: {owner: req.smartlocksession.username}});
       db.collection("users").update({user: req.smartlocksession.username}, {$set: {lockId: id}});
       res.send({redirect: "/dashboard"});
     }
     else {
-      res.send({redirect: false});
+      // lock was already registered with someone so we send back a failure
+      res.send({redirect: "failure"});
     }
   })
 })

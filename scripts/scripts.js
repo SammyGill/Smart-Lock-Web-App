@@ -16,13 +16,12 @@ function redirect(data) {
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
     $(".username").text("Welcome to the dashboard, " + data + "!");
-    console.log(data);
   })
 }
 
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value}, function(data) {
-    if(typeof(data.redirect) == "boolean") {
+    if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }
     else {
