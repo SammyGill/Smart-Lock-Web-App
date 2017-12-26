@@ -35,7 +35,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-  res.sendFile(dir + "/views/index.html");
+  res.sendFile(dir + "/views/login.html");
 })
 
 
