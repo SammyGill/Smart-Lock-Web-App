@@ -109,11 +109,11 @@ app.post("/registerLock", (req, res) => {
 
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
-  db.collection("locks").find({lockid:  id}).toArray((err, result) => {
+  db.collection("locks").find({lockId:  id}).toArray((err, result) => {
     if(result[0].owner == null) {
 
       // lock does not have an owner? Then set the username and the owner properly
-      db.collection("locks").update({lockid: id}, {$set: {owner: req.smartlocksession.username}});
+      db.collection("locks").update({lockId: id}, {$set: {owner: req.smartlocksession.username}});
       db.collection("users").update({user: req.smartlocksession.username}, {$set: {lockId: id}});
       res.send({redirect: "/dashboard"});
     }
@@ -121,5 +121,33 @@ app.post("/registerLock", (req, res) => {
       // lock was already registered with someone so we send back a failure
       res.send({redirect: "failure"});
     }
+  })
+})
+
+app.get("/lockStatus", (req, res) => {
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    var id = result[0].lockId;
+    db.collection("locks").find({lockId: id}).toArray((err, result) => {
+      res.send(result[0]);
+    })
+  })
+})
+
+app.post("/lock", (req, res) => {
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    var id = result[0].lockId;
+    db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+      res.send();
+    })
+  })
+})
+
+app.post("/unlock", (req, res) => {
+  console.log("here");
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    var id = result[0].lockId;
+    db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+      res.send();
+    })
   })
 })

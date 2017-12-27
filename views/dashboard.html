@@ -16,7 +16,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadDashboard()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a>
@@ -123,6 +123,18 @@
           <p> Dashboard page creating from the blank page template.</p>
         </div>
       </div>
+
+      <div class="col-md-3">
+      <div class="card mb-3" onclick="changeLock()" style="width:240px" >
+          <div class="card-header">
+            <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
+          </div>
+          <div class="card-body">
+            <img src="../imgs/lock.png" style="width:200px;height:130px;">
+          </div>
+          <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span></div>
+        </div>
+        </div>
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
@@ -155,8 +167,7 @@
         </div>
       </div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="js/scripts.js"></script>
+
     <!-- Bootstrap core JavaScript-->
     <script src="../vendor/jquery/jquery.min.js"></script>
     <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -165,7 +176,8 @@
     <!-- Custom scripts for all pages-->
     <script src="../js/sb-admin.min.js"></script>
   </div>
-
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="js/scripts.js"></script>
 </body>
 
 </html>

@@ -29,3 +29,30 @@ function registerLock() {
     }
   }) 
 }
+
+function getLockStatus() {
+  $.get("/lockStatus", function(data) {
+    if(data.status == "locked") {
+      $("#lock-action").text("unlock");
+      $("#lock-status").text("locked");
+    }
+    else {
+      $("#lock-action").text("lock");
+      $("#lock-status").text("unlocked");
+    }
+    console.log(data.status);
+  })
+}
+
+function changeLock() {
+  if (document.getElementById("lock-status").innerHTML == "locked") {
+    $.post("/unlock", getLockStatus);
+  }
+  else {
+    $.post("/lock", getLockStatus);
+  }
+}
+
+function test() {
+  console.log("works");
+}
