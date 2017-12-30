@@ -5,6 +5,7 @@ var app = express();
 var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
+var date = new Date();
 
 function isLoggedIn(user) {
   return((user != undefined));
@@ -109,11 +110,12 @@ app.post("/registerLock", (req, res) => {
 
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
-  db.collection("locks").find({lockid:  id}).toArray((err, result) => {
-    if(result[0].owner == null) {
+  db.collection("locks").find({lockId:  id}).toArray((err, result) => {
+     console.log(result[0]);
+     if(result[0].owner == null) {
 
       // lock does not have an owner? Then set the username and the owner properly
-      db.collection("locks").update({lockid: id}, {$set: {owner: req.smartlocksession.username}});
+      db.collection("locks").update({lockId: id}, {$set: {owner: req.smartlocksession.username}});
       db.collection("users").update({user: req.smartlocksession.username}, {$set: {lockId: id}});
       res.send({redirect: "/dashboard"});
     }
