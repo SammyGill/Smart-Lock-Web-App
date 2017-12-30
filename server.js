@@ -5,7 +5,7 @@ var app = express();
 var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
-var date = new Date();
+var d = new Date();
 
 function isLoggedIn(user) {
   return((user != undefined));
@@ -46,7 +46,6 @@ app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged 
     // in viga Google
   var email = req.query.email;
-
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -58,7 +57,9 @@ app.get("/authenticate", (req, res) => {
    */
   db.collection("users").find({user: email}).toArray((err, result) => {
     req.smartlocksession.username = email;
+    console.log(result.length);
     if(result.length) {
+      console.log(result[0]);
       if(result[0].lockId === null) {
         res.send({redirect: "/register"});
       }
@@ -152,4 +153,14 @@ app.post("/unlock", (req, res) => {
       res.send();
     })
   })
+})
+
+app.get("/timeStatus", (req, res) => {
+  d = new Date();
+  var minutes = d.getMinutes();
+  if (d.getMinutes() < 10) {
+    minutes = "0" + minutes;
+  }
+  var date = d.getHours() + ":" + minutes;
+  res.send(date);
 })

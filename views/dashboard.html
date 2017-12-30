@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<<<<<<< HEAD
-    <body onload="loadDashboard()">
-      <h1> <span class="username"> </span> </h1>
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-      <script src="scripts/scripts.js"></script>
-      <div id="time"></div>
-    </body>
-=======
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -24,10 +16,11 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime();">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-    <a class="navbar-brand" href="index.html">Smart Lock</a>
+    <a class="navbar-brand" href="index.html">Smart Lock</a> 
+    <font color="white"><span id="time"></span></font>
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -140,9 +133,11 @@
           <div class="card-body">
             <img src="../imgs/lock.png" style="width:200px;height:130px;">
           </div>
-          <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span></div>
-        </div>
-        </div>
+          <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span>
+          </div>
+      </div>
+      </div>
+
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
@@ -187,6 +182,5 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="js/scripts.js"></script>
 </body>
->>>>>>> 8f2ccb49fd06d15c9e03ea3e606903a251d0d0fc
 
 </html>

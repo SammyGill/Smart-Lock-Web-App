@@ -30,8 +30,6 @@ function registerLock() {
   }) 
 }
 
-<<<<<<< HEAD:scripts/scripts.js
-=======
 function getLockStatus() {
   $.get("/lockStatus", function(data) {
     if(data.status == "locked") {
@@ -58,4 +56,13 @@ function changeLock() {
 function test() {
   console.log("works");
 }
->>>>>>> 8f2ccb49fd06d15c9e03ea3e606903a251d0d0fc:js/scripts.js
+
+function getTime() {
+  $.get("/timeStatus", function(data) {
+      $("#time").text(data);
+  })
+  setInterval(function () {
+    getTime();
+  }, 60000);
+}
+
