@@ -15,7 +15,8 @@ function redirect(data) {
 
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
-    $(".username").text("Welcome to the dashboard, " + data + "!");
+    $(".username").text(data);
+    $(".header").text("Welcome to the dashboard, " + data + "!");
   })
 }
 
