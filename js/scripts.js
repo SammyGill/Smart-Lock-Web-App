@@ -30,3 +30,32 @@ function registerLock() {
   }) 
 }
 
+<<<<<<< HEAD:scripts/scripts.js
+=======
+function getLockStatus() {
+  $.get("/lockStatus", function(data) {
+    if(data.status == "locked") {
+      $("#lock-action").text("unlock");
+      $("#lock-status").text("locked");
+    }
+    else {
+      $("#lock-action").text("lock");
+      $("#lock-status").text("unlocked");
+    }
+    console.log(data.status);
+  })
+}
+
+function changeLock() {
+  if (document.getElementById("lock-status").innerHTML == "locked") {
+    $.post("/unlock", getLockStatus);
+  }
+  else {
+    $.post("/lock", getLockStatus);
+  }
+}
+
+function test() {
+  console.log("works");
+}
+>>>>>>> 8f2ccb49fd06d15c9e03ea3e606903a251d0d0fc:js/scripts.js
