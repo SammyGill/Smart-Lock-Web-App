@@ -75,7 +75,6 @@ app.get("/authenticate", (req, res) => {
   })
 })
 
-
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
   if(!isLoggedIn(req.smartlocksession.username)) {
@@ -83,16 +82,6 @@ app.get("/dashboard", (req, res) => {
     return;
   }
   res.sendFile(dir + "/views/dashboard.html");
-})
-
-
-// Route that redirects users to register their lock, sends registration page
-app.get("/register", (req, res) => {
-  if(!isLoggedIn(req.smartlocksession.username)) {
-    res.redirect("/");
-    return;
-  }
-  res.sendFile(dir + "/views/register.html");
 })
 
 /**
@@ -103,6 +92,57 @@ app.get("/register", (req, res) => {
  */
 app.get("/dashboardInformation", (req, res) => {
   res.send(req.smartlocksession.username);
+})
+
+// Route that redirects users to register their lock, sends registration page
+app.get("/register", (req, res) => {
+  if(!isLoggedIn(req.smartlocksession.username)) {
+    res.redirect("/");
+    return;
+  }
+  res.sendFile(dir + "/views/register.html");
+})
+
+app.get("/lockStatus", (req, res) => {
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    var id = result[0].lockId;
+    db.collection("locks").find({lockId: id}).toArray((err, result) => {
+      res.send(result[0]);
+    })
+  })
+})
+
+
+app.get("/settings", (req, res) => {
+  res.sendFile(dir + "/views/settings.html");
+})
+
+app.get("/timeStatus", (req, res) => {
+  d = new Date();
+  var minutes = d.getMinutes();
+  if (d.getMinutes() < 10) {
+    minutes = "0" + minutes;
+  }
+  var date = d.getHours() + ":" + minutes;
+  res.send(date);
+})
+
+
+
+
+
+/* ---------------------- POST ROUTES BELOW ---------------------- */
+
+
+
+
+app.post("/lock", (req, res) => {
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    var id = result[0].lockId;
+    db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+      res.send();
+    })
+  })
 })
 
 // Proccesses the lock registration in the database
@@ -127,24 +167,6 @@ app.post("/registerLock", (req, res) => {
   })
 })
 
-app.get("/lockStatus", (req, res) => {
-  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
-    var id = result[0].lockId;
-    db.collection("locks").find({lockId: id}).toArray((err, result) => {
-      res.send(result[0]);
-    })
-  })
-})
-
-app.post("/lock", (req, res) => {
-  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
-    var id = result[0].lockId;
-    db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
-      res.send();
-    })
-  })
-})
-
 app.post("/unlock", (req, res) => {
   console.log("here");
   db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
@@ -155,12 +177,6 @@ app.post("/unlock", (req, res) => {
   })
 })
 
-app.get("/timeStatus", (req, res) => {
-  d = new Date();
-  var minutes = d.getMinutes();
-  if (d.getMinutes() < 10) {
-    minutes = "0" + minutes;
-  }
-  var date = d.getHours() + ":" + minutes;
-  res.send(date);
-})
+
+
+

@@ -54,10 +54,6 @@ function changeLock() {
   }
 }
 
-function test() {
-  console.log("works");
-}
-
 function getTime() {
   $.get("/timeStatus", function(data) {
       $("#time").text(data);
