@@ -114,6 +114,12 @@ app.get("/lockStatus", (req, res) => {
 
 
 app.get("/settings", (req, res) => {
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    lockId = result[0].lockId;
+    db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+      console.log(result[0].members);
+    })
+  })
   res.sendFile(dir + "/views/settings.html");
 })
 
@@ -134,7 +140,35 @@ app.get("/timeStatus", (req, res) => {
 /* ---------------------- POST ROUTES BELOW ---------------------- */
 
 
+app.post("/addMember", (req, res) => {
+  var username = req.body.username;
+  var lockId = undefined;
 
+  // Get the ID of the lock we are going to assign the new user to
+  db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {
+    lockId = result[0].lockId;
+  })
+  db.collection("users").find({user: username}).toArray((err, result) => {
+    if(!result.length) {
+      console.log("no username found");
+      // No user with this username was found, send this error back and return
+    }
+    else if(result[0].lockId != null) {
+      console.log("user already assigned");
+      // User already assigned a lock, cannot assign
+    }
+    else {
+      db.collection("users").update({user: result[0].user}, {$set: {lockId: lockId}});
+      db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+        var members = result[0].members;
+        username = username.toString();
+        members.push(username);
+        db.collection("locks").update({lockId: lockId}, {$set: {members: members}});
+      })
+      
+    }
+  })
+})
 
 app.post("/lock", (req, res) => {
   db.collection("users").find({user: req.smartlocksession.username}).toArray((err, result) => {

@@ -63,3 +63,12 @@ function getTime() {
   }, 60000);
 }
 
+function addMember() {
+  $("#add-member-form").submit(function(event) {
+    event.preventDefault();
+    $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
+
+    })
+  })
+}
+
