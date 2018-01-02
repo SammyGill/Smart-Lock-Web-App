@@ -72,3 +72,18 @@ function addMember() {
   })
 }
 
+function addTimer() {
+  var $select = $(".1-12");
+  for (i=1; i<=12; i++) {
+    $select.append($('<option></option>').val(i).html(i))
+  }
+  var $select = $(".0-60");
+  for (i=0; i<=60; i++) {
+    var j = i;
+    if (j < 10) {
+      j = "0" + j
+    }
+    $select.append($('<option></option>').val(j).html(j))
+  }
+}
+
