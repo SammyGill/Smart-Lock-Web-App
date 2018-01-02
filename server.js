@@ -126,10 +126,19 @@ app.get("/settings", (req, res) => {
 app.get("/timeStatus", (req, res) => {
   d = new Date();
   var minutes = d.getMinutes();
+  var hours = d.getHours();
   if (d.getMinutes() < 10) {
     minutes = "0" + minutes;
   }
-  var date = d.getHours() + ":" + minutes;
+  if (d.getHours() > 12) {
+    hours = hours % 12;
+  }
+  var date = hours + ":" + minutes + ":" + d.getSeconds();
+  if (d.getHours()/12 == 0) {
+    date = date + " AM";
+  } else {
+    date = date + " PM";
+  }
   res.send(date);
 })
 

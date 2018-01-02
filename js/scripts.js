@@ -58,9 +58,9 @@ function getTime() {
   $.get("/timeStatus", function(data) {
       $("#time").text(data);
   })
-  setInterval(function () {
+  setTimeout(function () {
     getTime();
-  }, 60000);
+  }, 1000);
 }
 
 function addMember() {
