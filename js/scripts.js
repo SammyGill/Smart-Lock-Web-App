@@ -21,7 +21,7 @@ function loadDashboard() {
 }
 
 function registerLock() {
-  $.post("/registerLock", {id: document.getElementById("id").value}, function(data) {
+  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }
@@ -69,6 +69,12 @@ function addMember() {
     $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
       document.getElementById("resposne-message").innerHTML = data.message;
     })
+  })
+}
+
+function getName() {
+  $.get("/getName", function(name) {
+    document.getElementById("lock-name").value = (name + "'s Lock");
   })
 }
 
