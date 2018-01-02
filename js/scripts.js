@@ -21,7 +21,7 @@ function loadDashboard() {
 }
 
 function registerLock() {
-  $.post("/registerLock", {id: document.getElementById("id").value}, function(data) {
+  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }
@@ -72,6 +72,7 @@ function addMember() {
   })
 }
 
+<<<<<<< HEAD
 function addTimer() {
   var $select = $(".1-12");
   for (i=1; i<=12; i++) {
@@ -85,5 +86,11 @@ function addTimer() {
     }
     $select.append($('<option></option>').val(j).html(j))
   }
+=======
+function getName() {
+  $.get("/getName", function(name) {
+    document.getElementById("lock-name").value = (name + "'s Lock");
+  })
+>>>>>>> 78c3f8a8959fa81f66966bb1d4c8bb52dcd7ebe6
 }
 

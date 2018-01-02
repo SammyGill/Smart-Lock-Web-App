@@ -36,6 +36,10 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
+  memberArray = [];
+  for(var i = 0; i < 20; i++) {
+    db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
+  }
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -91,6 +95,10 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
 app.get("/dashboardInformation", (req, res) => {
+  res.send(req.smartlocksession.username);
+})
+
+app.get("/getName", (req, res) => {
   res.send(req.smartlocksession.username);
 })
 
@@ -204,6 +212,7 @@ app.post("/registerLock", (req, res) => {
       // lock does not have an owner? Then set the username and the owner properly
       db.collection("locks").update({lockId: id}, {$set: {owner: req.smartlocksession.username}});
       db.collection("users").update({user: req.smartlocksession.username}, {$set: {lockId: id}});
+      db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
       res.send({redirect: "/dashboard"});
     }
     else {
