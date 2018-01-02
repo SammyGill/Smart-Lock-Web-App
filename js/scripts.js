@@ -67,7 +67,7 @@ function addMember() {
   $("#add-member-form").submit(function(event) {
     event.preventDefault();
     $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
-
+      document.getElementById("resposne-message").innerHTML = data.message;
     })
   })
 }

@@ -151,11 +151,12 @@ app.post("/addMember", (req, res) => {
   db.collection("users").find({user: username}).toArray((err, result) => {
     if(!result.length) {
       console.log("no username found");
-      // No user with this username was found, send this error back and return
+      res.send({message: "No user found with this email"});
+      return;
     }
     else if(result[0].lockId != null) {
       console.log("user already assigned");
-      // User already assigned a lock, cannot assign
+      res.send({message:"User is already assigned to another lock"});
     }
     else {
       db.collection("users").update({user: result[0].user}, {$set: {lockId: lockId}});
@@ -163,7 +164,9 @@ app.post("/addMember", (req, res) => {
         var members = result[0].members;
         username = username.toString();
         members.push(username);
-        db.collection("locks").update({lockId: lockId}, {$set: {members: members}});
+        db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
+          res.send({message: "User successfully assigned to lock"});
+        });
       })
       
     }
