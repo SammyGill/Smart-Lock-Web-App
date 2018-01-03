@@ -94,6 +94,8 @@ function addTimer() {
     }
     $select.append($('<option></option>').val(j).html(j))
   }
+}
+
 
 function getName() {
   $.get("/getName", function(name) {
@@ -101,6 +103,7 @@ function getName() {
   })
 
 }
+
 
 function getLocks() {
   $.get("/getLocks", function(locksArray) {
@@ -118,6 +121,7 @@ function getLocks() {
     }
   })
 }
+
 
 function selectDashboard() {
   $(document).on("click", ".test", function(element) {
