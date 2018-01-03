@@ -143,6 +143,10 @@ app.get("/selectLock", (req, res) => {
   res.sendFile(dir + "/views/locks.html");
 })
 
+app.get("/selectDashboard", (req, res) => {
+  console.log(req.query);
+})
+
 app.get("/settings", (req, res) => {
   db.collection("users").find({user: req.session.username}).toArray((err, result) => {
     lockId = result[0].lockId;

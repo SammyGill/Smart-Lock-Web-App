@@ -92,9 +92,20 @@ function getLocks() {
     var list = document.getElementById("locks-list");
 
     for(var i = 0; i < locksArray.length; i++) {
+      var button = document.createElement("button");
+      button.appendChild(document.createTextNode(i));
+      button.setAttribute("class", "test");
+      button.setAttribute("id", i);
       var lockElement = document.createElement("li");
-      lockElement.appendChild(document.createTextNode(locksArray[i]));
+      lockElement.appendChild(button);
+      
       list.appendChild(lockElement);
     }
+  })
+}
+
+function selectDashboard() {
+  $(document).on("click", ".test", function(element) {
+    console.log(event.target.id);
   })
 }
