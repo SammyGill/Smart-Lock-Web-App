@@ -5,18 +5,27 @@ function onSignIn(googleUser) {
   console.log('Image URL: ' + profile.getImageUrl());
   console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
   if(googleUser) {
-    $.get("/authenticate", {email: profile.getEmail()}, redirect);
+    $.get("/authenticate", {email: profile.getEmail()}, function(data) {
+      if(data.locks.length > 1) {
+        window.location = "/selectLock"
+        console.log("multiple locks");
+        // load all pages
+      }
+      else if(data.locks.length == 0) {
+        window.location = "/register";
+      }
+      else {
+        window.location = "/dashboard"
+        // load the 1 page
+      }
+    });
   }
-}
-
-function redirect(data) {
-  window.location = data.redirect;
 }
 
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
     $(".username").text(data);
-    $(".header").text("Welcome to the dashboard, " + data + "!");
+    $(".header").text("Welcome to the dashboard, " + data.username + "!");
   })
 }
 
@@ -26,7 +35,7 @@ function registerLock() {
       $(".lockTaken").text("Taken");
     }
     else {
-      redirect(data);
+      window.location = data.redirect;
     }
   }) 
 }
@@ -78,3 +87,14 @@ function getName() {
   })
 }
 
+function getLocks() {
+  $.get("/getLocks", function(locksArray) {
+    var list = document.getElementById("locks-list");
+
+    for(var i = 0; i < locksArray.length; i++) {
+      var lockElement = document.createElement("li");
+      lockElement.appendChild(document.createTextNode(locksArray[i]));
+      list.appendChild(lockElement);
+    }
+  })
+}
