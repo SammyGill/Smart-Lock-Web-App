@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
   for(var i = 0; i < 20; i++) {
     db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
   }
-  */
+*/  
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -72,9 +72,9 @@ app.get("/authenticate", (req, res) => {
       else {
         if(result[0].locks.length > 1) {
           console.log("user has more than 1 lock associated")
-          req.session.lock = result[0].locks[0];
         }
         else {
+          req.session.lock = parseInt(result[0].locks[0]);
           console.log("user has just 1 lock associated");
         }
         res.send({locks: result[0].locks});
@@ -106,7 +106,16 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
 app.get("/dashboardInformation", (req, res) => {
-  res.send({username: req.session.username, lockId: req.session.lock});
+  var lockName = undefined;
+  console.log("lock id");
+  console.log(typeof(req.session.lock));
+  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+    console.log(result);
+    lockName = result[0].lockName;
+    console.log(lockName);
+    res.send({username: req.session.username, lockName: lockName});
+  })
+
 })
 
 app.get("/getLocks", (req, res) => {
@@ -144,16 +153,17 @@ app.get("/selectLock", (req, res) => {
 })
 
 app.get("/selectDashboard", (req, res) => {
-  console.log(req.query);
+  req.session.lock = parseInt(req.query.lockId);
+  res.send();
 })
 
 app.get("/settings", (req, res) => {
-  db.collection("users").find({user: req.session.username}).toArray((err, result) => {
-    lockId = result[0].lockId;
+    lockId = req.session.lock;
+    console.log(lockId);
     db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
       console.log(result[0].members);
     })
-  })
+
   res.sendFile(dir + "/views/settings.html");
 })
 
@@ -230,7 +240,7 @@ app.post("/registerLock", (req, res) => {
     if(result[0].owner == null) {
       var idArray = [];
       idArray.push(id);
-      req.session.lock = id;
+      req.session.lock = parseInt(id);
       // lock does not have an owner? Then set the username and the owner properly
       db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
       db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});

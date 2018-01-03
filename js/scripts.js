@@ -24,8 +24,8 @@ function onSignIn(googleUser) {
 
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
-    $(".username").text(data);
-    $(".header").text("Welcome to the dashboard, " + data.username + "!");
+    $(".username").text(data.username);
+    $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
   })
 }
 
@@ -111,9 +111,9 @@ function getLocks() {
 
     for(var i = 0; i < locksArray.length; i++) {
       var button = document.createElement("button");
-      button.appendChild(document.createTextNode(i));
-      button.setAttribute("class", "test");
-      button.setAttribute("id", i);
+      button.appendChild(document.createTextNode(locksArray[i]));
+      button.setAttribute("class", "lock");
+      button.setAttribute("id", locksArray[i]);
       var lockElement = document.createElement("li");
       lockElement.appendChild(button);
       
@@ -124,7 +124,9 @@ function getLocks() {
 
 
 function selectDashboard() {
-  $(document).on("click", ".test", function(element) {
-    console.log(event.target.id);
+  $(document).on("click", ".lock", function(element) {
+    $.get("/selectDashboard", {lockId: event.target.id}, function() {
+      window.location = "/dashboard";
+    })
   })
 }
