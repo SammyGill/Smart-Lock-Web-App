@@ -5,7 +5,9 @@ var app = express();
 var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
+var async = require("async");
 var d = new Date();
+
 
 function isLoggedIn(user) {
   return((user != undefined));
@@ -119,9 +121,17 @@ app.get("/dashboardInformation", (req, res) => {
 })
 
 app.get("/getLocks", (req, res) => {
+  var lockNames = [];
   db.collection("users").find({username: req.session.username}).toArray((err, result) => {
     var locks = result[0].locks;
-    res.send(locks);
+    async.each(locks, function(file, callback) {
+      db.collection("locks").find({lockId: file}).toArray((err, result) => {
+        lockNames.push(result[0].lockName);
+        callback();
+      })
+    }, function(err) {
+      res.send({locks: locks, lockNames: lockNames});
+    })
   })
 })
 

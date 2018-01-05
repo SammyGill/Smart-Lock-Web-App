@@ -106,14 +106,14 @@ function getName() {
 
 
 function getLocks() {
-  $.get("/getLocks", function(locksArray) {
+  $.get("/getLocks", function(data) {
     var list = document.getElementById("locks-list");
 
-    for(var i = 0; i < locksArray.length; i++) {
+    for(var i = 0; i < data.locks.length; i++) {
       var button = document.createElement("button");
-      button.appendChild(document.createTextNode(locksArray[i]));
+      button.appendChild(document.createTextNode(data.lockNames[i]));
       button.setAttribute("class", "lock");
-      button.setAttribute("id", locksArray[i]);
+      button.setAttribute("id", data.locks[i]);
       var lockElement = document.createElement("li");
       lockElement.appendChild(button);
       
