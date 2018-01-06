@@ -47,6 +47,13 @@ app.get("/", (req, res) => {
   res.sendFile(dir + "/views/login.html");
 })
 
+app.get("/addMembers", (req, res) => {
+  res.sendFile(dir + "/views/addMembers.html");
+})
+
+app.get("/addRule", (req, res) => {
+  res.sendFile(dir + "/views/addRules.html");
+})
 
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them

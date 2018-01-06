@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <link href="../css.styles.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -32,11 +33,22 @@
             <span class="nav-link-text">Dashboard</span>
           </a>
         </li>
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-          <a class="nav-link" href="settings">
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseComponents" data-parent="#exampleAccordion">
             <i class="fa fa-fw fa-wrench"></i>
             <span class="nav-link-text">Settings</span>
           </a>
+          <ul class="sidenav-second-level collapse" id="collapseComponents">
+            <li>
+              <a href="addMembers">Add Users</a>
+            </li>
+            <li>
+              <a href="addRule">Lock Rules</a>
+            </li>
+            <li>
+              <a href="roles.html"> User Roles </a>
+            </li>
+          </ul>
         </li>
       </ul>
       <ul class="navbar-nav sidenav-toggler">
@@ -127,8 +139,8 @@
         </div>
       </div>
 
-      <div class="col-md-3">
-      <div class="card mb-3" onclick="changeLock()" style="width:240px" >
+      <div class="col-md-3" style="width:240px; margin: 0 auto;">
+      <div class="card mb-3 lock-control" onclick="changeLock()" >
           <div class="card-header">
             <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
           </div>
