@@ -17,7 +17,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime();">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a> 
@@ -138,8 +138,8 @@
           <p> Dashboard page creating from the blank page template.</p>
         </div>
       </div>
-
-      <div class="col-md-3" style="width:240px; margin: 0 auto;">
+      <div class="row">
+      <div class="col-md-3">
       <div class="card mb-3 lock-control" onclick="changeLock()" >
           <div class="card-header">
             <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
@@ -151,7 +151,17 @@
           </div>
       </div>
       </div>
-
+      <div class="card">
+        <h5 class="card-header" style="text-align:center;">Members</h5>
+        <div class="card-body">
+            <div align="center">
+              <ul id="membersList">
+                
+              </ul>
+            </div>
+        </div>
+      </div>
+    </div>
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->

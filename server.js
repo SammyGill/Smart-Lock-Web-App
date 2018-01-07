@@ -153,16 +153,30 @@ app.get("/dashboardInformation", (req, res) => {
 
 app.get("/getLocks", (req, res) => {
   var lockNames = [];
+  var lockIds = [];
   db.collection("users").find({username: req.session.username}).toArray((err, result) => {
     var locks = result[0].locks;
     async.each(locks, function(file, callback) {
       db.collection("locks").find({lockId: file}).toArray((err, result) => {
         lockNames.push(result[0].lockName);
+        lockIds.push(file);
         callback();
       })
     }, function(err) {
-      res.send({locks: locks, lockNames: lockNames});
+      console.log(lockNames);
+      res.send({locks: lockIds, lockNames: lockNames});
     })
+  })
+})
+
+app.get("/getMembers", (req, res) => {
+  var id = req.session.lock;
+  var members = [];
+
+  db.collection("locks").find({lockId: id}).toArray((err, result) => {
+    members = result[0].members;
+    members.push(result[0].owner);
+    res.send({members: members});
   })
 })
 

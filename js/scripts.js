@@ -170,3 +170,15 @@ function loadTimesTwo() {
     select.add(time);
   }
 }
+
+function getMembers() {
+  $.get("/getMembers", function(data) {
+    var list = document.getElementById("membersList");
+
+    for(var i = 0; i < data.members.length; i++) {
+      var member = document.createElement("li");
+      member.appendChild(document.createTextNode(data.members[i]));
+      list.appendChild(member);
+    }
+  })
+}
