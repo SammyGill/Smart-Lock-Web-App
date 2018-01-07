@@ -14,24 +14,6 @@ function isLoggedIn(user) {
   return((user != undefined));
 } 
 
-function getTime() {
-  var d = new Date();
-  var minutes = d.getMinutes();
-  var hours = d.getHours();
-  if (d.getMinutes() < 10) {
-    minutes = "0" + minutes;
-  }
-  if (d.getHours() > 12) {
-    hours = hours % 12;
-  }
-  var date = hours + ":" + minutes
-  if (d.getHours()/12 == 0) {
-    date = date + " AM";
-  } else {
-    date = date + " PM";
-  }
-  return date;
-}
 
 // Used to make the server look in our directory for 
   // our javascript, css, and other files
@@ -226,14 +208,17 @@ app.get("/timeStatus", (req, res) => {
   d = new Date();
   var minutes = d.getMinutes();
   var hours = d.getHours();
+  var seconds = d.getSeconds();
   if (d.getMinutes() < 10) {
     minutes = "0" + minutes;
   }
   if (d.getHours() > 12) {
     hours = hours % 12;
   }
-  var date = hours + ":" + minutes
-  var date = hours + ":" + minutes + ":" + d.getSeconds();
+  if (d.getSeconds() < 10) {
+    seconds = "0" + seconds;
+  }
+  var date = hours + ":" + minutes + ":" + seconds;
   if (d.getHours()/12 == 0) {
     date = date + " AM";
   } else {
@@ -347,6 +332,7 @@ app.post("/unlock", (req, res) => {
     })
   })
 })
+
 
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
 
