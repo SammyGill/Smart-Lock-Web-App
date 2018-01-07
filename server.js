@@ -6,12 +6,32 @@ var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
 var async = require("async");
+var schedule = require('node-schedule');
 var d = new Date();
 
 
 function isLoggedIn(user) {
   return((user != undefined));
 } 
+
+function getTime() {
+  var d = new Date();
+  var minutes = d.getMinutes();
+  var hours = d.getHours();
+  if (d.getMinutes() < 10) {
+    minutes = "0" + minutes;
+  }
+  if (d.getHours() > 12) {
+    hours = hours % 12;
+  }
+  var date = hours + ":" + minutes
+  if (d.getHours()/12 == 0) {
+    date = date + " AM";
+  } else {
+    date = date + " PM";
+  }
+  return date;
+}
 
 // Used to make the server look in our directory for 
   // our javascript, css, and other files
@@ -51,7 +71,11 @@ app.get("/addMembers", (req, res) => {
   res.sendFile(dir + "/views/addMembers.html");
 })
 
-app.get("/addRule", (req, res) => {
+app.get("/addRoles", (req, res) => {
+  res.sendFile(dir + "/views/addRoles.html");
+})
+
+app.get("/addRules", (req, res) => {
   res.sendFile(dir + "/views/addRules.html");
 })
 
@@ -194,6 +218,7 @@ app.get("/timeStatus", (req, res) => {
   if (d.getHours() > 12) {
     hours = hours % 12;
   }
+  var date = hours + ":" + minutes
   var date = hours + ":" + minutes + ":" + d.getSeconds();
   if (d.getHours()/12 == 0) {
     date = date + " AM";
@@ -238,7 +263,22 @@ app.post("/addMember", (req, res) => {
 })
 
 app.post("/lock", (req, res) => {
-  db.collection("users").find({username: req.session.username}).toArray((err, result) => {
+  var username = req.session.username;
+  var time = getTime();
+  var date = new Date();
+  date = date.toDateString();
+  time = (date + " at " + time);
+  db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+    var names = result[0].names;
+    var actions = result[0].actions;
+    var times = result[0].times;
+    names.push(username);
+    actions.push("lock");
+    times.push(time);
+    db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
+  })
+
+  db.collection("users").find({username: username}).toArray((err, result) => {
     var id = req.session.lock;
     db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
       res.send();
@@ -272,8 +312,21 @@ app.post("/registerLock", (req, res) => {
 })
 
 app.post("/unlock", (req, res) => {
-  console.log("here");
-  db.collection("users").find({username: req.session.username}).toArray((err, result) => {
+  var username = req.session.username;
+  var time = getTime();
+  var date = new Date();
+  date = date.toDateString();
+  time = (date + " at " + time);
+  db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+    var names = result[0].names;
+    var actions = result[0].actions;
+    var times = result[0].times;
+    names.push(username);
+    actions.push("unlock");
+    times.push(time);
+    db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
+  })
+  db.collection("users").find({username: username}).toArray((err, result) => {
     var id = req.session.lock;
     db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
       res.send();
@@ -281,6 +334,9 @@ app.post("/unlock", (req, res) => {
   })
 })
 
+/* ---------------------- OTHER STUFF BELOW ---------------------- */
 
-
-
+// Template function to do whatever you want every minute
+var j = schedule.scheduleJob('*/1 * * * *', function(){
+  console.log('The answer to life, the universe, and everything!');
+});

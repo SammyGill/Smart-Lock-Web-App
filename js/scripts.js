@@ -150,3 +150,23 @@ function loadTimes() {
     select.add(time);
   }
 }
+
+function loadTimesTwo() {
+  for(var i = 0; i < 60; i++) {
+    var select = document.getElementById("minuteTwo");
+    var time = document.createElement("option");
+    if(i < 10) {
+      time.text = "0"+i;
+    }
+    else {
+      time.text = i;
+    }
+    select.add(time);
+  }
+  for(var i = 1; i < 13; i++) {
+    var select = document.getElementById("hourTwo");
+    var time = document.createElement("option");
+    time.text = i;
+    select.add(time);
+  }
+}

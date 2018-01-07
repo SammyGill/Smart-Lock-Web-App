@@ -2,13 +2,12 @@
 <html lang="en">
 
 <head>
-  <link href="../css.styles.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-  <title>Smart Lock Dashboard</title>
+  <title>SB Admin - Start Bootstrap Template</title>
   <!-- Bootstrap core CSS-->
   <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <!-- Custom fonts for this template-->
@@ -17,40 +16,39 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime();">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadTimes(); loadTimesTwo()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-    <a class="navbar-brand" href="index.html">Smart Lock</a> 
-    <font color="white"><span id="time"></span></font>
+    <a class="navbar-brand" href="index.html">Smart Lock</a>
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarResponsive">
-      <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
-          <a class="nav-link" href="dashboard">
-            <i class="fa fa-fw fa-dashboard"></i>
-            <span class="nav-link-text">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
-          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseComponents" data-parent="#exampleAccordion">
-            <i class="fa fa-fw fa-wrench"></i>
-            <span class="nav-link-text">Settings</span>
-          </a>
-          <ul class="sidenav-second-level collapse" id="collapseComponents">
-            <li>
-              <a href="addMembers">Add Users</a>
+        <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
+              <a class="nav-link" href="dashboard">
+                <i class="fa fa-fw fa-dashboard"></i>
+                <span class="nav-link-text">Dashboard</span>
+              </a>
             </li>
-            <li>
-              <a href="addRules">Lock Rules</a>
-            </li>
-            <li>
-              <a href="addRoles"> User Roles </a>
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+              <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseComponents" data-parent="#exampleAccordion">
+                <i class="fa fa-fw fa-wrench"></i>
+                <span class="nav-link-text">Settings</span>
+              </a>
+              <ul class="sidenav-second-level collapse" id="collapseComponents">
+                <li>
+                  <a href="addMembers">Add Users</a>
+                </li>
+                <li>
+                  <a href="addRules">Lock Rules</a>
+                </li>
+                <li>
+                  <a href="addRoles"> User Roles </a>
+                </li>
+              </ul>
             </li>
           </ul>
-        </li>
-      </ul>
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">
           <a class="nav-link text-center" id="sidenavToggler">
@@ -59,6 +57,40 @@
         </li>
       </ul>
       <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle mr-lg-2" id="messagesDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-fw fa-envelope"></i>
+            <span class="d-lg-none">Messages
+              <span class="badge badge-pill badge-primary">12 New</span>
+            </span>
+            <span class="indicator text-primary d-none d-lg-block">
+              <i class="fa fa-fw fa-circle"></i>
+            </span>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="messagesDropdown">
+            <h6 class="dropdown-header">New Messages:</h6>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">
+              <strong>David Miller</strong>
+              <span class="small float-right text-muted">11:21 AM</span>
+              <div class="dropdown-message small">Hey there! This new version of SB Admin is pretty awesome! These messages clip off when they reach the end of the box so they don't overflow over to the sides!</div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">
+              <strong>Jane Smith</strong>
+              <span class="small float-right text-muted">11:21 AM</span>
+              <div class="dropdown-message small">I was wondering if you could meet for an appointment at 3:00 instead of 4:00. Thanks!</div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">
+              <strong>John Doe</strong>
+              <span class="small float-right text-muted">11:21 AM</span>
+              <div class="dropdown-message small">I've sent the final files over to you for review. When you're able to sign off of them let me know and we can discuss distribution.</div>
+            </a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item small" href="#">View all messages</a>
+          </div>
+        </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle mr-lg-2" id="alertsDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fa fa-fw fa-bell"></i>
@@ -128,30 +160,58 @@
         <li class="breadcrumb-item">
           <a href="index.html">Dashboard</a>
         </li>
-        <li class="breadcrumb-item active">
-          <span class="username"> </span>
-        </li>
+        <li class="breadcrumb-item active">Add Members</li>
       </ol>
-      <div class="row">
-        <div class="col-12">
-          <h1> <span class="header"> </span> </h1>
-          <p> Dashboard page creating from the blank page template.</p>
-        </div>
-      </div>
-
-      <div class="col-md-3" style="width:240px; margin: 0 auto;">
-      <div class="card mb-3 lock-control" onclick="changeLock()" >
-          <div class="card-header">
-            <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
-          </div>
+      <div class="card">
+          <h5 class="card-header" style="text-align:center;">Add a member to the lock</h5>
           <div class="card-body">
-            <img src="../imgs/lock.png" style="width:170px;height:170px;">
-          </div>
-          <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span>
-          </div>
-      </div>
-      </div>
+              <div id="form" align="center">
+                  <form>
+                      <div class="form-group col-md-4" >
+                        <label for="roleName">Name of role</label>
+                        <input type="text" class="form-control" id="roleName" placeholder="Role name">
+                      </div>
+                      <div class="btn-group" data-toggle="buttons">                         
+                        <label class="btn btn-primary"style="background-color:grey;">
+                          <input type="radio" checked autocomplete="off" disabled > This role cannot...
+                        </label>
+                        <label class="btn btn-primary">
+                          <input type="radio" autocomplete="off"> Lock
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" autocomplete="off"> Unlock
+                        </label>
+                      </div>
+                      <div class="form-group col-md-12">
+                        <label for="roleSelect">between</label>
+                        <br>
+                        <select class="form-control col-md-1" id="hour" style="display:inline"> 
+          
+                        </select>
+                        <select class="form-control col-md-1" id="minute" style="display:inline">
 
+                        </select>
+                        <select class="form-control col-md-1" style="display:inline">
+                          <option> AM </option>
+                          <option> PM </option>
+                        </select>
+                        and
+                        <select class="form-control col-md-1" id="hourTwo" style="display:inline"> 
+          
+                        </select>
+                        <select class="form-control col-md-1" id="minuteTwo" style="display:inline">
+
+                        </select>
+                        <select class="form-control col-md-1" style="display:inline">
+                          <option> AM </option>
+                          <option> PM </option>
+                        </select>
+                      </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                    </div>
+          </div>
+        </div>
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
@@ -184,7 +244,6 @@
         </div>
       </div>
     </div>
-
     <!-- Bootstrap core JavaScript-->
     <script src="../vendor/jquery/jquery.min.js"></script>
     <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -194,6 +253,7 @@
     <script src="../js/sb-admin.min.js"></script>
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
   <script src="js/scripts.js"></script>
 </body>
 
