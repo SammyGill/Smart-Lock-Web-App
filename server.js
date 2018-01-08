@@ -14,6 +14,24 @@ function isLoggedIn(user) {
   return((user != undefined));
 } 
 
+function getTime() {
+  var d = new Date();
+  var minutes = d.getMinutes();
+  var hours = d.getHours();
+  if (d.getMinutes() < 10) {
+    minutes = "0" + minutes;
+  }
+  if (d.getHours() > 12) {
+    hours = hours % 12;
+  }
+  var date = hours + ":" + minutes
+  if (d.getHours()/12 == 0) {
+    date = date + " AM";
+  } else {
+    date = date + " PM";
+  }
+  return date;
+}
 
 // Used to make the server look in our directory for 
   // our javascript, css, and other files
