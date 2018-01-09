@@ -1,14 +1,26 @@
 <!DOCTYPE html>
+<style>
+button{
+   display:block;
+   margin: 0 auto;
+
+}
+input{
+   display:block;
+   margin:0 auto;
+}
+</style>
 <html>
   <title> Smart Lock - Registration </title>
   <head> </head>
 
   <body>
-    <h1> Register Your Smart Lock </h1>
+    <h1 align="center"> Register Your Smart Lock </h1>
     <h2 class="lockTaken"></h2>
-
+      <div>
       <input type="text" id="id" name="id" placeholder="Lock ID">
       <button type="submit" id="submit" onclick="registerLock()"> Submit </button>
+      </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>

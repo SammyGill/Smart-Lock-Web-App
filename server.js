@@ -6,6 +6,9 @@ var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
 var d = new Date();
+//var google = require('googleapis');
+
+
 
 function isLoggedIn(user) {
   return((user != undefined));
@@ -94,6 +97,23 @@ app.get("/dashboardInformation", (req, res) => {
   res.send(req.smartlocksession.username);
 })
 
+//This gets the users name and displays it on the dashboard
+/*var gmail = google.gmail({
+   auth:auth,
+   version: 'v1'
+});
+
+gmail.users.getProfile({
+   auth: auth,
+   userId: 'me'
+}, function(err, res) {
+   if(err) {
+      console.log(err);
+   } else {
+        console.log(res);
+     }
+});
+*/
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
   if(!isLoggedIn(req.smartlocksession.username)) {
