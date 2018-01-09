@@ -2,11 +2,13 @@
 <html lang="en">
 
 <head>
+  <link href="../css/styles.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
+  <meta name="google-signin-client_id" content="272016247378-ro1nqj9jb67a7v4kqumdpoobvse8jbnf.apps.googleusercontent.com">
   <title>SB Admin - Start Bootstrap Template</title>
   <!-- Bootstrap core CSS-->
   <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -19,10 +21,11 @@
 
 
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="addMember()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="addMember(); getTime(); addTimer();">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Start Bootstrap</a>
+    <font color="white"><span id="time"></span></font>
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -134,6 +137,18 @@
       <input type="checkbox" value="canLock"> Lock <br>
       <input type="checkbox" value="canUnlock"> Unlock <br>
       <input type="checkbox" value="canAdd"> Add Members <br>
+
+      <h1> Add a Timer </h1>
+      <h6> Set a time for your Smart Lock to automatically be locked </h6>
+      <select class="1-12"></select>
+      <span> : </span>
+      <select class="0-60"></select>
+      <select>
+        <option> AM </option>
+        <option> PM </option>
+      </select>
+      <button type="submit"> Submit </button>
+
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
@@ -161,7 +176,7 @@
           <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
           <div class="modal-footer">
             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-            <a class="btn btn-primary" href="login.html">Logout</a>
+            <a class="btn btn-primary" href="/" onclick="signOut();">Logout</a>
           </div>
         </div>
       </div>

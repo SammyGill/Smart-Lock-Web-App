@@ -2,11 +2,14 @@
 <html lang="en">
 
 <head>
+  <div class="g-signin2"></div>
+  <link href="../css.styles.css" rel="stylesheet">
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
+  <meta name="google-signin-client_id" content="272016247378-ro1nqj9jb67a7v4kqumdpoobvse8jbnf.apps.googleusercontent.com">
   <title>Smart Lock Dashboard</title>
   <!-- Bootstrap core CSS-->
   <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -16,7 +19,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime();">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a> 
@@ -44,9 +47,22 @@
 
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
           <a class="nav-link" href="settings">
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseComponents" data-parent="#exampleAccordion">
             <i class="fa fa-fw fa-wrench"></i>
             <span class="nav-link-text">Settings</span>
           </a>
+          <ul class="sidenav-second-level collapse" id="collapseComponents">
+            <li>
+              <a href="addMembers">Add Users</a>
+            </li>
+            <li>
+              <a href="addRules">Lock Rules</a>
+            </li>
+            <li>
+              <a href="addRoles"> User Roles </a>
+            </li>
+          </ul>
         </li>
       </ul>
       <ul class="navbar-nav sidenav-toggler">
@@ -136,9 +152,9 @@
           <p> Dashboard page creating from the blank page template.</p>
         </div>
       </div>
-
+      <div class="row">
       <div class="col-md-3">
-      <div class="card mb-3" onclick="changeLock()" style="width:240px" >
+      <div class="card mb-3 lock-control" onclick="changeLock()" >
           <div class="card-header">
             <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
           </div>
@@ -149,7 +165,17 @@
           </div>
       </div>
       </div>
-
+      <div class="card">
+        <h5 class="card-header" style="text-align:center;">Members</h5>
+        <div class="card-body">
+            <div align="center">
+              <ul id="membersList">
+                
+              </ul>
+            </div>
+        </div>
+      </div>
+    </div>
     </div>
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
@@ -177,7 +203,8 @@
           <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
           <div class="modal-footer">
             <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-            <a class="btn btn-primary" href="login.html">Logout</a>
+            <a class="btn btn-primary" href="/" onclick="signOut();">Logout</a>
+             <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
           </div>
         </div>
       </div>

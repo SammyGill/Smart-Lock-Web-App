@@ -14,11 +14,21 @@ input{
   <title> Smart Lock - Registration </title>
   <head> </head>
 
+<<<<<<< HEAD
   <body>
     <h1 align="center"> Register Your Smart Lock </h1>
     <h2 class="lockTaken"></h2>
       <div>
       <input type="text" id="id" name="id" placeholder="Lock ID">
+=======
+  <body onload="getName()">
+    <h1> Register Your Smart Lock </h1>
+    <h2 class="lockTaken"></h2>
+
+      <input type="text" id="id" placeholder="Lock ID" style="margin-bottom:10px">
+      <br>
+      <input type="text" id="lock-name" value="Lock Name">
+>>>>>>> b8bec1687404cd953447b3a118ede059515aefbb
       <button type="submit" id="submit" onclick="registerLock()"> Submit </button>
       </div>
 
