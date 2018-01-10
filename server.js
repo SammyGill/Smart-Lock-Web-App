@@ -8,6 +8,9 @@ var session = require("client-sessions");
 var async = require("async");
 var schedule = require('node-schedule');
 var d = new Date();
+//var google = require('googleapis');
+
+
 
 
 function isLoggedIn(user) {
@@ -185,6 +188,23 @@ app.get("/getName", (req, res) => {
   res.send(req.session.username);
 })
 
+//This gets the users name and displays it on the dashboard
+/*var gmail = google.gmail({
+   auth:auth,
+   version: 'v1'
+});
+
+gmail.users.getProfile({
+   auth: auth,
+   userId: 'me'
+}, function(err, res) {
+   if(err) {
+      console.log(err);
+   } else {
+        console.log(res);
+     }
+});
+*/
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
   if(!isLoggedIn(req.session.username)) {

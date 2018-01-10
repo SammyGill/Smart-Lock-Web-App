@@ -1,18 +1,43 @@
 <!DOCTYPE html>
+<style>
+button{
+   display:block;
+   margin: 0 auto;
+
+}
+input{
+   display:block;
+   margin:0 auto;
+}
+</style>
 <html>
   <title> Smart Lock - Registration </title>
-  <head> </head>
+  <head> 
+  <!-- Required meta tags -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-  <body onload="getName()">
-    <h1> Register Your Smart Lock </h1>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
+  integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
+  crossorigin="anonymous">
+  </head>
+
+
+  <body>
+    <h1 align="center"> Register Your Smart Lock </h1>
+    <br>
     <h2 class="lockTaken"></h2>
-
-    <form>
-      <input type="text" id="id" placeholder="Lock ID" style="margin-bottom:10px">
+      <div class="input-group mb-3">
+      <div class="input-group-prepend">
+      <span class="input-group-text" id="basic-addon1">Lock ID</span>
+      </div>
+      <input type="text" class="form-control" placeholder="ID Number"
+      aria-label="ID Number" aria-describedby="basic-addon1" >
+      </div>
       <br>
-      <input type="text" id="lock-name" value="Lock Name">
-      <button type="submit" id="submit" onclick="registerLock()"> Submit </button>
-    </form>
+      <button class="btn btn-primary" type="submit" onclick="registerLock()">Submit</button>
+      </div>
+  </body onload="getName()">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
