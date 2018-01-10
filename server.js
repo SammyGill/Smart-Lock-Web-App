@@ -58,6 +58,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
+
 /*
   memberArray = [];
   for(var i = 0; i < 20; i++) {
@@ -276,6 +277,21 @@ app.post("/addMember", (req, res) => {
       })
       
     }
+  })
+})
+
+app.post("/createRule", (req, res) => {
+  console.log(req.body.action);
+  console.log(req.body.time);
+  var lockId = req.session.lock;
+  var actions = [];
+  var times = [];
+  db.collection("rules").find({lockId: lockId}).toArray((err, result) => {
+    actions = result[0].actions;
+    times = result[0].times;
+    actions.push(req.body.action);
+    times.push(req.body.time);
+    db.collection("rules").update({lockId: lockId}, {$set: {actions: actions, times: times}});
   })
 })
 

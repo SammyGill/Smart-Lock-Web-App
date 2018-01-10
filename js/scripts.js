@@ -196,3 +196,21 @@ function onLoad() {
     gapi.auth2.init();
   });
 }
+
+function createRule() {
+  var action = undefined;
+  if(document.getElementById("unlock").checked) {
+    action = "unlock";
+  }
+  else {
+    action = "lock";
+  }
+  var hourSelect = document.getElementById("hour")
+  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteSelect = document.getElementById("minute")
+  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodSelect = document.getElementById("period")
+  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var time = hourOption + ":" + minuteOption + " " + periodOption;
+  $.post("/createRule", {action: action, time: time});
+}

@@ -17,7 +17,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadTimes()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadTimes(); selectLockAction()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a>
@@ -171,13 +171,13 @@
                       <div class="btn-group" data-toggle="buttons">
                           
                           <label class="btn btn-primary"style="background-color:grey;">
-                            <input type="radio" checked autocomplete="off" disabled > I want to...
+                            <input type="radio" autocomplete="off" disabled > I want to...
+                          </label>
+                          <label class="btn btn-primary active" aria-pressed="true" >
+                            <input type="radio" autocomplete="off" id="lock"> Lock
                           </label>
                           <label class="btn btn-primary">
-                            <input type="radio" autocomplete="off"> Lock
-                          </label>
-                          <label class="btn btn-primary">
-                              <input type="radio" autocomplete="off"> Unlock
+                              <input type="radio" autocomplete="off" id="unlock"> Unlock
                           </label>
                         </div>
                       <div class="form-group col-md-4">
@@ -189,12 +189,12 @@
                         <select class="form-control col-md-3" id="minute" style="display:inline">
 
                         </select>
-                        <select class="form-control col-md-3" style="display:inline">
+                        <select class="form-control col-md-3" id="period" style="display:inline">
                           <option> AM </option>
                           <option> PM </option>
                         </select>
                       </div>
-                        <button type="submit" class="btn btn-primary" style="display:inline">Submit</button>
+                        <button class="btn btn-primary" style="display:inline" onclick="createRule()">Submit</button>
                     </form>
                     </div>
           </div>
@@ -218,7 +218,8 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+            <h5 class="modal-title" id="21822056912191
+            pleModalLabel">Ready to Leave?</h5>
             <button class="close" type="button" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">×</span>
             </button>
@@ -242,6 +243,11 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://apis.google.com/js/platform.js" async defer></script>
   <script src="js/scripts.js"></script>
+  <script>
+  function selectLockAction() {
+    document.getElementById("lock").checked = true;
+  }
+  </script>
 </body>
 
 </html>
