@@ -23,25 +23,27 @@ input{
   </head>
 
 
-  <body>
+  <body onload="getName()">
     <h1 align="center"> Register Your Smart Lock </h1>
-    <br>
-    <h2 class="lockTaken"></h2>
-      <div class="input-group mb-3">
-      <div class="input-group-prepend">
-      <span class="input-group-text" id="basic-addon1">Lock ID</span>
-      </div>
-      <input type="text" class="form-control" placeholder="ID Number"
-      aria-label="ID Number" aria-describedby="basic-addon1" >
-      </div>
-      <br>
-      <button class="btn btn-primary" type="submit" onclick="registerLock()">Submit</button>
-      </div>
-  </body onload="getName()">
+    <h2 align="center" class="lockTaken"></h2>
+      <div id="form" align="center">
+          
+              <div class="form-group col-md-4" >
+                <label for="exampleInputEmail1">Lock Name</label>
+                <input type="text" class="form-control" placeholder="Lock Name" id="lock-name">
+              </div>
+              <div class="form-group col-md-4" >
+                  <label for="exampleInputEmail1">ID</label>
+                  <input type="text" class="form-control" placeholder="Lock Name" id="id">
+                </div>
+                <button onclick="registerLock()">Submit</button>
+            
+            </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src="js/scripts.js"></script>
   </body>
+
 
 </html>
