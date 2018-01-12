@@ -183,6 +183,7 @@
                             <input type="radio" autocomplete="off" id="unlock"> Unlock
                         </label>
                       </div>
+                     
                       <div class="form-group col-md-12">
                         <label for="roleSelect">between</label>
                         <br>
@@ -208,7 +209,10 @@
                           <option> PM </option>
                         </select>
                       </div>
-                        <button type="submit" class="btn btn-primary" onclick="createRole();">Submit</button>
+                      <div class="checkbox">
+                      	<input type="checkbox" id="addMembers" value="canLock"> This role can add other users who can lock or unlock this lock. <br>
+                      </div>
+                        <button type="submit" class="btn btn-primary" onclick="createRole();"">Submit</button>
                     </form>
                     </div>
           </div>

@@ -43,6 +43,8 @@ function loadDashboard() {
 //data.username
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
+    console.log(data);
+    console.log("sadsadsad");
     if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }

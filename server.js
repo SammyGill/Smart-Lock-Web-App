@@ -304,15 +304,7 @@ app.post("/createRule", (req, res) => {
   console.log(req.body.action);
   console.log(req.body.time);
   var lockId = req.session.lock;
-  var actions = [];
-  var times = [];
-  db.collection("rules").find({lockId: lockId}).toArray((err, result) => {
-    actions = result[0].actions;
-    times = result[0].times;
-    actions.push(req.body.action);
-    times.push(req.body.time);
-    db.collection("rules").update({lockId: lockId}, {$set: {actions: actions, times: times}});
-  })
+  db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
 })
 
 app.post("/createRole", (req, res) => {
@@ -367,6 +359,7 @@ app.post("/registerLock", (req, res) => {
       res.send({redirect: "/dashboard"});
     }
     else {
+      console.log("lock already taken");
       // lock was already registered with someone so we send back a failure
       res.send({redirect: "failure"});
     }
@@ -401,5 +394,13 @@ app.post("/unlock", (req, res) => {
 
 // Template function to do whatever you want every minute
 var j = schedule.scheduleJob('*/1 * * * *', function(){
-  console.log('The answer to life, the universe, and everything!');
+  var time = getTime();
+  db.collection("rules").find({time: time}).toArray((err, result) => {
+    if(result.length) {
+      console.log("found rules")
+    }
+    else {
+      console.log("did not find rules");
+    }
+  })
 });
