@@ -315,6 +315,15 @@ app.post("/createRule", (req, res) => {
   })
 })
 
+app.post("/createRole", (req, res) => {
+  console.log(req.body.canAddOthers);
+  console.log(req.body.action);
+  console.log(req.body.time);
+  //var lockId = req.session.lock;
+  //var actions = [];
+  //var times = [];
+})
+
 app.post("/lock", (req, res) => {
   var username = req.session.username;
   var time = getTime();

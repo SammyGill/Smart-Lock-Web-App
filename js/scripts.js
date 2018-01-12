@@ -1,9 +1,21 @@
+var name;
 function onSignIn(googleUser) {
-  var profile = googleUser.getBasicProfile();
-  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  console.log('Name: ' + profile.getName());
-  console.log('Image URL: ' + profile.getImageUrl());
-  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+
+  if (auth2.isSignedIn.get()) {
+    var profile = auth2.currentUser.get().getBasicProfile();
+    console.log('ID: ' + profile.getId());
+    console.log('Full Name: ' + profile.getName());
+    name = profile.getName();
+    //console.log('Given Name: ' + profile.getGivenName());
+    //console.log('Family Name: ' + profile.getFamilyName());
+    //console.log('Image URL: ' + profile.getImageUrl());
+    console.log('Email: ' + profile.getEmail());
+  }
+  //var profile = googleUser.getBasicProfile();
+  //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  //console.log('Name: ' + profile.getName());
+  //console.log('Image URL: ' + profile.getImageUrl());
+  //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
   if(googleUser) {
     $.get("/authenticate", {email: profile.getEmail()}, function(data) {
       if(data.locks.length > 1) {
@@ -25,10 +37,10 @@ function onSignIn(googleUser) {
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
     $(".username").text(data.username);
-    $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
+    $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
   })
 }
-
+//data.username
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     if(data.redirect == "failure") {
@@ -213,4 +225,38 @@ function createRule() {
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   $.post("/createRule", {action: action, time: time});
+}
+
+function createRole() {
+  var canAddOthers = undefined;
+  var action = undefined;
+  if(document.getElementById("addingMembers").checked) {
+    canAddOthers = true;
+  }
+  else {
+    canAddOthers = false;
+  }
+
+  if(document.getElementById("unlock").checked) {
+    action = "unlock";
+  }
+  else {
+    action = "lock";
+  }
+  var canAddOthersOption = canAddOthers.options[canAddOthers.selectedIndex].text;
+  var actionOption = action.options[action.selectedIndex].text;
+  var hourSelect = document.getElementById("hour")
+  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteSelect = document.getElementById("minute")
+  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodSelect = document.getElementById("period")
+  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var hourTwoSelect = document.getElementById("hourTwo")
+  var hourTwoOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteTwoSelect = document.getElementById("minuteTwo")
+  var minuteTwoOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodTwoSelect = document.getElementById("periodTwo")
+  var periodTwoOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var time = hourOption + ":" + minuteOption + " " + periodOption + " until " + hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  $.post("/createRole", {canAddOthers: canAddOthers, action: action, time: time});
 }
