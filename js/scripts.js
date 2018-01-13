@@ -29,6 +29,12 @@ function loadDashboard() {
   })
 }
 
+
+  function loadLocks() {
+    $.get("getLocks", function(data) {
+      $(".locks").text
+    }
+  }
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     console.log(data);
