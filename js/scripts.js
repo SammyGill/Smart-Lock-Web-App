@@ -1,10 +1,12 @@
+var name;
 function onSignIn(googleUser) {
-  var profile = googleUser.getBasicProfile();
-  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  console.log('Name: ' + profile.getName());
-  console.log('Image URL: ' + profile.getImageUrl());
-  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+
   if(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    console.log('ID: ' + profile.getId());
+    console.log('Full Name: ' + profile.getName());
+    name = profile.getName();
+    console.log('Email: ' + profile.getEmail());
     $.get("/authenticate", {email: profile.getEmail()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "/selectLock"
@@ -25,10 +27,10 @@ function onSignIn(googleUser) {
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
     $(".username").text(data.username);
-    $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
+    $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
   })
 }
-
+//data.username
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     console.log(data);
@@ -218,6 +220,22 @@ function createRule() {
 }
 
 function createRole() {
+  var canAddOthers = undefined;
+  var action = undefined;
+  if(document.getElementById("addMembers").checked) {
+    canAddOthers = "yes";
+  }
+  else {
+    canAddOthers = "no";
+  }
+
+  if(document.getElementById("unlock").checked) {
+    action = "unlock";
+  }
+  else {
+    action = "lock";
+  }
+  var roleLabel = document.getElementById("roleName")
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
   var minuteSelect = document.getElementById("minute")
@@ -226,14 +244,13 @@ function createRole() {
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
 
-  var hourSelectTwo = document.getElementById("hourTwo")
-  var hourOptionTwo = hourSelectTwo.options[hourSelectTwo.selectedIndex].text;
-  var minuteSelectTwo = document.getElementById("minuteTwo")
-  var minuteOptionTwo = minuteSelectTwo.options[minuteSelectTwo.selectedIndex].text;
-  var periodSelectTwo = document.getElementById("periodTwo")
-  var periodOptionTwo = periodSelectTwo.options[periodSelectTwo.selectedIndex].text;
-  var timeTwo = hourOptionTwo + ":" + minuteOptionTwo + " " + periodOptionTwo;
-  $.post("/createRole", {timeOne: time, timeTwo: timeTwo}, function() {
-    console.log("yes");
-  })
+  var hourTwoSelect = document.getElementById("hourTwo")
+  var hourTwoOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteTwoSelect = document.getElementById("minuteTwo")
+  var minuteTwoOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodTwoSelect = document.getElementById("periodTwo")
+  var periodTwoOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var time = hourOption + ":" + minuteOption + " " + periodOption + " until " + hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  $.post("/createRole", {timeOne: time, timeTwo: timeTwo, roleLabel: roleLabel, canAddOthers: canAddOthers, action: action, time: time});
 }
+
