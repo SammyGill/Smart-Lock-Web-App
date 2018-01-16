@@ -1,22 +1,12 @@
 var name;
 function onSignIn(googleUser) {
 
-  if (auth2.isSignedIn.get()) {
-    var profile = auth2.currentUser.get().getBasicProfile();
+  if(googleUser) {
+    var profile = googleUser.getBasicProfile();
     console.log('ID: ' + profile.getId());
     console.log('Full Name: ' + profile.getName());
     name = profile.getName();
-    //console.log('Given Name: ' + profile.getGivenName());
-    //console.log('Family Name: ' + profile.getFamilyName());
-    //console.log('Image URL: ' + profile.getImageUrl());
     console.log('Email: ' + profile.getEmail());
-  }
-  //var profile = googleUser.getBasicProfile();
-  //console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  //console.log('Name: ' + profile.getName());
-  //console.log('Image URL: ' + profile.getImageUrl());
-  //console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-  if(googleUser) {
     $.get("/authenticate", {email: profile.getEmail()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "/selectLock"
@@ -232,11 +222,11 @@ function createRule() {
 function createRole() {
   var canAddOthers = undefined;
   var action = undefined;
-  if(document.getElementById("addingMembers").checked) {
-    canAddOthers = true;
+  if(document.getElementById("addMembers").checked) {
+    canAddOthers = "yes";
   }
   else {
-    canAddOthers = false;
+    canAddOthers = "no";
   }
 
   if(document.getElementById("unlock").checked) {
@@ -245,8 +235,7 @@ function createRole() {
   else {
     action = "lock";
   }
-  var canAddOthersOption = canAddOthers.options[canAddOthers.selectedIndex].text;
-  var actionOption = action.options[action.selectedIndex].text;
+  var roleLabel = document.getElementById("roleName")
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
   var minuteSelect = document.getElementById("minute")
@@ -260,5 +249,5 @@ function createRole() {
   var periodTwoSelect = document.getElementById("periodTwo")
   var periodTwoOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption + " until " + hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  $.post("/createRole", {canAddOthers: canAddOthers, action: action, time: time});
+  $.post("/createRole", {roleLabel: roleLabel, canAddOthers: canAddOthers, action: action, time: time});
 }

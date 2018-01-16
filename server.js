@@ -308,6 +308,7 @@ app.post("/createRule", (req, res) => {
 })
 
 app.post("/createRole", (req, res) => {
+  console.log(req.body.roleLabel);
   console.log(req.body.canAddOthers);
   console.log(req.body.action);
   console.log(req.body.time);
