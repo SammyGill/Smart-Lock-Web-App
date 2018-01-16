@@ -216,3 +216,24 @@ function createRule() {
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   $.post("/createRule", {action: action, time: time});
 }
+
+function createRole() {
+  var hourSelect = document.getElementById("hour")
+  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteSelect = document.getElementById("minute")
+  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodSelect = document.getElementById("period")
+  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var time = hourOption + ":" + minuteOption + " " + periodOption;
+
+  var hourSelectTwo = document.getElementById("hourTwo")
+  var hourOptionTwo = hourSelectTwo.options[hourSelectTwo.selectedIndex].text;
+  var minuteSelectTwo = document.getElementById("minuteTwo")
+  var minuteOptionTwo = minuteSelectTwo.options[minuteSelectTwo.selectedIndex].text;
+  var periodSelectTwo = document.getElementById("periodTwo")
+  var periodOptionTwo = periodSelectTwo.options[periodSelectTwo.selectedIndex].text;
+  var timeTwo = hourOptionTwo + ":" + minuteOptionTwo + " " + periodOptionTwo;
+  $.post("/createRole", {timeOne: time, timeTwo: timeTwo}, function() {
+    console.log("yes");
+  })
+}
