@@ -30,29 +30,33 @@
     <div class="collapse navbar-collapse" id="navbarResponsive">
       <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
       
-        <li class="nav-item btn-group dropright" title="Dashboard">
-        <a class="btn btn-secondary" href="dashboard">
-        <i class = "fa fa-fw fa-dashboard"></i>
-        Dashboard
-        </a> 
-        <a class="btn btn-secondary dropdown-toggle" data-toggle="dropdown"
-        aria-haspopup="true" aria-expanded="false">
-        <span class="sr-only">Toggle Dropright</span>
-        </a>
-        <div class="dropdown-menu">
-        <a class="dropdown-item" href="dashoard">Action</a>
-        </div>
+
+        <!-- dashboard dropdown bottom -->
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#dashboardComponents" data-parent="#exampleAccordion"> 
+            <i class = "fa fa-fw fa-dashboard"></i>
+            <span class="nav-link-text">Dashboard</span>
+          </a>
+          <ul class="sidenav-second-level collapse" id="dashboardComponents">
+            <li>
+              <a href="addMembers">Add Users</a>
+            </li>
+            <li>
+              <a href="addRules">Lock Rules</a>
+            </li>
+            <li>
+              <a href="addRoles"> User Roles </a>
+            </li>
+          </ul>
         </li>
         
-
+        <!-- Settings dropdown bottom -->
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-          <a class="nav-link" href="settings">
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
-          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseComponents" data-parent="#exampleAccordion">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#SettingsComponents" data-parent="#exampleAccordion">
             <i class="fa fa-fw fa-wrench"></i>
             <span class="nav-link-text">Settings</span>
           </a>
-          <ul class="sidenav-second-level collapse" id="collapseComponents">
+          <ul class="sidenav-second-level collapse" id="SettingsComponents">
             <li>
               <a href="addMembers">Add Users</a>
             </li>
@@ -65,13 +69,17 @@
           </ul>
         </li>
       </ul>
+
+      <!-- Sidebar toggler -->
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">
-          <a class="nav-link text-center" id="sidenavToggler">
+          <a class="nav-link text-right" id="sidenavToggler">
             <i class="fa fa-fw fa-angle-left"></i>
           </a>
         </li>
       </ul>
+
+
       <ul class="navbar-nav ml-auto">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle mr-lg-2" id="alertsDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
