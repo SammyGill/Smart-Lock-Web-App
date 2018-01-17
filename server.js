@@ -36,6 +36,26 @@ function getTime() {
   return date;
 }
 
+function convertToMilitary(time) {
+  if(time.indexOf("PM") != -1) {
+    time = time.replace("PM", "");
+    time = time.replace(" ", "");
+    var timeArray = time.split(":");
+    timeArray[0] = parseInt(timeArray[0]);
+    if(timeArray[0] != 12) {
+      timeArray[0] += 12;
+    }
+
+    var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
+    return timeString;
+  }
+  time = time.replace("AM", "");
+  time = time.replace(" ", "");
+  var timeArray = time.split(":");
+  timeArray[0] = timeArray[0].replace("0", "");
+  return (parseInt(timeArray[0] + timeArray[1]));
+}
+
 // Used to make the server look in our directory for 
   // our javascript, css, and other files
 app.use(express.static(dir));
@@ -302,11 +322,27 @@ app.post("/addMember", (req, res) => {
   })
 })
 
+app.post("/createRole", (req, res) => {
+  console.log(convertToMilitary(req.body.timeOne));
+  console.log(convertToMilitary(req.body.timeTwo));
+  console.log("create role");
+})
+
 app.post("/createRule", (req, res) => {
   console.log(req.body.action);
   console.log(req.body.time);
   var lockId = req.session.lock;
   db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
+})
+
+app.post("/createRole", (req, res) => {
+  console.log(req.body.roleLabel);
+  console.log(req.body.canAddOthers);
+  console.log(req.body.action);
+  console.log(req.body.time);
+  //var lockId = req.session.lock;
+  //var actions = [];
+  //var times = [];
 })
 
 app.post("/lock", (req, res) => {
@@ -391,6 +427,15 @@ var j = schedule.scheduleJob('*/1 * * * *', function(){
   db.collection("rules").find({time: time}).toArray((err, result) => {
     if(result.length) {
       console.log("found rules")
+      async.each(result, function(lock, callback) {
+        console.log(lock);
+        if(lock.action == "unlock") {
+          db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "unlocked"}});
+        }
+        else {
+          db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "locked"}});
+        }
+      })
     }
     else {
       console.log("did not find rules");
