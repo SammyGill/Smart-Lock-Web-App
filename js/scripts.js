@@ -455,12 +455,15 @@ function createRole() {
   var time = hourOption + ":" + minuteOption + " " + periodOption;
 
   var hourTwoSelect = document.getElementById("hourTwo")
-  var hourTwoOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var hourTwoOption = hourTwoSelect.options[hourTwoSelect.selectedIndex].text;
   var minuteTwoSelect = document.getElementById("minuteTwo")
-  var minuteTwoOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var minuteTwoOption = minuteTwoSelect.options[minuteTwoSelect.selectedIndex].text;
   var periodTwoSelect = document.getElementById("periodTwo")
-  var periodTwoOption = periodSelect.options[periodSelect.selectedIndex].text;
+  var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  $.post("/createRole", {timeOne: time, timeTwo: timeTwo, roleLabel: roleLabel, canAddOthers: canAddOthers, action: action, time: time});
+  console.log("hello");
+  console.log(time);
+  console.log(timeTwo);
+  $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
 }

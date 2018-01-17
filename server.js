@@ -15,7 +15,7 @@ var d = new Date();
 
 function isLoggedIn(user) {
   return((user != undefined));
-} 
+}
 
 function getTime() {
   var d = new Date();
@@ -56,7 +56,7 @@ function convertToMilitary(time) {
   return (parseInt(timeArray[0] + timeArray[1]));
 }
 
-// Used to make the server look in our directory for 
+// Used to make the server look in our directory for
   // our javascript, css, and other files
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -87,7 +87,7 @@ app.get("/", (req, res) => {
   for(var i = 0; i < 20; i++) {
     db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
   }
-*/  
+*/
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -106,7 +106,7 @@ app.get("/addRules", (req, res) => {
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 app.get("/authenticate", (req, res) => {
-  // User email is obtained from the Javascript function after user has logged 
+  // User email is obtained from the Javascript function after user has logged
     // in viga Google
   var email = req.query.email;
   /**
@@ -115,7 +115,7 @@ app.get("/authenticate", (req, res) => {
    *    - If the resulting array != 0, then we found a user in the database
    *      - If the lock id associated is null, then the user needs to register their lock
    *      - Else the user has a lock associated and we can send them to the dashboard
-   *    - Else the resulting array size == 0, then we must first add the user to the 
+   *    - Else the resulting array size == 0, then we must first add the user to the
    *      database before redirecting them to register their lock
    */
   db.collection("users").find({username: email}).toArray((err, result) => {
@@ -317,12 +317,14 @@ app.post("/addMember", (req, res) => {
           res.send({message: "User successfully assigned to lock"});
         });
       })
-      
+
     }
   })
 })
 
 app.post("/createRole", (req, res) => {
+  console.log(req.body.timeOne);
+  console.log(req.body.timeTwo);
   console.log(convertToMilitary(req.body.timeOne));
   console.log(convertToMilitary(req.body.timeTwo));
   console.log("create role");
@@ -333,16 +335,6 @@ app.post("/createRule", (req, res) => {
   console.log(req.body.time);
   var lockId = req.session.lock;
   db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
-})
-
-app.post("/createRole", (req, res) => {
-  console.log(req.body.roleLabel);
-  console.log(req.body.canAddOthers);
-  console.log(req.body.action);
-  console.log(req.body.time);
-  //var lockId = req.session.lock;
-  //var actions = [];
-  //var times = [];
 })
 
 app.post("/lock", (req, res) => {
