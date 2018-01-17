@@ -108,7 +108,7 @@ app.get("/authenticate", (req, res) => {
       }
       else {
         if(result[0].locks.length > 1) {
-          console.log("user has more than 1 lock associated")
+          console.log("user has more than 1 lock associated");
         }
         else {
           req.session.lock = parseInt(result[0].locks[0]);
@@ -162,12 +162,14 @@ app.get("/getLocks", (req, res) => {
     var locks = result[0].locks;
     async.each(locks, function(file, callback) {
       db.collection("locks").find({lockId: file}).toArray((err, result) => {
+        console.log({lockId: file});
         lockNames.push(result[0].lockName);
         lockIds.push(file);
         callback();
       })
     }, function(err) {
       console.log(lockNames);
+      console.log(locks);
       res.send({locks: lockIds, lockNames: lockNames});
     })
   })

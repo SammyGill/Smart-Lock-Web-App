@@ -19,7 +19,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers(); loadLocks()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a> 
@@ -37,16 +37,7 @@
             <i class = "fa fa-fw fa-dashboard"></i>
             <span class="nav-link-text">Dashboard</span>
           </a>
-          <ul class="sidenav-second-level collapse" id="dashboardComponents">
-            <li>
-              <a href="addMembers">Add Users</a>
-            </li>
-            <li>
-              <a href="addRules">Lock Rules</a>
-            </li>
-            <li>
-              <a href="addRoles"> User Roles </a>
-            </li>
+          <ul class="sidenav-second-level collapse" id="dashboardComponents"">
           </ul>
         </li>
         
@@ -153,6 +144,9 @@
         <li class="breadcrumb-item active">
           <span class="username"> </span>
         </li>
+        <li class="breadcrumb-item active">
+          <span class="locks"> </span>
+        </li>
       </ol>
       <div class="row">
         <div class="col-12">
@@ -194,7 +188,7 @@
         </div>
       </div>
     </footer>
-    
+
     <!-- Scroll to Top Button-->
     <a class="scroll-to-top rounded" href="#page-top">
       <i class="fa fa-angle-up"></i>
