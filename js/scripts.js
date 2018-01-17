@@ -1,12 +1,12 @@
 var name;
 
 function onSignIn(googleUser) {
-  if(googleUSer) {
+  if(googleUser) {
     var profile = googleUser.getBasicProfile();
     console.log("ID " + profile.getId());
     console.log("Full Name " + profile.getName());
     name = profile.getName();
-    console.log("Email " + profile.getEmai());
+    console.log("Email " + profile.getEmail());
     $.get("/authenticate", {email: profile.getEmail()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
@@ -460,6 +460,7 @@ function createRole() {
   var minuteTwoOption = minuteSelect.options[minuteSelect.selectedIndex].text;
   var periodTwoSelect = document.getElementById("periodTwo")
   var periodTwoOption = periodSelect.options[periodSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption + " until " + hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  var time = hourOption + ":" + minuteOption + " " + periodOption;
+  var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
   $.post("/createRole", {timeOne: time, timeTwo: timeTwo, roleLabel: roleLabel, canAddOthers: canAddOthers, action: action, time: time});
 }
