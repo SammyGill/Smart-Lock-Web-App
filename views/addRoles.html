@@ -17,7 +17,7 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadTimes(); loadTimesTwo()">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadTimes(); loadTimesTwo(); getMembersDropDown()">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a>
@@ -169,8 +169,14 @@
               <div id="form" align="center">
                   <form>
                       <div class="form-group col-md-4" >
-                        <label for="roleName">Name of role</label>
-                        <input type="text" class="form-control" id="roleName" placeholder="Role name">
+                        <label for="roleName">Members</label> <br>
+                        <select class="custom-select" id="members" style="display:inline" onchange="getMemberInfo()">
+
+                        </select>
+                        <br>
+                        <input type="checkbox" id="can-add-roles"> Can Manage Roles <br>
+                        <input type="checkbox" id="can-add-members"> Can Add Members <br>
+                        <input type="checkbox" id="can-add-rules"> Can Manage Rules
                       </div>
                       <div class="btn-group" data-toggle="buttons">                         
                         <label class="btn btn-primary"style="background-color:grey;">

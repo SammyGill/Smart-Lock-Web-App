@@ -285,7 +285,7 @@ app.get("/timeStatus", (req, res) => {
 app.post("/addMember", (req, res) => {
   var username = req.body.username;
   var lockId = req.session.lock
-
+console.log(username);
   db.collection("users").find({username: username}).toArray((err, result) => {
     if(!result.length) {
       console.log("no username found");
