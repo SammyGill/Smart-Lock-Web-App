@@ -24,6 +24,7 @@ function onSignIn(googleUser) {
     function loadDashboard() {
       $.get("/dashboardInformation", function(data) {
         $(".username").text(data.username);
+        $(".lockname").text(data.lockName);
         $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
       })
     }
@@ -32,7 +33,6 @@ function onSignIn(googleUser) {
     function loadLocks(){
       $.get("/getLocks", function(data) {
         var list = document.getElementById("dashboardComponents");
-        console.log(list);
         for(var i = 0; i < data.locks.length; i++) {
           var lock = document.createElement("a");
           lock.appendChild(document.createTextNode(data.lockNames[i]));
@@ -41,7 +41,6 @@ function onSignIn(googleUser) {
           lock.setAttribute("id", data.locks[i]);
           var lockElement = document.createElement("li");
           lockElement.appendChild(lock);
-          console.log(lockElement);
           list.appendChild(lockElement);
         }
       })

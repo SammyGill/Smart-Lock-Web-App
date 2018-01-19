@@ -288,6 +288,11 @@ app.get("/timeStatus", (req, res) => {
   res.send(date);
 })
 
+app.get("/switchLocks", (req, res) => {
+
+  res.sendFile(dir + "/views/dashboard.html");
+})
+
 
 
 
