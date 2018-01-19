@@ -21,209 +21,218 @@ function onSignIn(googleUser) {
   }
 }
 
-    function loadDashboard() {
-      $.get("/dashboardInformation", function(data) {
-        $(".username").text(name);
-        $(".lockname").text(data.lockName);
-        $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
-      })
+function loadDashboard() {
+  $.get("/dashboardInformation", function(data) {
+    $(".username").text(name);
+    $(".lockname").text(data.lockName);
+    $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
+  })
+}
+
+
+function loadLocks(){
+  $.get("/getLocks", function(data) {
+    var list = document.getElementById("dashboardComponents");
+    console.log(data.locks);
+    for(var i = 0; i < data.locks.length; i++) {
+      var lock = document.createElement("a");
+      lock.appendChild(document.createTextNode(data.lockNames[i]));
+      lock.setAttribute("class", "sidenav-second-level collapse locksonSiderbar");
+      lock.setAttribute("id", data.locks[i]);
+      var lockElement = document.createElement("li");
+      lockElement.appendChild(lock);
+      list.appendChild(lockElement);
     }
+  })
+}
 
+function switchLock() {
+  $(document).on("click", ".locksonSiderbar", function(element){
+    $.get("/switchLock", {lockId: event.target.id}, function() {
+      window.location = "dashboard";
+    })
+  })
+}
 
-    function loadLocks(){
-      $.get("/getLocks", function(data) {
-        var list = document.getElementById("dashboardComponents");
-        for(var i = 0; i < data.locks.length; i++) {
-          var lock = document.createElement("a");
-          lock.appendChild(document.createTextNode(data.lockNames[i]));
-          lock.setAttribute("class", "sidenav-second-level collapse");
-          lock.setAttribute("onclick", "switchLock()")
-          lock.setAttribute("id", data.locks[i]);
-          var lockElement = document.createElement("li");
-          lockElement.appendChild(lock);
-          list.appendChild(lockElement);
-        }
-      })
+// function selectDashboard() {
+//   $(document).on("click", ".lock", function(element) {
+//     $.get("/selectDashboard", {lockId: event.target.id}, function() {
+//       window.location = "/dashboard";
+//     })
+//   })
+// }
+
+function registerLock() {
+  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
+    console.log(data);
+    console.log("sadsadsad");
+    if(data.redirect == "failure") {
+      $(".lockTaken").text("Taken");
     }
-
-    function switchLock() {
-      $(document).on("click", function(element) {
-        $.get("/switchLock", {lockId: event.target.id}, function(data) {
-          console.log("here2" + data);
-          window.location = "/dashboard";
-        })
-      })
+    else {
+      window.location = data.redirect;
     }
+  })
+}
 
-    function registerLock() {
-      $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-        console.log(data);
-        console.log("sadsadsad");
-        if(data.redirect == "failure") {
-          $(".lockTaken").text("Taken");
-        }
-        else {
-          window.location = data.redirect;
-        }
-      })
+function getLockStatus() {
+  $.get("/lockStatus", function(data) {
+    if(data.status == "locked") {
+      $("#lock-action").text("unlock");
+      $("#lock-status").text("locked");
     }
-
-    function getLockStatus() {
-      $.get("/lockStatus", function(data) {
-        if(data.status == "locked") {
-          $("#lock-action").text("unlock");
-          $("#lock-status").text("locked");
-        }
-        else {
-          $("#lock-action").text("lock");
-          $("#lock-status").text("unlocked");
-        }
-        console.log(data.status);
-      })
+    else {
+      $("#lock-action").text("lock");
+      $("#lock-status").text("unlocked");
     }
+    console.log(data.status);
+  })
+}
 
-    function changeLock() {
-      if (document.getElementById("lock-status").innerHTML == "locked") {
-        $.post("/unlock", getLockStatus);
-      }
-      else {
-        $.post("/lock", getLockStatus);
-      }
+function changeLock() {
+  if (document.getElementById("lock-status").innerHTML == "locked") {
+    $.post("/unlock", getLockStatus);
+  }
+  else {
+    $.post("/lock", getLockStatus);
+  }
+}
+
+
+function getTime() {
+  $.get("/timeStatus", function(data) {
+    $("#time").text(data);
+  })
+  setTimeout(function () {
+    getTime();
+  }, 1000);
+}
+
+function addMember() {
+  console.log("he;p");
+  $("#add-member-form").submit(function(event) {
+    event.preventDefault();
+    $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
+      document.getElementById("response-message").innerHTML = data.message;
+    })
+  })
+}
+
+function addTimer() {
+  var $select = $(".1-12");
+  for (i=1; i<=12; i++) {
+    $select.append($('<option></option>').val(i).html(i))
+  }
+  var $select = $(".0-60");
+  for (i=0; i<=60; i++) {
+    var j = i;
+    if (j < 10) {
+      j = "0" + j
     }
+    $select.append($('<option></option>').val(j).html(j))
+  }
+}
 
 
-    function getTime() {
-      $.get("/timeStatus", function(data) {
-        $("#time").text(data);
-      })
-      setTimeout(function () {
-        getTime();
-      }, 1000);
+function getName() {
+  $.get("/getName", function(name) {
+    document.getElementById("lock-name").value = (name + "'s Lock");
+  })
+
+}
+
+
+function getLocks() {
+  $.get("/getLocks", function(data) {
+    var list = document.getElementById("locks-list");
+    for(var i = 0; i < data.locks.length; i++) {
+      var button = document.createElement("button");
+      button.appendChild(document.createTextNode(data.lockNames[i]));
+      button.setAttribute("class", "lock");
+      button.setAttribute("id", data.locks[i]);
+      var lockElement = document.createElement("li");
+      lockElement.appendChild(button);
+
+      list.appendChild(lockElement);
     }
+  })
+}
 
-    function addMember() {
-      console.log("he;p");
-      $("#add-member-form").submit(function(event) {
-        event.preventDefault();
-        $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
-          document.getElementById("response-message").innerHTML = data.message;
-        })
-      })
+
+function selectDashboard() {
+  $(document).on("click", ".lock", function(element) {
+    $.get("/selectDashboard", {lockId: event.target.id}, function() {
+      window.location = "/dashboard";
+    })
+  })
+}
+
+
+
+function loadTimes() {
+  for(var i = 0; i < 60; i++) {
+    var select = document.getElementById("minute");
+    var time = document.createElement("option");
+    if(i < 10) {
+      time.text = "0"+i;
     }
-
-    function addTimer() {
-      var $select = $(".1-12");
-      for (i=1; i<=12; i++) {
-        $select.append($('<option></option>').val(i).html(i))
-      }
-      var $select = $(".0-60");
-      for (i=0; i<=60; i++) {
-        var j = i;
-        if (j < 10) {
-          j = "0" + j
-        }
-        $select.append($('<option></option>').val(j).html(j))
-      }
+    else {
+      time.text = i;
     }
+    select.add(time);
+  }
+  for(var i = 1; i < 13; i++) {
+    var select = document.getElementById("hour");
+    var time = document.createElement("option");
+    time.text = i;
+    select.add(time);
+  }
+}
 
-
-    function getName() {
-      $.get("/getName", function(name) {
-        document.getElementById("lock-name").value = (name + "'s Lock");
-      })
-
+function loadTimesTwo() {
+  for(var i = 0; i < 60; i++) {
+    var select = document.getElementById("minuteTwo");
+    var time = document.createElement("option");
+    if(i < 10) {
+      time.text = "0"+i;
     }
-
-
-    function getLocks() {
-      $.get("/getLocks", function(data) {
-        var list = document.getElementById("locks-list");
-        for(var i = 0; i < data.locks.length; i++) {
-          var button = document.createElement("button");
-          button.appendChild(document.createTextNode(data.lockNames[i]));
-          button.setAttribute("class", "lock");
-          button.setAttribute("id", data.locks[i]);
-          var lockElement = document.createElement("li");
-          lockElement.appendChild(button);
-
-          list.appendChild(lockElement);
-        }
-      })
+    else {
+      time.text = i;
     }
+    select.add(time);
+  }
+  for(var i = 1; i < 13; i++) {
+    var select = document.getElementById("hourTwo");
+    var time = document.createElement("option");
+    time.text = i;
+    select.add(time);
+  }
+}
 
+function getMembers() {
+  $.get("/getMembers", function(data) {
+    var list = document.getElementById("membersList");
 
-    function selectDashboard() {
-      $(document).on("click", ".lock", function(element) {
-        $.get("/selectDashboard", {lockId: event.target.id}, function() {
-          window.location = "/dashboard";
-        })
-      })
+    for(var i = 0; i < data.members.length; i++) {
+      var member = document.createElement("li");
+      member.appendChild(document.createTextNode(data.members[i]));
+      list.appendChild(member);
     }
+  })
+}
 
-    function loadTimes() {
-      for(var i = 0; i < 60; i++) {
-        var select = document.getElementById("minute");
-        var time = document.createElement("option");
-        if(i < 10) {
-          time.text = "0"+i;
-        }
-        else {
-          time.text = i;
-        }
-        select.add(time);
-      }
-      for(var i = 1; i < 13; i++) {
-        var select = document.getElementById("hour");
-        var time = document.createElement("option");
-        time.text = i;
-        select.add(time);
-      }
-    }
+function signOut() {
+  var auth2 = gapi.auth2.getAuthInstance();
+  auth2.signOut().then(function () {
+    console.log('User signed out.');
+  });
+}
 
-    function loadTimesTwo() {
-      for(var i = 0; i < 60; i++) {
-        var select = document.getElementById("minuteTwo");
-        var time = document.createElement("option");
-        if(i < 10) {
-          time.text = "0"+i;
-        }
-        else {
-          time.text = i;
-        }
-        select.add(time);
-      }
-      for(var i = 1; i < 13; i++) {
-        var select = document.getElementById("hourTwo");
-        var time = document.createElement("option");
-        time.text = i;
-        select.add(time);
-      }
-    }
-
-    function getMembers() {
-      $.get("/getMembers", function(data) {
-        var list = document.getElementById("membersList");
-
-        for(var i = 0; i < data.members.length; i++) {
-          var member = document.createElement("li");
-          member.appendChild(document.createTextNode(data.members[i]));
-          list.appendChild(member);
-        }
-      })
-    }
-
-    function signOut() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(function () {
-        console.log('User signed out.');
-      });
-    }
-
-    function onLoad() {
-      gapi.load('auth2', function() {
-        gapi.auth2.init();
-      });
-    }
+function onLoad() {
+  gapi.load('auth2', function() {
+    gapi.auth2.init();
+  });
+}
 
 function createRule() {
   var action = undefined;
@@ -282,7 +291,7 @@ function changeLock() {
 
 function getTime() {
   $.get("/timeStatus", function(data) {
-      $("#time").text(data);
+    $("#time").text(data);
   })
   setTimeout(function () {
     getTime();
@@ -392,10 +401,10 @@ function getMembers() {
 }
 
 function signOut() {
-    var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-      console.log('User signed out.');
-    });
+  var auth2 = gapi.auth2.getAuthInstance();
+  auth2.signOut().then(function () {
+    console.log('User signed out.');
+  });
 }
 
 function onLoad() {

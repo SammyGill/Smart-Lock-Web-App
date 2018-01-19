@@ -58,25 +58,25 @@ function convertToMilitary(time) {
 
 // Used to make the server look in our directory for
   // our javascript, css, and other files
-app.use(express.static(dir));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  cookieName: 'session',
-  secret: 'random_string_goes_here',
-  duration: 30 * 60 * 1000,
-}));
-app.use(bodyParser.json());
+  app.use(express.static(dir));
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(session({
+    cookieName: 'session',
+    secret: 'random_string_goes_here',
+    duration: 30 * 60 * 1000,
+  }));
+  app.use(bodyParser.json());
 
-mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
-  if(err) {
-    return console.log(err);
-  }
+  mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
+    if(err) {
+      return console.log(err);
+    }
 
-  db = database.db("smart-lock");
-  app.listen(3000, function() {
-    console.log("listening on 3000");
+    db = database.db("smart-lock");
+    app.listen(3000, function() {
+      console.log("listening on 3000");
+    })
   })
-})
 
 
 // Route for accessing the site, sends back the homepage
@@ -87,7 +87,7 @@ app.get("/", (req, res) => {
   for(var i = 0; i < 20; i++) {
     db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
   }
-*/
+  */
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -104,14 +104,14 @@ app.get("/addRules", (req, res) => {
 })
 
 app.get("/registerLock", (req, res) => {
-   res.sendFile(dir + "/views/registerLock.html");
+ res.sendFile(dir + "/views/registerLock.html");
 })
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
-app.get("/authenticate", (req, res) => {
+  app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
-  var email = req.query.email;
+    var email = req.query.email;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -121,7 +121,7 @@ app.get("/authenticate", (req, res) => {
    *    - Else the resulting array size == 0, then we must first add the user to the
    *      database before redirecting them to register their lock
    */
-  db.collection("users").find({username: email}).toArray((err, result) => {
+   db.collection("users").find({username: email}).toArray((err, result) => {
     req.session.username = email;
     if(result.length) {
       console.log("found a user with this username");
@@ -147,7 +147,7 @@ app.get("/authenticate", (req, res) => {
       })
     }
   })
-})
+ })
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
@@ -165,22 +165,23 @@ app.get("/dashboard", (req, res) => {
  * is because the dashboard will contain some information personalized
  * to the user.
  */
-app.get("/dashboardInformation", (req, res) => {
+ app.get("/dashboardInformation", (req, res) => {
   var lockName = undefined;
   var username = undefined;
   console.log("lock id");
   console.log(typeof(req.session.lock));
   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-    console.log("llll" + result);
     lockName = result[0].lockName;
     username = req.session.username;
+    console.log("current lockName: " + lockName);
+    console.log("curretn lockId: " + req.session.lock);
     console.log({username: req.session.username, lockName: lockName});
     res.send({username: req.session.username, lockName: lockName});
   })
 
 })
 
-app.get("/getLocks", (req, res) => {
+ app.get("/getLocks", (req, res) => {
   var lockNames = [];
   var lockIds = [];
   db.collection("users").find({username: req.session.username}).toArray((err, result) => {
@@ -200,7 +201,7 @@ app.get("/getLocks", (req, res) => {
   })
 })
 
-app.get("/getMembers", (req, res) => {
+ app.get("/getMembers", (req, res) => {
   var id = req.session.lock;
   var members = [];
 
@@ -211,7 +212,7 @@ app.get("/getMembers", (req, res) => {
   })
 })
 
-app.get("/getName", (req, res) => {
+ app.get("/getName", (req, res) => {
   res.send(req.session.username);
 })
 
@@ -245,20 +246,21 @@ app.get("/selectDashboard", (req, res) => {
 })
 
 app.get("/settings", (req, res) => {
-    lockId = req.session.lock;
-    console.log(lockId);
-    db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-      console.log(result[0].members);
-    })
+  lockId = req.session.lock;
+  console.log(lockId);
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    console.log(result[0].members);
+  })
 
   res.sendFile(dir + "/views/settings.html");
 })
 
+
 app.get("/switchLock", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
-  console.log("here!" + lock);
-  res.send(req.session.lock);
+  res.send();
 })
+
 
 app.get("/timeStatus", (req, res) => {
   d = new Date();
@@ -293,7 +295,7 @@ app.get("/timeStatus", (req, res) => {
 app.post("/addMember", (req, res) => {
   var username = req.body.username;
   var lockId = req.session.lock
-console.log(username);
+  console.log(username);
   db.collection("users").find({username: username}).toArray((err, result) => {
     if(!result.length) {
       console.log("no username found");
