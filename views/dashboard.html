@@ -32,22 +32,50 @@
       
 
         <!-- dashboard dropdown bottom -->
-        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard">
-          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#dashboardComponents" data-parent="#exampleAccordion"> 
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard"> 
+         <li class="nav-item" data-toggle="tooltip" data-placement="right"
+         title="Components">
+
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse"
+          href="#dashboardComponents" data-parent="#exampleAccordian">
             <i class = "fa fa-fw fa-dashboard"></i>
             <span class="nav-link-text">Dashboard</span>
-          </a>
-          <ul class="sidenav-second-level collapse" id="dashboardComponents"">
+            </a>
+          <ul class="sidenav-second-level collapse" id="dashboardComponents">
+            <li>
+              <a href="addMembers">Add Users</a>
+            </li>
+            <li>
+              <a href="addRules">Lock Rules</a>
+            </li>
+            <li>
+              <a href="addRoles"> User Roles</a>
+            </li>
           </ul>
         </li>
+       
+
+        <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Register Lock">
+         <a class="nav-link" data-toggle="tooltip" href="registerLock">
+         <i class="fa fa-lock" aria-hidden="true"></i>
+         <span class="nav-link-text">Register Lock</span>
+        </a>
+       </li>
+       
         
         <!-- Settings dropdown bottom -->
         <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#SettingsComponents" data-parent="#exampleAccordion">
+       
+       <li class="nav-item" data-toggle="tooltip" data-placement="right"
+           title="Components">
+          <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse"
+          href="#collapseComponents" data-parent="#exampleAccordion">
+
             <i class="fa fa-fw fa-wrench"></i>
             <span class="nav-link-text">Settings</span>
+      
           </a>
-          <ul class="sidenav-second-level collapse" id="SettingsComponents">
+          <ul class="sidenav-second-level collapse" id="collapseComponents">
             <li>
               <a href="addMembers">Add Users</a>
             </li>
@@ -60,7 +88,7 @@
           </ul>
         </li>
       </ul>
-
+     
       <!-- Sidebar toggler -->
       <ul class="navbar-nav sidenav-toggler">
         <li class="nav-item">
