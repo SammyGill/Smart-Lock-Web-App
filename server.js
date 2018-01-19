@@ -236,6 +236,21 @@ app.get("/lockStatus", (req, res) => {
   })
 })
 
+app.get("/memberRoleInfo", (req, res) => {
+  var username = req.query.username;
+  var lockId = req.session.lock;
+  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+    if(!result[0]) {
+      // did not find anyone with this username and lock that has a role
+      db.collection("roles").insert({})
+      res.send({roles: false});
+    }
+    else {
+      // return the role stuff
+    }
+  })
+})
+
 app.get("/selectLock", (req, res) => {
   res.sendFile(dir + "/views/locks.html");
 })

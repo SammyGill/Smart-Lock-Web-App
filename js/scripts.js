@@ -29,7 +29,6 @@ function loadDashboard() {
   })
 }
 
-
 function loadLocks(){
   $.get("/getLocks", function(data) {
     var list = document.getElementById("dashboardComponents");
@@ -140,15 +139,13 @@ function getName() {
   })
 
 }
-
-
 function getLocks() {
   $.get("/getLocks", function(data) {
     var list = document.getElementById("locks-list");
     for(var i = 0; i < data.locks.length; i++) {
       var button = document.createElement("button");
       button.appendChild(document.createTextNode(data.lockNames[i]));
-      button.setAttribute("class", "lock");
+      button.setAttribute("class", "lock")
       button.setAttribute("id", data.locks[i]);
       var lockElement = document.createElement("li");
       lockElement.appendChild(button);
@@ -157,7 +154,6 @@ function getLocks() {
     }
   })
 }
-
 
 function selectDashboard() {
   $(document).on("click", ".lock", function(element) {
@@ -252,6 +248,10 @@ function createRule() {
   $.post("/createRule", {action: action, time: time});
 }
 
+<<<<<<< HEAD
+=======
+//data.username
+>>>>>>> 0e64ea9046172bb4db9f0c56206a340bcd9767e1
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     console.log(data);
@@ -464,10 +464,29 @@ function createRole() {
   var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  console.log("hello");
   console.log(time);
   console.log(timeTwo);
-  $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
+  hourOption = parseInt(hourOption);
+  console.log("hello. i am potato: " + hourSelect);
+  hourTwoOption = parseInt(hourTwoOption);
+  minuteOption = parseInt(minuteOption);
+  minuteTwoOption = parseInt(minuteTwoOption);
+  if (periodOption == "PM") {
+    hourOption = hourOption + 12;
+  } 
+  if (periodTwoSelect == "PM") {
+    hourTwoOption = hourTwoOption + 12;
+  }
+  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && hourTwoOption <= hourOption)) {
+   $("#addingRoles").submit(function(event) {
+    event.preventDefault();
+    document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
+  })
+    //var errName = $("#invalidTime"); //Element selector
+    //errName.html("Invalid Time"); // Put the message content inside div
+  } else {
+    $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
+  } 
 }
 
 function getMembersDropDown() {
@@ -489,4 +508,12 @@ function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
   console.log(memberOption);
+  $.get("/memberRoleInfo", {username: memberOption}, function(data) {
+    console.log(data);
+    if(!data.roles) {
+      document.getElementById("can-add-roles").checked = true;
+      document.getElementById("can-add-members").checked = true;
+      document.getElementById("can-add-rules").checked = true;
+    }
+  })
 }
