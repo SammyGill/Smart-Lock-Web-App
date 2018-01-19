@@ -167,19 +167,14 @@
           <h5 class="card-header" style="text-align:center;">Add a member to the lock</h5>
           <div class="card-body">
               <div id="form" align="center">
-                  <form>
+                  <form id="add-member-form">
                       <div class="form-group col-md-4" >
+                        <h3 id="response-message"></h3>
                         <label for="exampleInputEmail1">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                        <input type="email" class="form-control" id="username" aria-describedby="emailHelp" placeholder="Enter email">
                         <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                       </div>
-                      <div class="form-group col-md-4">
-                        <label for="roleSelect">Select an optional role</label>
-                        <select class="form-control">
-                          <option> Temp </option>
-                        </select>
-                      </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button onclick="addMember()" class="btn btn-primary">Submit</button>
                     </form>
                     </div>
           </div>
@@ -224,6 +219,9 @@
     <!-- Custom scripts for all pages-->
     <script src="../js/sb-admin.min.js"></script>
   </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  <script src="js/scripts.js"></script>
 </body>
 
 </html>
