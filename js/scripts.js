@@ -493,4 +493,12 @@ function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
   console.log(memberOption);
+  $.get("/memberRoleInfo", {username: memberOption}, function(data) {
+    console.log(data);
+    if(!data.roles) {
+      document.getElementById("can-add-roles").checked = true;
+      document.getElementById("can-add-members").checked = true;
+      document.getElementById("can-add-rules").checked = true;
+    }
+  })
 }
