@@ -167,7 +167,7 @@
           <h5 class="card-header" style="text-align:center;">Add a member to the lock</h5>
           <div class="card-body">
               <div id="form" align="center">
-                  <form>
+                  <form id="addingRoles">
                       <div class="form-group col-md-4" >
                         <label for="roleName">Members</label> <br>
                         <select class="custom-select" id="members" style="display:inline" onchange="getMemberInfo()">
@@ -218,6 +218,7 @@
                       <div class="checkbox">
                       	<input type="checkbox" id="addMembers" value="canLock"> This role can add other users who can lock or unlock this lock. <br>
                       </div>
+                        <p id="invalidTime"> </p>
                         <button class="btn btn-primary" onclick="createRole();">Submit</button>
                     </form>
                     </div>

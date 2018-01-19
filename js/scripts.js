@@ -21,10 +21,11 @@ function onSignIn(googleUser) {
   }
 }
 
+
     function loadDashboard() {
       $.get("/dashboardInformation", function(data) {
-        $(".username").text(data.username);
-        $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
+        $(".username").text(name);
+        $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
       })
     }
 
@@ -133,7 +134,7 @@ function onSignIn(googleUser) {
         for(var i = 0; i < data.locks.length; i++) {
           var button = document.createElement("button");
           button.appendChild(document.createTextNode(data.lockNames[i]));
-          button.setAttribute("class", "lock");
+          button.setAttribute("class", "lock")
           button.setAttribute("id", data.locks[i]);
           var lockElement = document.createElement("li");
           lockElement.appendChild(button);
@@ -235,12 +236,6 @@ function createRule() {
   $.post("/createRule", {action: action, time: time});
 }
 
-function loadDashboard() {
-  $.get("/dashboardInformation", function(data) {
-    $(".username").text(data.username);
-    $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
-  })
-}
 //data.username
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
@@ -454,10 +449,29 @@ function createRole() {
   var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  console.log("hello");
   console.log(time);
   console.log(timeTwo);
-  $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
+  hourOption = parseInt(hourOption);
+  console.log("hello. i am potato: " + hourSelect);
+  hourTwoOption = parseInt(hourTwoOption);
+  minuteOption = parseInt(minuteOption);
+  minuteTwoOption = parseInt(minuteTwoOption);
+  if (periodOption == "PM") {
+    hourOption = hourOption + 12;
+  } 
+  if (periodTwoSelect == "PM") {
+    hourTwoOption = hourTwoOption + 12;
+  }
+  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && hourTwoOption <= hourOption)) {
+     $("#addingRoles").submit(function(event) {
+        event.preventDefault();
+        document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
+      })
+    //var errName = $("#invalidTime"); //Element selector
+    //errName.html("Invalid Time"); // Put the message content inside div
+  } else {
+    $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
+  } 
 }
 
 function getMembersDropDown() {
