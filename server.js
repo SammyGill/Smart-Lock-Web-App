@@ -167,12 +167,14 @@ app.get("/dashboard", (req, res) => {
  */
 app.get("/dashboardInformation", (req, res) => {
   var lockName = undefined;
+  var username = undefined;
   console.log("lock id");
   console.log(typeof(req.session.lock));
   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-    console.log(result);
+    console.log("llll" + result);
     lockName = result[0].lockName;
-    console.log(lockName);
+    username = req.session.username;
+    console.log({username: req.session.username, lockName: lockName});
     res.send({username: req.session.username, lockName: lockName});
   })
 
@@ -252,6 +254,12 @@ app.get("/settings", (req, res) => {
   res.sendFile(dir + "/views/settings.html");
 })
 
+app.get("/switchLock", (req, res) => {
+  req.session.lock = parseInt(req.query.lockId);
+  console.log("here!" + lock);
+  res.send(req.session.lock);
+})
+
 app.get("/timeStatus", (req, res) => {
   d = new Date();
   var minutes = d.getMinutes();
@@ -273,11 +281,6 @@ app.get("/timeStatus", (req, res) => {
     date = date + " PM";
   }
   res.send(date);
-})
-
-app.get("/switchLocks", (req, res) => {
-
-  res.sendFile(dir + "/views/dashboard.html");
 })
 
 

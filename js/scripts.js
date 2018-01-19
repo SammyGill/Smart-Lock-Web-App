@@ -23,9 +23,9 @@ function onSignIn(googleUser) {
 
     function loadDashboard() {
       $.get("/dashboardInformation", function(data) {
-        $(".username").text(data.username);
+        $(".username").text(name);
         $(".lockname").text(data.lockName);
-        $(".header").text("Welcome to " + data.lockName + ", " + data.username + "!");
+        $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
       })
     }
 
@@ -37,12 +37,21 @@ function onSignIn(googleUser) {
           var lock = document.createElement("a");
           lock.appendChild(document.createTextNode(data.lockNames[i]));
           lock.setAttribute("class", "sidenav-second-level collapse");
-          // lock.setAttribute("href", "selec")
+          lock.setAttribute("onclick", "switchLock()")
           lock.setAttribute("id", data.locks[i]);
           var lockElement = document.createElement("li");
           lockElement.appendChild(lock);
           list.appendChild(lockElement);
         }
+      })
+    }
+
+    function switchLock() {
+      $(document).on("click", function(element) {
+        $.get("/switchLock", {lockId: event.target.id}, function(data) {
+          console.log("here2" + data);
+          window.location = "/dashboard";
+        })
       })
     }
 
@@ -234,13 +243,6 @@ function createRule() {
   $.post("/createRule", {action: action, time: time});
 }
 
-function loadDashboard() {
-  $.get("/dashboardInformation", function(data) {
-    $(".username").text(data.username);
-    $(".header").text("Welcome to " + data.lockName + ", " + name + "!");
-  })
-}
-//data.username
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     console.log(data);
