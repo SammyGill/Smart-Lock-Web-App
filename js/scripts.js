@@ -93,10 +93,11 @@ function onSignIn(googleUser) {
     }
 
     function addMember() {
+      console.log("he;p");
       $("#add-member-form").submit(function(event) {
         event.preventDefault();
         $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
-          document.getElementById("resposne-message").innerHTML = data.message;
+          document.getElementById("response-message").innerHTML = data.message;
         })
       })
     }
@@ -286,15 +287,6 @@ function getTime() {
   }, 1000);
 }
 
-function addMember() {
-  $("#add-member-form").submit(function(event) {
-    event.preventDefault();
-    $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
-      document.getElementById("resposne-message").innerHTML = data.message;
-    })
-  })
-}
-
 function addTimer() {
   var $select = $(".1-12");
   for (i=1; i<=12; i++) {
@@ -465,4 +457,25 @@ function createRole() {
   console.log(time);
   console.log(timeTwo);
   $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
+}
+
+function getMembersDropDown() {
+  $.get("/getMembers", function(data) {
+    var select = document.getElementById("members");
+    for(var i = 0; i < data.members.length; i++) {
+      var option = document.createElement("option");
+      option.text = data.members[i];
+      select.add(option);
+    }
+    select.selectedIndex = "0";  
+    getMemberInfo();
+
+  })
+
+}
+
+function getMemberInfo() {
+  var memberSelect = document.getElementById('members');
+  var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+  console.log(memberOption);
 }

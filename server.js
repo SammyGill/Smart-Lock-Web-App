@@ -103,6 +103,9 @@ app.get("/addRules", (req, res) => {
   res.sendFile(dir + "/views/addRules.html");
 })
 
+app.get("/registerLock", (req, res) => {
+   res.sendFile(dir + "/views/registerLock.html");
+})
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 app.get("/authenticate", (req, res) => {
@@ -210,23 +213,7 @@ app.get("/getName", (req, res) => {
   res.send(req.session.username);
 })
 
-//This gets the users name and displays it on the dashboard
-/*var gmail = google.gmail({
-   auth:auth,
-   version: 'v1'
-});
 
-gmail.users.getProfile({
-   auth: auth,
-   userId: 'me'
-}, function(err, res) {
-   if(err) {
-      console.log(err);
-   } else {
-        console.log(res);
-     }
-});
-*/
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
   if(!isLoggedIn(req.session.username)) {
@@ -303,7 +290,7 @@ app.get("/switchLocks", (req, res) => {
 app.post("/addMember", (req, res) => {
   var username = req.body.username;
   var lockId = req.session.lock
-
+console.log(username);
   db.collection("users").find({username: username}).toArray((err, result) => {
     if(!result.length) {
       console.log("no username found");
