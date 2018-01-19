@@ -15,7 +15,7 @@ var d = new Date();
 
 function isLoggedIn(user) {
   return((user != undefined));
-} 
+}
 
 function getTime() {
   var d = new Date();
@@ -36,7 +36,27 @@ function getTime() {
   return date;
 }
 
-// Used to make the server look in our directory for 
+function convertToMilitary(time) {
+  if(time.indexOf("PM") != -1) {
+    time = time.replace("PM", "");
+    time = time.replace(" ", "");
+    var timeArray = time.split(":");
+    timeArray[0] = parseInt(timeArray[0]);
+    if(timeArray[0] != 12) {
+      timeArray[0] += 12;
+    }
+
+    var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
+    return timeString;
+  }
+  time = time.replace("AM", "");
+  time = time.replace(" ", "");
+  var timeArray = time.split(":");
+  timeArray[0] = timeArray[0].replace("0", "");
+  return (parseInt(timeArray[0] + timeArray[1]));
+}
+
+// Used to make the server look in our directory for
   // our javascript, css, and other files
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -67,7 +87,7 @@ app.get("/", (req, res) => {
   for(var i = 0; i < 20; i++) {
     db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
   }
-*/  
+*/
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -89,7 +109,7 @@ app.get("/registerLock", (req, res) => {
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 app.get("/authenticate", (req, res) => {
-  // User email is obtained from the Javascript function after user has logged 
+  // User email is obtained from the Javascript function after user has logged
     // in viga Google
   var email = req.query.email;
   /**
@@ -98,7 +118,7 @@ app.get("/authenticate", (req, res) => {
    *    - If the resulting array != 0, then we found a user in the database
    *      - If the lock id associated is null, then the user needs to register their lock
    *      - Else the user has a lock associated and we can send them to the dashboard
-   *    - Else the resulting array size == 0, then we must first add the user to the 
+   *    - Else the resulting array size == 0, then we must first add the user to the
    *      database before redirecting them to register their lock
    */
   db.collection("users").find({username: email}).toArray((err, result) => {
@@ -111,7 +131,7 @@ app.get("/authenticate", (req, res) => {
       }
       else {
         if(result[0].locks.length > 1) {
-          console.log("user has more than 1 lock associated")
+          console.log("user has more than 1 lock associated");
         }
         else {
           req.session.lock = parseInt(result[0].locks[0]);
@@ -165,12 +185,14 @@ app.get("/getLocks", (req, res) => {
     var locks = result[0].locks;
     async.each(locks, function(file, callback) {
       db.collection("locks").find({lockId: file}).toArray((err, result) => {
+        console.log({lockId: file});
         lockNames.push(result[0].lockName);
         lockIds.push(file);
         callback();
       })
     }, function(err) {
       console.log(lockNames);
+      console.log(locks);
       res.send({locks: lockIds, lockNames: lockNames});
     })
   })
@@ -282,9 +304,17 @@ app.post("/addMember", (req, res) => {
           res.send({message: "User successfully assigned to lock"});
         });
       })
-      
+
     }
   })
+})
+
+app.post("/createRole", (req, res) => {
+  console.log(req.body.timeOne);
+  console.log(req.body.timeTwo);
+  console.log(convertToMilitary(req.body.timeOne));
+  console.log(convertToMilitary(req.body.timeTwo));
+  console.log("create role");
 })
 
 app.post("/createRule", (req, res) => {
@@ -376,6 +406,15 @@ var j = schedule.scheduleJob('*/1 * * * *', function(){
   db.collection("rules").find({time: time}).toArray((err, result) => {
     if(result.length) {
       console.log("found rules")
+      async.each(result, function(lock, callback) {
+        console.log(lock);
+        if(lock.action == "unlock") {
+          db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "unlocked"}});
+        }
+        else {
+          db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "locked"}});
+        }
+      })
     }
     else {
       console.log("did not find rules");
