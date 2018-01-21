@@ -248,10 +248,6 @@ function createRule() {
   $.post("/createRule", {action: action, time: time});
 }
 
-<<<<<<< HEAD
-=======
-//data.username
->>>>>>> 0e64ea9046172bb4db9f0c56206a340bcd9767e1
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
     console.log(data);
