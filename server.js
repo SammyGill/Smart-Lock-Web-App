@@ -428,7 +428,10 @@ app.post("/unlock", (req, res) => {
 app.post("/updateRole", (req, res) => {
   var username = req.body.username;
   var lockId = req.session.lock;
-  db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: req.body.canAddMembers, canCreateRules: req.body.canCreateRules, canManageRoles: req.body.canManageRoles}})
+  var canAddMembers = (req.body.canAddMembers == "true");
+  var canCreateRules = (req.body.canCreateRules == "true");
+  var canManageRoles = (req.body.canManageRoles == "true");
+  db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles}})
 })
 
 

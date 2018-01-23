@@ -515,9 +515,9 @@ function getMemberInfo() {
   $.get("/memberRoleInfo", {username: memberOption}, function(data) {
     console.log(data);
     if(!data.roles) {
-      document.getElementById("can-add-roles").checked = true;
+      document.getElementById("can-manage-roles").checked = true;
       document.getElementById("can-add-members").checked = true;
-      document.getElementById("can-add-rules").checked = true;
+      document.getElementById("can-create-rules").checked = true;
     }
     else {
       document.getElementById("can-manage-roles").checked = data.roles.canManageRoles;
