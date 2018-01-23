@@ -242,11 +242,14 @@ app.get("/memberRoleInfo", (req, res) => {
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
     if(!result[0]) {
       // did not find anyone with this username and lock that has a role
-      db.collection("roles").insert({})
+      var lockRestrictions = [];
+      var unlockRestrictions = [];
+      db.collection("roles").insert({username: username, lockId: lockId, lockRestrictions: lockRestrictions, unlockRestrictions: unlockRestrictions,
+                                      canAddMembers: true, canCreateRules: true, canManageRoles: true});
       res.send({roles: false});
     }
     else {
-      // return the role stuff
+      res.send({roles: result[0]});
     }
   })
 })
@@ -420,6 +423,12 @@ app.post("/unlock", (req, res) => {
       res.send();
     })
   })
+})
+
+app.post("/updateRole", (req, res) => {
+  var username = req.body.username;
+  var lockId = req.session.lock;
+  db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: req.body.canAddMembers, canCreateRules: req.body.canCreateRules, canManageRoles: req.body.canManageRoles}})
 })
 
 

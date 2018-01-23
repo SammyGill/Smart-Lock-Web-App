@@ -427,8 +427,13 @@ function createRule() {
   $.post("/createRule", {action: action, time: time});
 }
 
-function createRole() {
-  var canAddOthers = undefined;
+function updateRole() {
+  var canAddMembers = document.getElementById("can-add-members").checked;
+  var canCreateRules = document.getElementById("can-create-rules").checked;
+  var canManageRoles = document.getElementById("can-manage-roles").checked;
+  var usernameSelect = document.getElementById("members");
+  var username = usernameSelect.options[usernameSelect.selectedIndex].text;
+  $.post("/updateRole", {username: username, canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles});
   var action = undefined;
   if(document.getElementById("addMembers").checked) {
     canAddOthers = "yes";
@@ -443,6 +448,8 @@ function createRole() {
   else {
     action = "lock";
   }
+  
+  /*
   var roleLabel = document.getElementById("roleName")
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
@@ -483,6 +490,7 @@ function createRole() {
   } else {
     $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
   } 
+  */
 }
 
 function getMembersDropDown() {
@@ -510,6 +518,11 @@ function getMemberInfo() {
       document.getElementById("can-add-roles").checked = true;
       document.getElementById("can-add-members").checked = true;
       document.getElementById("can-add-rules").checked = true;
+    }
+    else {
+      document.getElementById("can-manage-roles").checked = data.roles.canManageRoles;
+      document.getElementById("can-add-members").checked = data.roles.canAddMembers;
+      document.getElementById("can-create-rules").checked = data.roles.canCreateRules;
     }
   })
 }

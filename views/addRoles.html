@@ -174,52 +174,13 @@
 
                         </select>
                         <br>
-                        <input type="checkbox" id="can-add-roles"> Can Manage Roles <br>
+                        <input type="checkbox" id="can-manage-roles"> Can Manage Roles <br>
                         <input type="checkbox" id="can-add-members"> Can Add Members <br>
-                        <input type="checkbox" id="can-add-rules"> Can Manage Rules
-                      </div>
-                      <div class="btn-group" data-toggle="buttons">                         
-                        <label class="btn btn-primary"style="background-color:grey;">
-                          <input type="radio" checked autocomplete="off" disabled > This role cannot...
-                        </label>
-                        <label class="btn btn-primary">
-                          <input type="radio" autocomplete="off" id="lock"> Lock
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="radio" autocomplete="off" id="unlock"> Unlock
-                        </label>
-                      </div>
-                     
-                      <div class="form-group col-md-12">
-                        <label for="roleSelect">between</label>
-                        <br>
-                        <select class="form-control col-md-1" id="hour" style="display:inline"> 
-          
-                        </select>
-                        <select class="form-control col-md-1" id="minute" style="display:inline">
-
-                        </select>
-                        <select class="form-control col-md-1"  id="period" style="display:inline">
-                          <option> AM </option>
-                          <option> PM </option>
-                        </select>
-                        and
-                        <select class="form-control col-md-1" id="hourTwo" style="display:inline"> 
-          
-                        </select>
-                        <select class="form-control col-md-1" id="minuteTwo" style="display:inline">
-
-                        </select>
-                        <select class="form-control col-md-1"  id="periodTwo" style="display:inline">
-                          <option> AM </option>
-                          <option> PM </option>
-                        </select>
-                      </div>
-                      <div class="checkbox">
-                      	<input type="checkbox" id="addMembers" value="canLock"> This role can add other users who can lock or unlock this lock. <br>
-                      </div>
+                        <input type="checkbox" id="can-create-rules"> Can Manage Rules
+                      </div>                       
+                        
                         <p id="invalidTime"> </p>
-                        <button class="btn btn-primary" onclick="createRole();">Update</button>
+                        <button class="btn btn-primary" onclick="updateRole();">Update</button>
                     </form>
                     </div>
           </div>
