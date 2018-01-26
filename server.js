@@ -112,6 +112,7 @@ app.get("/registerLock", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
     var email = req.query.email;
+    var fullname = req.query.fullname;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -123,8 +124,13 @@ app.get("/registerLock", (req, res) => {
    */
    db.collection("users").find({username: email}).toArray((err, result) => {
     req.session.username = email;
+    req.session.fullname = fullname;
     if(result.length) {
       console.log("found a user with this username");
+      if(result[0].name == null) {
+      	console.log("user have not saved the full name");
+      	db.collection("users").update({username: email}, {$set: {name: fullname}});
+      }
       if(result[0].locks.length == 0) {
         console.log("user does not have a lock associated");
         res.send({locks: []});
@@ -136,13 +142,14 @@ app.get("/registerLock", (req, res) => {
         else {
           req.session.lock = parseInt(result[0].locks[0]);
           console.log("user has just 1 lock associated");
+          console.log(result[0]);
         }
         res.send({locks: result[0].locks});
       }
     }
     else {
       console.log("could not find user in database");
-      db.collection("users").insert({username: email, locks: []}, (err, doc) => {
+      db.collection("users").insert({username: email, name: fullname, locks: []}, (err, doc) => {
         res.send({locks: []});
       })
     }
@@ -207,6 +214,7 @@ app.get("/dashboard", (req, res) => {
 
   db.collection("locks").find({lockId: id}).toArray((err, result) => {
     members = result[0].members;
+    //if(members.length == 0){}
     members.push(result[0].owner);
     res.send({members: members});
   })

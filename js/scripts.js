@@ -7,7 +7,7 @@ function onSignIn(googleUser) {
     console.log("Full Name " + profile.getName());
     name = profile.getName();
     console.log("Email " + profile.getEmail());
-    $.get("/authenticate", {email: profile.getEmail()}, function(data) {
+    $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
       }
