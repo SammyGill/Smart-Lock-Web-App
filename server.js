@@ -327,10 +327,25 @@ app.post("/addMember", (req, res) => {
       db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
         var members = result[0].members;
         username = username.toString();
-        members.push(username);
-        db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
-          res.send({message: "User successfully assigned to lock"});
-        });
+        var alreadyExists = false;
+        for (var i = 0; i < members.length; i++) {
+          if (members[i] == username) {
+            alreadyExists = true;
+          }
+        }
+        console.log(alreadyExists);
+        if (alreadyExists == false) {
+          members.push(username);
+          db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
+            res.send({message: "User successfully assigned to lock"});
+          });
+        } else {
+          res.send({message: "User already exists!"});
+        }
+        //members.push(username);
+        //db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
+          //res.send({message: "User successfully assigned to lock"});
+        //});
       })
 
     }

@@ -191,7 +191,6 @@
                 
               </div>
               <div class="btn-group" data-toggle="buttons">    
-
                   <label class="btn btn-primary"style="background-color:grey;">
                     <input type="radio" checked autocomplete="off" disabled > This role cannot...
                   </label>
@@ -230,9 +229,11 @@
                   </select>
                 </div>
                 <div>
-                  <button class="btn btn-primary" onclick="addTimeRestriction();">Add Restriction
-                  </button>       
-                  <p id="invalidTime"> </p>
+                  <form id="addingRoles">
+                    <button class="btn btn-primary" onclick="addTimeRestriction();">Add Restriction
+                    </button>       
+                    <p id="invalidTime"> </p>
+                  </form>
                 </div>
           </div>
 

@@ -533,6 +533,6 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
-  console.log(time);
-  console.log(timeTwo);
+  //console.log(time);
+  //console.log(timeTwo);
 }
