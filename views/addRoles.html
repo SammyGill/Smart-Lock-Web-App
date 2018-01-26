@@ -179,7 +179,6 @@
                         <input type="checkbox" id="can-create-rules"> Can Manage Rules
                       </div>                       
                         
-                        <p id="invalidTime"> </p>
                         <button class="btn btn-primary" onclick="updateRole();">Update</button>
                     </form>
                     </div>
@@ -192,7 +191,6 @@
                 
               </div>
               <div class="btn-group" data-toggle="buttons">    
-
                   <label class="btn btn-primary"style="background-color:grey;">
                     <input type="radio" checked autocomplete="off" disabled > This role cannot...
                   </label>
@@ -229,6 +227,13 @@
                     <option> AM </option>
                     <option> PM </option>
                   </select>
+                </div>
+                <div>
+                  <form id="addingRoles">
+                    <button class="btn btn-primary" onclick="addTimeRestriction();">Add Restriction
+                    </button>       
+                    <p id="invalidTime"> </p>
+                  </form>
                 </div>
           </div>
 

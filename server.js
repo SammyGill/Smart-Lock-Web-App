@@ -209,7 +209,7 @@ app.get("/dashboard", (req, res) => {
   db.collection("locks").find({lockId: id}).toArray((err, result) => {
     members = result[0].members;
     members.push(result[0].owner);
-    res.send({members: members});
+    res.send({members: members, owner: result[0].owner});
   })
 })
 
@@ -329,19 +329,19 @@ app.post("/addMember", (req, res) => {
         var members = result[0].members;
         username = username.toString();
         var alreadyExists = false;
-        for(var i =0; i<members.length; i++){
-           if(members[i] == username){
-              alreadyExists = true;
-           }
+        for (var i = 0; i < members.length; i++) {
+          if (members[i] == username || result[0].owner == username) {
+            alreadyExists = true;
+          }
         }
         console.log(alreadyExists);
-        if(alreadyExists == false){
-        members.push(username);
-        db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
-          res.send({message: "User successfully assigned to lock"});
-        });
-        } else{
-           res.send({message: "User already exists!"});
+        if (alreadyExists == false) {
+          members.push(username);
+          db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
+            res.send({message: "User successfully assigned to lock"});
+          });
+        } else {
+          res.send({message: "User already exists for this lock!"});
         }
       })
 
@@ -379,7 +379,6 @@ app.post("/lock", (req, res) => {
     times.push(time);
     db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
   })
-
   db.collection("users").find({username: username}).toArray((err, result) => {
     var id = req.session.lock;
     db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
@@ -401,7 +400,6 @@ app.post("/registerLock", (req, res) => {
      console.log("ONE");
      db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
     console.log("TWO");
-       
         res.send();
      })
   

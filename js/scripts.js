@@ -384,18 +384,6 @@ function loadTimesTwo() {
   }
 }
 
-function getMembers() {
-  $.get("/getMembers", function(data) {
-    var list = document.getElementById("membersList");
-
-    for(var i = 0; i < data.members.length; i++) {
-      var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i]));
-      list.appendChild(member);
-    }
-  })
-}
-
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
@@ -450,41 +438,6 @@ function updateRole() {
   }
   
   /*
-  var roleLabel = document.getElementById("roleName")
-  var hourSelect = document.getElementById("hour")
-  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
-  var minuteSelect = document.getElementById("minute")
-  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
-  var periodSelect = document.getElementById("period")
-  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption;
-
-  var hourTwoSelect = document.getElementById("hourTwo")
-  var hourTwoOption = hourTwoSelect.options[hourTwoSelect.selectedIndex].text;
-  var minuteTwoSelect = document.getElementById("minuteTwo")
-  var minuteTwoOption = minuteTwoSelect.options[minuteTwoSelect.selectedIndex].text;
-  var periodTwoSelect = document.getElementById("periodTwo")
-  var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption;
-  var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  console.log(time);
-  console.log(timeTwo);
-  hourOption = parseInt(hourOption);
-  console.log("hello. i am potato: " + hourSelect);
-  hourTwoOption = parseInt(hourTwoOption);
-  minuteOption = parseInt(minuteOption);
-  minuteTwoOption = parseInt(minuteTwoOption);
-  if (periodOption == "PM") {
-    hourOption = hourOption + 12;
-  } 
-  if (periodTwoSelect == "PM") {
-    hourTwoOption = hourTwoOption + 12;
-  }
-  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && hourTwoOption <= hourOption)) {
-   $("#addingRoles").submit(function(event) {
-    event.preventDefault();
-    document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
-  })
     //var errName = $("#invalidTime"); //Element selector
     //errName.html("Invalid Time"); // Put the message content inside div
   } else {
@@ -499,7 +452,9 @@ function getMembersDropDown() {
     for(var i = 0; i < data.members.length; i++) {
       var option = document.createElement("option");
       option.text = data.members[i];
-      select.add(option);
+      if (option.text != data.owner) {
+        select.add(option);
+      }
     }
     select.selectedIndex = "0";  
     getMemberInfo();
@@ -525,4 +480,49 @@ function getMemberInfo() {
       document.getElementById("can-create-rules").checked = data.roles.canCreateRules;
     }
   })
+}
+
+function addTimeRestriction() {
+  var roleLabel = document.getElementById("roleName")
+  var hourSelect = document.getElementById("hour")
+  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
+  var minuteSelect = document.getElementById("minute")
+  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
+  var periodSelect = document.getElementById("period")
+  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
+
+  var hourTwoSelect = document.getElementById("hourTwo")
+  var hourTwoOption = hourTwoSelect.options[hourTwoSelect.selectedIndex].text;
+  var minuteTwoSelect = document.getElementById("minuteTwo")
+  var minuteTwoOption = minuteTwoSelect.options[minuteTwoSelect.selectedIndex].text;
+  var periodTwoSelect = document.getElementById("periodTwo")
+  var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
+  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  //console.log(time);
+  //console.log(timeTwo);
+  hourOption = parseInt(hourOption);
+  console.log("hello. i am potato: " + hourSelect);
+  hourTwoOption = parseInt(hourTwoOption);
+  minuteOption = parseInt(minuteOption);
+  minuteTwoOption = parseInt(minuteTwoOption);
+  if (periodOption == "PM") {
+    hourOption = hourOption + 12;
+  } 
+  if (periodTwoOption == "PM") {
+    hourTwoOption = hourTwoOption + 12;
+  }
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
+  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  //console.log(time);
+  //console.log(timeTwo);
+  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && minuteTwoOption < minuteOption)) {
+   //$("#addingRoles").submit(function(event) {
+    event.preventDefault();
+    document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
+    //})
+  }
+  //console.log(time);
+  //console.log(timeTwo);
 }
