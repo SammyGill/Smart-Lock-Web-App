@@ -500,7 +500,7 @@ function addTimeRestriction() {
   var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
   var periodSelect = document.getElementById("period")
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption;
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
 
   var hourTwoSelect = document.getElementById("hourTwo")
   var hourTwoOption = hourTwoSelect.options[hourTwoSelect.selectedIndex].text;
@@ -508,10 +508,10 @@ function addTimeRestriction() {
   var minuteTwoOption = minuteTwoSelect.options[minuteTwoSelect.selectedIndex].text;
   var periodTwoSelect = document.getElementById("periodTwo")
   var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption;
-  var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  console.log(time);
-  console.log(timeTwo);
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
+  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  //console.log(time);
+  //console.log(timeTwo);
   hourOption = parseInt(hourOption);
   console.log("hello. i am potato: " + hourSelect);
   hourTwoOption = parseInt(hourTwoOption);
@@ -520,14 +520,18 @@ function addTimeRestriction() {
   if (periodOption == "PM") {
     hourOption = hourOption + 12;
   } 
-  if (periodTwoSelect == "PM") {
+  if (periodTwoOption == "PM") {
     hourTwoOption = hourTwoOption + 12;
   }
-  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && hourTwoOption <= hourOption)) {
-   $("#addingRoles").submit(function(event) {
+  //var time = hourOption + ":" + minuteOption + " " + periodOption;
+  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  //console.log(time);
+  //console.log(timeTwo);
+  if (hourTwoOption < hourOption || (hourTwoOption == hourOption && minuteTwoOption < minuteOption)) {
+   //$("#addingRoles").submit(function(event) {
     event.preventDefault();
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
-    })
+    //})
   }
   console.log(time);
   console.log(timeTwo);

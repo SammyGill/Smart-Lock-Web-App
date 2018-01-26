@@ -179,7 +179,6 @@
                         <input type="checkbox" id="can-create-rules"> Can Manage Rules
                       </div>                       
                         
-                        <p id="invalidTime"> </p>
                         <button class="btn btn-primary" onclick="updateRole();">Update</button>
                     </form>
                     </div>
@@ -230,7 +229,11 @@
                     <option> PM </option>
                   </select>
                 </div>
-                <button class="btn btn-primary" onclick="addTimeRestriction()"">Add Restriction</button>
+                <div>
+                  <button class="btn btn-primary" onclick="addTimeRestriction();">Add Restriction
+                  </button>       
+                  <p id="invalidTime"> </p>
+                </div>
           </div>
 
         </div>
