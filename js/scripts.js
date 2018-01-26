@@ -384,18 +384,6 @@ function loadTimesTwo() {
   }
 }
 
-function getMembers() {
-  $.get("/getMembers", function(data) {
-    var list = document.getElementById("membersList");
-
-    for(var i = 0; i < data.members.length; i++) {
-      var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i]));
-      list.appendChild(member);
-    }
-  })
-}
-
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
@@ -464,7 +452,9 @@ function getMembersDropDown() {
     for(var i = 0; i < data.members.length; i++) {
       var option = document.createElement("option");
       option.text = data.members[i];
-      select.add(option);
+      if (option.text != data.owner) {
+        select.add(option);
+      }
     }
     select.selectedIndex = "0";  
     getMemberInfo();
