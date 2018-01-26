@@ -104,7 +104,7 @@ app.get("/addRules", (req, res) => {
 })
 
 app.get("/registerLock", (req, res) => {
- res.sendFile(dir + "/views/register.html");
+ res.sendFile(dir + "/views/registerLock.html");
 })
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
@@ -170,12 +170,12 @@ app.get("/dashboard", (req, res) => {
   var username = undefined;
   console.log("lock id");
   console.log(typeof(req.session.lock));
-  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+  db.collection("locks").find({lockName: req.session.lockName}).toArray((err, result) => {
      console.log("This is the problem:" + lockName);
     lockName = result[0].lockName;
     username = req.session.username;
     console.log("current lockName: " + lockName);
-    console.log("current lockId: " + req.session.lock);
+    console.log("curretn lockId: " + req.session.lock);
     console.log({username: req.session.username, lockName: lockName});
     res.send({username: req.session.username, lockName: lockName});
   })
@@ -328,21 +328,10 @@ app.post("/addMember", (req, res) => {
       db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
         var members = result[0].members;
         username = username.toString();
-        var alreadyExists = false;
-        for(var i =0; i<members.length; i++){
-           if(members[i] == username){
-              alreadyExists = true;
-           }
-        }
-        console.log(alreadyExists);
-        if(alreadyExists == false){
         members.push(username);
         db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
           res.send({message: "User successfully assigned to lock"});
         });
-        } else{
-           res.send({message: "User already exists!"});
-        }
       })
 
     }
@@ -395,25 +384,21 @@ app.post("/registerLock", (req, res) => {
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
    
-  
+
   //look for user name
   db.collection("users").find({username: username}).toArray((err, result) => {
-     console.log("ONE");
-     db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-    console.log("TWO");
-       
+     db.collection("locks").update( {$push: {lockId: id}}, (err, numberAffected, rawResponse) => {
         res.send();
      })
   
-     db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-        console.log("THREE");
+     db.collection("locks").update({$push: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
      res.send();
   })
   })
 
 
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-    console.log(id);
+
     if(result[0].owner == null) {
       var idArray = [];
       idArray.push(id);
