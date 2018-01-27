@@ -52,7 +52,7 @@ function convertToMilitary(time) {
   time = time.replace("AM", "");
   time = time.replace(" ", "");
   var timeArray = time.split(":");
-  timeArray[0] = timeArray[0].replace("0", "");
+  console.log("first number is " + timeArray[0]);
   return (parseInt(timeArray[0] + timeArray[1]));
 }
 
@@ -333,6 +333,40 @@ app.post("/addMember", (req, res) => {
         });
       })
 
+    }
+  })
+})
+
+app.post("/addTimeRestriction", (req, res) => {
+  console.log(req.body.action);
+  console.log(convertToMilitary(req.body.startTime));
+  console.log(convertToMilitary(req.body.endTime));
+  var startTime = convertToMilitary(req.body.startTime);
+  var endTime = convertToMilitary(req.body.endTime);
+  var timeArray = [startTime, endTime];
+  var username = req.body.username;
+  db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+    // If we found a user with the roles, update it
+
+    console.log(result);
+    if(result[0]) {
+      var resultArray = undefined;
+      if(req.body.action == "lock") {
+        console.log("add lock restriction");
+        resultArray = result[0].lockRestrictions;
+        console.log(resultArray);
+        console.log(timeArray);
+
+        resultArray.push(timeArray);
+        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
+      }
+      else {
+        console.log("add unlock restriction");
+        resultArray = result[0].unlockRestrictions;
+        resultArray.push(timeArray);
+        console.log(resultArray);
+        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
+      }
     }
   })
 })
