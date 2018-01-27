@@ -7,7 +7,7 @@ function onSignIn(googleUser) {
     console.log("Full Name " + profile.getName());
     name = profile.getName();
     console.log("Email " + profile.getEmail());
-    $.get("/authenticate", {email: profile.getEmail()}, function(data) {
+    $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
       }
@@ -208,10 +208,9 @@ function loadTimesTwo() {
 function getMembers() {
   $.get("/getMembers", function(data) {
     var list = document.getElementById("membersList");
-
     for(var i = 0; i < data.members.length; i++) {
       var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i]));
+      member.appendChild(document.createTextNode(data.members[i] + ": " + data.fullnames[i]));
       list.appendChild(member);
     }
   })
@@ -384,18 +383,6 @@ function loadTimesTwo() {
   }
 }
 
-function getMembers() {
-  $.get("/getMembers", function(data) {
-    var list = document.getElementById("membersList");
-
-    for(var i = 0; i < data.members.length; i++) {
-      var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i]));
-      list.appendChild(member);
-    }
-  })
-}
-
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
@@ -457,7 +444,9 @@ function getMembersDropDown() {
     for(var i = 0; i < data.members.length; i++) {
       var option = document.createElement("option");
       option.text = data.members[i];
-      select.add(option);
+      if (option.text != data.owner) {
+        select.add(option);
+      }
     }
     select.selectedIndex = "0";  
     getMemberInfo();
@@ -537,5 +526,10 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
+<<<<<<< HEAD
   $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo});
+=======
+  //console.log(time);
+  //console.log(timeTwo);
+>>>>>>> 51100ed981882d40b43c164966539234c93942a7
 }
