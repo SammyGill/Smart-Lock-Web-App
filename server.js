@@ -104,7 +104,7 @@ app.get("/addRules", (req, res) => {
 })
 
 app.get("/registerLock", (req, res) => {
-	res.sendFile(dir + "/views/registerLock.html");
+	res.sendFile(dir + "/views/register.html");
 })
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
@@ -112,6 +112,7 @@ app.get("/registerLock", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
     var email = req.query.email;
+    var fullname = req.query.email;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -171,18 +172,19 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
  app.get("/dashboardInformation", (req, res) => {
- 	var lockName = undefined;
- 	var username = undefined;
- 	console.log("lock id");
- 	console.log(typeof(req.session.lock));
- 	db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
- 		lockName = result[0].lockName;
- 		username = req.session.username;
- 		console.log("current lockName: " + lockName);
- 		console.log("curretn lockId: " + req.session.lock);
- 		console.log({username: req.session.username, lockName: lockName});
- 		res.send({username: req.session.username, lockName: lockName});
- 	})
+  var lockName = undefined;
+  var username = undefined;
+  console.log("lock id");
+  console.log(typeof(req.session.lock));
+  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+     console.log("This is the problem:" + lockName);
+    lockName = result[0].lockName;
+    username = req.session.username;
+    console.log("current lockName: " + lockName);
+    console.log("current lockId: " + req.session.lock);
+    console.log({username: req.session.username, lockName: lockName});
+    res.send({username: req.session.username, lockName: lockName});
+  })
 
  })
 
@@ -367,7 +369,6 @@ app.post("/addMember", (req, res) => {
           //res.send({message: "User successfully assigned to lock"});
         //});
       })
-
 		}
 	})
 })
@@ -417,12 +418,27 @@ app.post("/registerLock", (req, res) => {
 
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
+   
+  
+  //look for user name
+  db.collection("users").find({username: username}).toArray((err, result) => {
+     console.log("ONE");
+     db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
+    console.log("TWO");
+        res.send();
+     })
+  
+     db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
+        console.log("THREE");
+     res.send();
+  })
+  })
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-
-  	if(result[0].owner == null) {
-  		var idArray = [];
-  		idArray.push(id);
-  		req.session.lock = parseInt(id);
+    console.log(id);
+    if(result[0].owner == null) {
+      var idArray = [];
+      idArray.push(id);
+      req.session.lock = parseInt(id);
       // lock does not have an owner? Then set the username and the owner properly
       db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
       db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
@@ -493,4 +509,3 @@ var j = schedule.scheduleJob('*/1 * * * *', function(){
 		}
 	})
 });
->>>>>>> 3759e35c247ae9f1512e05f077870e7b72a50d08
