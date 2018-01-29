@@ -7,7 +7,7 @@ function onSignIn(googleUser) {
     console.log("Full Name " + profile.getName());
     name = profile.getName();
     console.log("Email " + profile.getEmail());
-    $.get("/authenticate", {email: profile.getEmail()}, function(data) {
+    $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
       }
@@ -208,10 +208,9 @@ function loadTimesTwo() {
 function getMembers() {
   $.get("/getMembers", function(data) {
     var list = document.getElementById("membersList");
-
     for(var i = 0; i < data.members.length; i++) {
       var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i]));
+      member.appendChild(document.createTextNode(data.members[i] + ": " + data.fullnames[i]));
       list.appendChild(member);
     }
   })
@@ -398,13 +397,6 @@ function onLoad() {
 }
 
 function createRule() {
-  var action = undefined;
-  if(document.getElementById("unlock").checked) {
-    action = "unlock";
-  }
-  else {
-    action = "lock";
-  }
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
   var minuteSelect = document.getElementById("minute")
@@ -483,6 +475,17 @@ function getMemberInfo() {
 }
 
 function addTimeRestriction() {
+  var memberSelect = document.getElementById('members');
+  var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+
+  var action = undefined;
+  if(document.getElementById("unlock").checked) {
+    action = "unlock";
+  }
+  else {
+    action = "lock";
+  }
+
   var roleLabel = document.getElementById("roleName")
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
@@ -498,8 +501,8 @@ function addTimeRestriction() {
   var minuteTwoOption = minuteTwoSelect.options[minuteTwoSelect.selectedIndex].text;
   var periodTwoSelect = document.getElementById("periodTwo")
   var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
-  //var time = hourOption + ":" + minuteOption + " " + periodOption;
-  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
+  var time = hourOption + ":" + minuteOption + " " + periodOption;
+  var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
   //console.log(time);
   //console.log(timeTwo);
   hourOption = parseInt(hourOption);
@@ -523,8 +526,12 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
+<<<<<<< HEAD
+  $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo});
+=======
   //console.log(time);
   //console.log(timeTwo);
+>>>>>>> 51100ed981882d40b43c164966539234c93942a7
 }
 
 
