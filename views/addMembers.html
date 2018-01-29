@@ -159,7 +159,7 @@
       <!-- Breadcrumbs-->
       <ol class="breadcrumb">
         <li class="breadcrumb-item">
-          <a href="index.html">Dashboard</a>
+          <a href="dashboard">Dashboard</a>
         </li>
         <li class="breadcrumb-item active">Add Members</li>
       </ol>
@@ -167,7 +167,9 @@
           <h5 class="card-header" style="text-align:center;">Add a member to the lock</h5>
           <div class="card-body">
               <div id="form" align="center">
-                  <form id="add-member-form">
+                  <p id="invalidAccess"> </p>
+                  <form id="add-member-form" onload="canAddMembers();">
+                      <p id="invalidAccess"> </p>
                       <div class="form-group col-md-4" >
                         <h3 id="response-message"></h3>
                         <label for="exampleInputEmail1">Email address</label>
