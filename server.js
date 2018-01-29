@@ -37,7 +37,6 @@ function getTime() {
 }
 
 function convertToMilitary(time) {
-<<<<<<< HEAD
   if(time.indexOf("PM") != -1) {
     time = time.replace("PM", "");
     time = time.replace(" ", "");
@@ -55,27 +54,7 @@ function convertToMilitary(time) {
   var timeArray = time.split(":");
   console.log("first number is " + timeArray[0]);
   return (parseInt(timeArray[0] + timeArray[1]));
-=======
-	if(time.indexOf("PM") != -1) {
-		time = time.replace("PM", "");
-		time = time.replace(" ", "");
-		var timeArray = time.split(":");
-		timeArray[0] = parseInt(timeArray[0]);
-		if(timeArray[0] != 12) {
-			timeArray[0] += 12;
-		}
-
-		var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-		return timeString;
-	}
-	time = time.replace("AM", "");
-	time = time.replace(" ", "");
-	var timeArray = time.split(":");
-	timeArray[0] = timeArray[0].replace("0", "");
-	return (parseInt(timeArray[0] + timeArray[1]));
->>>>>>> 51100ed981882d40b43c164966539234c93942a7
 }
-
 // Used to make the server look in our directory for
   // our javascript, css, and other files
   app.use(express.static(dir));
@@ -472,8 +451,8 @@ app.post("/registerLock", (req, res) => {
 
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
-   
-  
+
+
   //look for user name
   db.collection("users").find({username: username}).toArray((err, result) => {
      console.log("ONE");
@@ -481,7 +460,7 @@ app.post("/registerLock", (req, res) => {
     console.log("TWO");
         res.send();
      })
-  
+
      db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
         console.log("THREE");
      res.send();
