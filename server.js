@@ -17,6 +17,7 @@ function isLoggedIn(user) {
 	return((user != undefined));
 }
 
+
 function getTime() {
 	var d = new Date();
 	var minutes = d.getMinutes();
@@ -36,45 +37,6 @@ function getTime() {
 	return date;
 }
 
-function convertToMilitary(time) {
-<<<<<<< HEAD
-  if(time.indexOf("PM") != -1) {
-    time = time.replace("PM", "");
-    time = time.replace(" ", "");
-    var timeArray = time.split(":");
-    timeArray[0] = parseInt(timeArray[0]);
-    if(timeArray[0] != 12) {
-      timeArray[0] += 12;
-    }
-
-    var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-    return timeString;
-  }
-  time = time.replace("AM", "");
-  time = time.replace(" ", "");
-  var timeArray = time.split(":");
-  console.log("first number is " + timeArray[0]);
-  return (parseInt(timeArray[0] + timeArray[1]));
-=======
-	if(time.indexOf("PM") != -1) {
-		time = time.replace("PM", "");
-		time = time.replace(" ", "");
-		var timeArray = time.split(":");
-		timeArray[0] = parseInt(timeArray[0]);
-		if(timeArray[0] != 12) {
-			timeArray[0] += 12;
-		}
-
-		var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-		return timeString;
-	}
-	time = time.replace("AM", "");
-	time = time.replace(" ", "");
-	var timeArray = time.split(":");
-	timeArray[0] = timeArray[0].replace("0", "");
-	return (parseInt(timeArray[0] + timeArray[1]));
->>>>>>> 51100ed981882d40b43c164966539234c93942a7
-}
 
 // Used to make the server look in our directory for
   // our javascript, css, and other files
@@ -88,6 +50,7 @@ function convertToMilitary(time) {
   app.use(bodyParser.json());
 
   mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
+	  console.log("connected go mongo");
   	if(err) {
   		return console.log(err);
   	}
@@ -102,12 +65,15 @@ function convertToMilitary(time) {
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
 
-/*
+	namesArray = [];
+	actionsArray = [];
+	timesArray = []''
   memberArray = [];
-  for(var i = 0; i < 20; i++) {
-    db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
+  for(var i = 0; i < 50; i++) {
+	db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray});
+	db.collection("/history").insert({lockId: i, names: namesArray, actions: actionsArray, times: timesArray});
   }
-  */
+  
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -197,7 +163,7 @@ app.get("/dashboard", (req, res) => {
   console.log("lock id");
   console.log(typeof(req.session.lock));
   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-     console.log("This is the problem:" + lockName);
+     console.log("This is the problem:" + result[0]);
     lockName = result[0].lockName;
     username = req.session.username;
     console.log("current lockName: " + lockName);
@@ -472,32 +438,20 @@ app.post("/registerLock", (req, res) => {
 
   // id gets sent as a string, so we must parse it as an integer
   var id = parseInt(req.body.id);
-   
-  
-  //look for user name
-  db.collection("users").find({username: username}).toArray((err, result) => {
-     console.log("ONE");
-     db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-    console.log("TWO");
-        res.send();
-     })
-  
-     db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-        console.log("THREE");
-     res.send();
-  })
-  })
+
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
     console.log(id);
     if(result[0].owner == null) {
-      var idArray = [];
-      idArray.push(id);
-      req.session.lock = parseInt(id);
-      // lock does not have an owner? Then set the username and the owner properly
-      db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
-      db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
-      db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
-      res.send({redirect: "/dashboard"});
+      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
+		var idArray = result[0].locks
+		idArray.push(id);
+		req.session.lock = parseInt(id);
+		// lock does not have an owner? Then set the username and the owner properly
+		db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
+		db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
+		db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+		res.send({redirect: "/dashboard"});
+	  })
     }
     else {
      console.log("lock already taken");
@@ -543,23 +497,3 @@ app.post("/updateRole", (req, res) => {
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
 
 // Template function to do whatever you want every minute
-var j = schedule.scheduleJob('*/1 * * * *', function(){
-	var time = getTime();
-	db.collection("rules").find({time: time}).toArray((err, result) => {
-		if(result.length) {
-			console.log("found rules")
-			async.each(result, function(lock, callback) {
-				console.log(lock);
-				if(lock.action == "unlock") {
-					db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "unlocked"}});
-				}
-				else {
-					db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "locked"}});
-				}
-			})
-		}
-		else {
-			console.log("did not find rules");
-		}
-	})
-});
