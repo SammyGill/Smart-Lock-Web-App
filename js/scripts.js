@@ -527,4 +527,21 @@ function addTimeRestriction() {
     //})
   }
   $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo});
+
+}
+
+
+function canAddMembers() {
+  var memberSelect = document.getElementById('members');
+  var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+  $.get("/memberRoleInfo", {username: memberOption}, function(data) {
+    console.log("entering");
+   if (data.roles.canAddMembers == false) {
+   //$("#addingRoles").submit(function(event) {
+    event.preventDefault();
+    document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
+    //})
+   }
+  })
+
 }
