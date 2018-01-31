@@ -82,16 +82,16 @@ function convertToMilitary(time) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-
+/*
 	namesArray = [];
 	actionsArray = [];
-	timesArray = []''
+	timesArray = [];
   memberArray = [];
   for(var i = 0; i < 50; i++) {
 	db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray});
 	db.collection("/history").insert({lockId: i, names: namesArray, actions: actionsArray, times: timesArray});
   }
-  
+  */
   res.sendFile(dir + "/views/login.html");
 })
 
