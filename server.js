@@ -52,9 +52,13 @@ function convertToMilitary(time) {
   time = time.replace("AM", "");
   time = time.replace(" ", "");
   var timeArray = time.split(":");
-  console.log("first number is " + timeArray[0]);
   return (parseInt(timeArray[0] + timeArray[1]));
 }
+
+function checkRestrictions(arrayOne, arrayTwo) {
+
+}
+
 // Used to make the server look in our directory for
   // our javascript, css, and other files
   app.use(express.static(dir));
@@ -82,11 +86,14 @@ function convertToMilitary(time) {
 app.get("/", (req, res) => {
 
 /*
-  memberArray = [];
-  for(var i = 0; i < 20; i++) {
-    db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray})
+  var memberArray = [];
+	var usernamesArray = [];
+	var timesArray = [];
+	var actionsArray = [];
+  for(var i = 0; i < 50; i++) {
+    db.collection("history").insert({lockId: i, usernames: usernamesArray, actions: actionsArray, times: timesArray});
   }
-  */
+*/
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -382,18 +389,34 @@ app.post("/addMember", (req, res) => {
 })
 
 app.post("/addTimeRestriction", (req, res) => {
-  console.log(req.body.action);
-  console.log(convertToMilitary(req.body.startTime));
-  console.log(convertToMilitary(req.body.endTime));
   var startTime = convertToMilitary(req.body.startTime);
   var endTime = convertToMilitary(req.body.endTime);
+	var action = req.body.action;
+	var restrictions = undefined;
   var timeArray = [startTime, endTime];
   var username = req.body.username;
   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-    // If we found a user with the roles, update it
-
-    console.log(result);
+    // If we found a user with the roles, check to see if there are any conflicts
     if(result[0]) {
+			// check to see if there are any conflicts
+			if(action == "lock") {
+				restrictions = result[0].lockRestrictions;
+			}
+			else {
+				restrictions = result[0].unlockRestrictions;
+			}
+
+			// function to determine if there is an overlap in the lockRestrictions
+			if(checkRestrictions(timeArray, restrictions)) {
+				// If result is true, there is no error in the input and we can go ahead and add it
+
+			}
+			else {
+				// Otherwise there was an error in the input that was provided and we should
+					// give an appropriate error back
+			}
+
+
       var resultArray = undefined;
       if(req.body.action == "lock") {
         console.log("add lock restriction");
