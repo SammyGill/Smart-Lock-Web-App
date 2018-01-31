@@ -343,7 +343,16 @@ app.post("/addMember", (req, res) => {
 		}
 		else {
 			var locksArray = result[0].locks;
-			locksArray.push(lockId);
+      //console.log("THIS IS THE RESULT: " + result[0].locks);
+      var lockExists = false;
+      for (var i = 0; i < locksArray.length; i++) {
+        if (locksArray[i] == lockId) {
+          lockExists = true;
+        }
+      }
+      if (lockExists == false) {
+			  locksArray.push(lockId);
+      }
 			db.collection("users").update({username: username}, {$set: {locks: locksArray}});
 			db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
 				var members = result[0].members;

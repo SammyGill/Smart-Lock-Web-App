@@ -526,12 +526,8 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
-<<<<<<< HEAD
   $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo});
-=======
-  //console.log(time);
-  //console.log(timeTwo);
->>>>>>> 51100ed981882d40b43c164966539234c93942a7
+
 }
 
 
