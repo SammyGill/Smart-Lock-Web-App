@@ -82,7 +82,6 @@ function checkRestrictions(inputArray, dbArray) {
   app.use(bodyParser.json());
 
   mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
-	  console.log("connected go mongo");
   	if(err) {
   		return console.log(err);
   	}
@@ -144,28 +143,22 @@ app.get("/registerLock", (req, res) => {
    	req.session.username = email;
     req.session.fullname = fullname;
    	if(result.length) {
-   		console.log("found a user with this username");
       if(result[0].name == null) {
-        console.log("user have not saved the full name");
         db.collection("users").update({username: email}, {$set: {name: fullname}});
       }
    		if(result[0].locks.length == 0) {
-   			console.log("user does not have a lock associated");
    			res.send({locks: []});
    		}
    		else {
    			if(result[0].locks.length > 1) {
-   				console.log("user has more than 1 lock associated");
    			}
    			else {
    				req.session.lock = parseInt(result[0].locks[0]);
-   				console.log("user has just 1 lock associated");
    			}
    			res.send({locks: result[0].locks});
    		}
    	}
    	else {
-   		console.log("could not find user in database");
    		db.collection("users").insert({username: email, name: fullname, locks: []}, (err, doc) => {
    			res.send({locks: []});
    		})
@@ -192,15 +185,9 @@ app.get("/dashboard", (req, res) => {
  app.get("/dashboardInformation", (req, res) => {
   var lockName = undefined;
   var username = undefined;
-  console.log("lock id");
-  console.log(typeof(req.session.lock));
   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-     console.log("This is the problem:" + result[0]);
     lockName = result[0].lockName;
     username = req.session.username;
-    console.log("current lockName: " + lockName);
-    console.log("current lockId: " + req.session.lock);
-    console.log({username: req.session.username, lockName: lockName});
     res.send({username: req.session.username, lockName: lockName});
   })
 
@@ -213,14 +200,11 @@ app.get("/dashboard", (req, res) => {
  		var locks = result[0].locks;
  		async.each(locks, function(file, callback) {
  			db.collection("locks").find({lockId: file}).toArray((err, result) => {
- 				console.log({lockId: file});
  				lockNames.push(result[0].lockName);
  				lockIds.push(file);
  				callback();
  			})
  		}, function(err) {
- 			console.log(lockNames);
- 			console.log(locks);
  			res.send({locks: lockIds, lockNames: lockNames});
  		})
  	})
@@ -237,18 +221,6 @@ app.get("/dashboard", (req, res) => {
  			members.push("There are no members currently associated with this lock");
  		}
  		res.send({members: members, owner: result[0].owner});
-                                // else{
-                                //      for (var i = 0; i < members.length; i++) {
-                                //              console.log("members: " + members[i]);
-                                //              db.collection("users").find({username: members[i]}).toArray((err, result) => {
-                                //                      console.log("results: " + result);
-                                //                      console.log("fullnames: " + result[0].name);
-                                //                      fullnames.push(result[0].name);
-                                //              })
-                                //      }
-                                //      console.log({members: members, fullnames: fullnames});
-                                //      res.send({members: members, fullnames: fullnames});
- //      }
 })
  })
 
@@ -305,9 +277,7 @@ app.get("/selectDashboard", (req, res) => {
 
 app.get("/settings", (req, res) => {
 	lockId = req.session.lock;
-	console.log(lockId);
 	db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-		console.log(result[0].members);
 	})
 
 	res.sendFile(dir + "/views/settings.html");
@@ -344,21 +314,9 @@ app.get("/timeStatus", (req, res) => {
 })
 
 app.get("/canAccessAddMembers", (req, res) => {
-  console.log("member member!");
   var username = req.session.username;
   var lockId = req.session.lock;
-  console.log(username);
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-    //if(!result[0]) {
-      // did not find anyone with this username and lock that has a role
-      //var lockRestrictions = [];
-      //var unlockRestrictions = [];
-      //db.collection("roles").insert({username: username, lockId: lockId, lockRestrictions: lockRestrictions, unlockRestrictions: unlockRestrictions,
-        //canAddMembers: true, canCreateRules: true, canManageRoles: true});
-      //res.send({roles: false});
-    //}
-    //else {
-     console.log(result[0]);
      res.send({roles: result[0]});
    //}
  })
@@ -372,16 +330,13 @@ app.get("/canAccessAddMembers", (req, res) => {
 app.post("/addMember", (req, res) => {
 	var username = req.body.username;
 	var lockId = req.session.lock
-	console.log(username);
 	db.collection("users").find({username: username}).toArray((err, result) => {
 		if(!result.length) {
-			console.log("no username found");
 			res.send({message: "No user found with this email"});
 			return;
 		}
 		else {
 			var locksArray = result[0].locks;
-      //console.log("THIS IS THE RESULT: " + result[0].locks);
       var lockExists = false;
       for (var i = 0; i < locksArray.length; i++) {
         if (locksArray[i] == lockId) {
@@ -401,7 +356,6 @@ app.post("/addMember", (req, res) => {
 						alreadyExists = true;
 					}
 				}
-				console.log(alreadyExists);
 				if (alreadyExists == false) {
 					members.push(username);
 					db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
@@ -440,28 +394,21 @@ app.post("/addTimeRestriction", (req, res) => {
 
 			// function to determine if there is an overlap in the lockRestrictions
 			if(checkRestrictions(timeArray, restrictions)) {
-				console.log("good restriction");
 				// If result is true, there is no error in the input and we can go ahead and add it
 				if(req.body.action == "lock") {
-					console.log("add lock restriction");
 					resultArray = result[0].lockRestrictions;
-					console.log(resultArray);
-					console.log(timeArray);
 	
 					resultArray.push(timeArray);
 					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
 				}
 				else {
-					console.log("add unlock restriction");
 					resultArray = result[0].unlockRestrictions;
 					resultArray.push(timeArray);
-					console.log(resultArray);
 					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
 				}
 				res.send();
 			}
 			else {
-				console.log("bad restriction");
 				// Otherwise there was an error in the input that was provided and we should
 					// give an appropriate error back
 					res.send({error: "There is an error with your input!"});
@@ -479,8 +426,6 @@ app.post("/createRole", (req, res) => {
 })
 
 app.post("/createRule", (req, res) => {
-	console.log(req.body.action);
-	console.log(req.body.time);
 	var lockId = req.session.lock;
 	db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
 })
@@ -519,19 +464,15 @@ app.post("/registerLock", (req, res) => {
 
   //look for user name
   db.collection("users").find({username: username}).toArray((err, result) => {
-     console.log("ONE");
      db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-    console.log("TWO");
         res.send();
      })
 
      db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-        console.log("THREE");
      res.send();
   })
   })
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-    console.log(id);
     if(result[0].owner == null) {
       db.collection("users").find({username: req.session.username}).toArray((err, result) => {
 		var idArray = result[0].locks
@@ -545,7 +486,6 @@ app.post("/registerLock", (req, res) => {
 	  })
     }
     else {
-     console.log("lock already taken");
       // lock was already registered with someone so we send back a failure
       res.send({redirect: "failure"});
     }

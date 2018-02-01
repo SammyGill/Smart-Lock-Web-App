@@ -3,10 +3,7 @@ var name;
 function onSignIn(googleUser) {
   if(googleUser) {
     var profile = googleUser.getBasicProfile();
-    console.log("ID " + profile.getId());
-    console.log("Full Name " + profile.getName());
     name = profile.getName();
-    console.log("Email " + profile.getEmail());
     $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
@@ -32,7 +29,6 @@ function loadDashboard() {
 function loadLocks(){
   $.get("/getLocks", function(data) {
     var list = document.getElementById("dashboardComponents");
-    console.log(data.locks);
     for(var i = 0; i < data.locks.length; i++) {
       var lock = document.createElement("a");
       lock.appendChild(document.createTextNode(data.lockNames[i]));
@@ -63,8 +59,6 @@ function switchLock() {
 
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-    console.log(data);
-    console.log("sadsadsad");
     if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }
@@ -84,7 +78,6 @@ function getLockStatus() {
       $("#lock-action").text("lock");
       $("#lock-status").text("unlocked");
     }
-    console.log(data.status);
   })
 }
 
@@ -108,7 +101,6 @@ function getTime() {
 }
 
 function addMember() {
-  console.log("he;p");
   $("#add-member-form").submit(function(event) {
     event.preventDefault();
     $.post("/addMember", {username: document.getElementById("username").value}, function(data) {
@@ -219,7 +211,6 @@ function getMembers() {
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
-    console.log('User signed out.');
   });
 }
 
@@ -249,8 +240,6 @@ function createRule() {
 
 function registerLock() {
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-    console.log(data);
-    console.log("sadsadsad");
     if(data.redirect == "failure") {
       $(".lockTaken").text("Taken");
     }
@@ -270,7 +259,6 @@ function getLockStatus() {
       $("#lock-action").text("lock");
       $("#lock-status").text("unlocked");
     }
-    console.log(data.status);
   })
 }
 
@@ -386,7 +374,6 @@ function loadTimesTwo() {
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
-    console.log('User signed out.');
   });
 }
 
@@ -458,9 +445,7 @@ function getMembersDropDown() {
 function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
-  console.log(memberOption);
   $.get("/memberRoleInfo", {username: memberOption}, function(data) {
-    console.log(data);
     if(!data.roles) {
       document.getElementById("can-manage-roles").checked = true;
       document.getElementById("can-add-members").checked = true;
@@ -493,7 +478,6 @@ function addTimeRestriction() {
   var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
   var periodSelect = document.getElementById("period")
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
-  //var time = hourOption + ":" + minuteOption + " " + periodOption;
 
   var hourTwoSelect = document.getElementById("hourTwo")
   var hourTwoOption = hourTwoSelect.options[hourTwoSelect.selectedIndex].text;
@@ -503,8 +487,6 @@ function addTimeRestriction() {
   var periodTwoOption = periodTwoSelect.options[periodTwoSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  //console.log(time);
-  //console.log(timeTwo);
   hourOption = parseInt(hourOption);
   hourTwoOption = parseInt(hourTwoOption);
   minuteOption = parseInt(minuteOption);
@@ -515,10 +497,6 @@ function addTimeRestriction() {
   if (periodTwoOption == "PM") {
     hourTwoOption = hourTwoOption + 12;
   }
-  //var time = hourOption + ":" + minuteOption + " " + periodOption;
-  //var timeTwo = hourTwoOption + ":" + minuteTwoOption + " " + periodTwoOption;
-  //console.log(time);
-  //console.log(timeTwo);
   if (hourTwoOption < hourOption || (hourTwoOption == hourOption && minuteTwoOption < minuteOption)) {
    //$("#addingRoles").submit(function(event) {
     event.preventDefault();
@@ -528,11 +506,9 @@ function addTimeRestriction() {
     event.preventDefault();
     $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
       if(data.error) {
-        console.log("error");
         $(".error-message").text(data.error);
       }
       else {
-        console.log("no error")
         $(".error-message").text("");
       }
 
@@ -545,13 +521,9 @@ function canAddMembers() {
   //var memberSelect = document.getElementById('members');
   //var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
   $.get("/canAccessAddMembers", function(data) {
-    console.log("entering");
    if (data.roles.canAddMembers == false) {
-   //$("#addingRoles").submit(function(event) {
-    console.log("I CAN'T ADD MEMBERS");
     event.preventDefault();
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-    //})
    }
   })
 
