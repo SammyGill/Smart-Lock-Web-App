@@ -532,12 +532,13 @@ function addTimeRestriction() {
 
 
 function canAddMembers() {
-  var memberSelect = document.getElementById('members');
-  var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
-  $.get("/memberRoleInfo", {username: memberOption}, function(data) {
+  //var memberSelect = document.getElementById('members');
+  //var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+  $.get("/canAccessAddMembers", function(data) {
     console.log("entering");
    if (data.roles.canAddMembers == false) {
    //$("#addingRoles").submit(function(event) {
+    console.log("I CAN'T ADD MEMBERS");
     event.preventDefault();
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
     //})
