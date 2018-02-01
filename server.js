@@ -343,7 +343,26 @@ app.get("/timeStatus", (req, res) => {
 	res.send(date);
 })
 
-
+app.get("/canAccessAddMembers", (req, res) => {
+  console.log("member member!");
+  var username = req.session.username;
+  var lockId = req.session.lock;
+  console.log(username);
+  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+    //if(!result[0]) {
+      // did not find anyone with this username and lock that has a role
+      //var lockRestrictions = [];
+      //var unlockRestrictions = [];
+      //db.collection("roles").insert({username: username, lockId: lockId, lockRestrictions: lockRestrictions, unlockRestrictions: unlockRestrictions,
+        //canAddMembers: true, canCreateRules: true, canManageRoles: true});
+      //res.send({roles: false});
+    //}
+    //else {
+     console.log(result[0]);
+     res.send({roles: result[0]});
+   //}
+ })
+})
 
 
 
