@@ -56,8 +56,18 @@ function convertToMilitary(time) {
   return (parseInt(timeArray[0] + timeArray[1]));
 }
 
-function checkRestrictions(arrayOne, arrayTwo) {
-
+function checkRestrictions(inputArray, dbArray) {
+	var inputStart = inputArray[0];
+	var inputEnd = inputArray[1];
+	for(var i = 0; i < dbArray.length; dbArray++) {
+		if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
+			return false;
+		}
+		if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
+			return false;
+		}
+	}
+	return true;
 }
 
 // Used to make the server look in our directory for
@@ -396,7 +406,8 @@ app.post("/addTimeRestriction", (req, res) => {
 	var action = req.body.action;
 	var restrictions = undefined;
   var timeArray = [startTime, endTime];
-  var username = req.body.username;
+	var username = req.body.username;
+	var resultArray = undefined;
   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
     // If we found a user with the roles, check to see if there are any conflicts
     if(result[0]) {
@@ -410,32 +421,32 @@ app.post("/addTimeRestriction", (req, res) => {
 
 			// function to determine if there is an overlap in the lockRestrictions
 			if(checkRestrictions(timeArray, restrictions)) {
+				console.log("good restriction");
 				// If result is true, there is no error in the input and we can go ahead and add it
-
+				if(req.body.action == "lock") {
+					console.log("add lock restriction");
+					resultArray = result[0].lockRestrictions;
+					console.log(resultArray);
+					console.log(timeArray);
+	
+					resultArray.push(timeArray);
+					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
+				}
+				else {
+					console.log("add unlock restriction");
+					resultArray = result[0].unlockRestrictions;
+					resultArray.push(timeArray);
+					console.log(resultArray);
+					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
+				}
+				res.send();
 			}
 			else {
+				console.log("bad restriction");
 				// Otherwise there was an error in the input that was provided and we should
 					// give an appropriate error back
+					res.send({error: "There is an error with your input!"});
 			}
-
-
-      var resultArray = undefined;
-      if(req.body.action == "lock") {
-        console.log("add lock restriction");
-        resultArray = result[0].lockRestrictions;
-        console.log(resultArray);
-        console.log(timeArray);
-
-        resultArray.push(timeArray);
-        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
-      }
-      else {
-        console.log("add unlock restriction");
-        resultArray = result[0].unlockRestrictions;
-        resultArray.push(timeArray);
-        console.log(resultArray);
-        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
-      }
     }
   })
 })

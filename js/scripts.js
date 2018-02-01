@@ -506,7 +506,6 @@ function addTimeRestriction() {
   //console.log(time);
   //console.log(timeTwo);
   hourOption = parseInt(hourOption);
-  console.log("hello. i am potato: " + hourSelect);
   hourTwoOption = parseInt(hourTwoOption);
   minuteOption = parseInt(minuteOption);
   minuteTwoOption = parseInt(minuteTwoOption);
@@ -526,7 +525,18 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
-  $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo});
+    event.preventDefault();
+    $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
+      if(data.error) {
+        console.log("error");
+        $(".error-message").text(data.error);
+      }
+      else {
+        console.log("no error")
+        $(".error-message").text("");
+      }
+
+    })  
 
 }
 
