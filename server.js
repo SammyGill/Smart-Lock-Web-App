@@ -165,6 +165,47 @@ app.get("/authenticate", (req, res) => {
             }
       })
 })
+  // Determines whether or not the user has a lock associated with them
+  app.get("/authenticate", (req, res) => {
+  // User email is obtained from the Javascript function after user has logged
+    // in viga Google
+    var email = req.query.email;
+    var fullname = req.query.fullname;
+  /**
+   * Determines whether or not the user has a lock associated through steps
+   * - Attempt to see if the user is in the database with their email
+   *    - If the resulting array != 0, then we found a user in the database
+   *      - If the lock id associated is null, then the user needs to register their lock
+   *      - Else the user has a lock associated and we can send them to the dashboard
+   *    - Else the resulting array size == 0, then we must first add the user to the
+   *      database before redirecting them to register their lock
+   */
+   db.collection("users").find({username: email}).toArray((err, result) => {
+   	req.session.username = email;
+    req.session.fullname = fullname;
+   	if(result.length) {
+      if(result[0].name == null) {
+        db.collection("users").update({username: email}, {$set: {name: fullname}});
+      }
+   		if(result[0].locks.length == 0) {
+   			res.send({locks: []});
+   		}
+   		else {
+   			if(result[0].locks.length > 1) {
+   			}
+   			else {
+   				req.session.lock = parseInt(result[0].locks[0]);
+   			}
+   			res.send({locks: result[0].locks});
+   		}
+   	}
+   	else {
+   		db.collection("users").insert({username: email, name: fullname, locks: []}, (err, doc) => {
+   			res.send({locks: []});
+   		})
+   	}
+   })
+ })
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
@@ -313,6 +354,7 @@ app.get("/timeStatus", (req, res) => {
       res.send(date);
 })
 
+<<<<<<< HEAD
 app.get("/canAccessAddMembers", (req, res) => {
       var username = req.session.username;
       var lockId = req.session.lock;
@@ -321,6 +363,16 @@ app.get("/canAccessAddMembers", (req, res) => {
             //}
             })
       })
+=======
+app.get("/canAccess", (req, res) => {
+  var username = req.session.username;
+  var lockId = req.session.lock;
+  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+     res.send({roles: result[0]});
+   //}
+ })
+})
+>>>>>>> 21b89f817861d6e4541e16624656d5be6117bc8f
 
 
 
