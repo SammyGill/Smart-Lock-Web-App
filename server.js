@@ -12,16 +12,19 @@ var d = new Date();
 
 
 
-
+//check if user is logged in 
 function isLoggedIn(user) {
    return((user != undefined));
 }
 
-
+//get the time
 function getTime() {
+   //create new date
    var d = new Date();
+   //get mins + hours
    var minutes = d.getMinutes();
    var hours = d.getHours();
+   //format
    if (d.getMinutes() < 10) {
       minutes = "0" + minutes;
    }
@@ -37,6 +40,7 @@ function getTime() {
    return date;
 }
 
+//convert civilian to military time 
 function convertToMilitary(time) {
    if(time.indexOf("PM") != -1) {
       time = time.replace("PM", "");
@@ -514,7 +518,6 @@ app.post("/lock", (req, res) => {
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
-<<<<<<< HEAD
       var username = req.session.username;
 
       // id gets sent as a string, so we must parse it as an integer
@@ -550,7 +553,7 @@ app.post("/registerLock", (req, res) => {
             res.send({redirect: "failure"});
             }
             })
-=======
+
 	var username = req.session.username;
 
   // id gets sent as a string, so we must parse it as an integer
@@ -574,7 +577,7 @@ app.post("/registerLock", (req, res) => {
       res.send({redirect: "failure"});
     }
   })
->>>>>>> df194ba70ba9b83f19af22e76e1bc0f7d4653108
+
 })
 
 //unlock function

@@ -538,3 +538,14 @@ function canAddRules() {
    }
   })   
 }
+
+
+function canAddRoles() {
+  $.get("/canAccess", function(data) {
+   if (data.roles.canManageRoles == false) {
+    event.preventDefault();
+    document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
+   }
+  })
+}
+
