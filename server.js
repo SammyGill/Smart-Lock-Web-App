@@ -311,6 +311,7 @@ app.get("/memberRoleInfo", (req, res) => {
             })
       })
 
+
 app.get("/selectLock", (req, res) => {
       res.sendFile(dir + "/views/locks.html");
       })
@@ -377,7 +378,33 @@ app.get("/canAccess", (req, res) => {
  })
 })
 
+app.get("/showHistory", (req, res) => {
+  var id = req.session.lock;
+  var members = [];
+  var memActions = [];
+  var userActing = [];
 
+  db.collection("history").find({lockId: id}).toArray((err, result) => {
+    members = result[0].times;
+    memActions = result[0].actions;
+    //userActing = result[0].usernames;
+    members.push(result[0].owner);
+    memActions.push(result[0].owner);
+    //userActing.push(result[0].owner);
+    res.send({members: members, memActions: memActions/*, userActing: userActing*/});
+  })
+})
+
+ /*app.get("/showHistory", (req, res) => {
+  var id = req.session.lock;
+  var members1 = [];
+
+  db.collection("history").find({lockId: id}).toArray((err, result) => {
+    members = result[0].members;
+    members.push(result[0].owner);
+    res.send({members: members});
+  })
+})*/
 
 
 /* ---------------------- POST ROUTES BELOW ---------------------- */
@@ -492,28 +519,27 @@ app.post("/createRule", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
-      var username = req.session.username;
-      var time = getTime();
-      var date = new Date();
-      date = date.toDateString();
-      time = (date + " at " + time);
-      //record lock action to history
-      db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-            var names = result[0].names;
-            var actions = result[0].actions;
-            var times = result[0].times;
-            names.push(username);
-            actions.push("lock");
-            times.push(time);
-            db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
-            })
-      //update the status of the lock in the database
-      db.collection("users").find({username: username}).toArray((err, result) => {
-            var id = req.session.lock;
-            db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
-                  res.send();
-                  })
-            })
+	var username = req.session.username;
+	var time = getTime();
+	var date = new Date();
+	date = date.toDateString();
+	time = (date + " at " + time);
+	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+		var names = result[0].usernames;
+		var actions = result[0].actions;
+		var times = result[0].times;
+		names.push(username);
+		actions.push("lock");
+		times.push(time);
+		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
+	})
+
+	db.collection("users").find({username: username}).toArray((err, result) => {
+		var id = req.session.lock;
+		db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+			res.send();
+		})
+	})
 })
 
 // Proccesses the lock registration in the database
@@ -554,6 +580,7 @@ app.post("/registerLock", (req, res) => {
             }
             })
 
+
 	var username = req.session.username;
 
   // id gets sent as a string, so we must parse it as an integer
@@ -577,34 +604,30 @@ app.post("/registerLock", (req, res) => {
       res.send({redirect: "failure"});
     }
   })
-
 })
 
 //unlock function
 app.post("/unlock", (req, res) => {
-      //get username +tme
-      var username = req.session.username;
-      var time = getTime();
-      var date = new Date();
-      date = date.toDateString();
-      time = (date + " at " + time);
-      //update history of unlock action
-      db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-            var names = result[0].names;
-            var actions = result[0].actions;
-            var times = result[0].times;
-            names.push(username);
-            actions.push("unlock");
-            times.push(time);
-            db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
-            })
-      //update the users lock/unlock status 
-      db.collection("users").find({username: username}).toArray((err, result) => {
-            var id = req.session.lock;
-            db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
-                  res.send();
-                  })
-            })
+	var username = req.session.username;
+	var time = getTime();
+	var date = new Date();
+	date = date.toDateString();
+	time = (date + " at " + time);
+	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+		var names = result[0].usernames;
+		var actions = result[0].actions;
+		var times = result[0].times;
+		names.push(username);
+		actions.push("unlock");
+		times.push(time);
+		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
+	})
+	db.collection("users").find({username: username}).toArray((err, result) => {
+		var id = req.session.lock;
+		db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+			res.send();
+		})
+	})
 })
 
 //update role in data base

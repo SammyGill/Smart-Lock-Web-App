@@ -202,11 +202,23 @@ function getMembers() {
     var list = document.getElementById("membersList");
     for(var i = 0; i < data.members.length; i++) {
       var member = document.createElement("li");
-      member.appendChild(document.createTextNode(data.members[i] + ": " + data.fullnames[i]));
+      member.appendChild(document.createTextNode(data.members[i] /*+ ": " + data.fullnames[i]*/));
       list.appendChild(member);
     }
   })
 }
+
+function showHistory() {
+  $.get("/showHistory", function(data) {
+    var list = document.getElementById("historyList");
+    for(var i = data.members.length - 2; i > data.members.length - 7; i--) {
+      var mem = document.createElement("ul");
+      mem.appendChild(document.createTextNode("Last " + data.memActions[i] + "ed at " + data.members[i]));
+      list.appendChild(mem);
+    }
+  })
+}
+
 
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
