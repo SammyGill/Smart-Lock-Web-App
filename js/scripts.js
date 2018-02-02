@@ -518,13 +518,23 @@ function addTimeRestriction() {
 
 
 function canAddMembers() {
-  //var memberSelect = document.getElementById('members');
-  //var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
-  $.get("/canAccessAddMembers", function(data) {
+  $.get("/canAccess", function(data) {
    if (data.roles.canAddMembers == false) {
     event.preventDefault();
+    document.getElementById("add-member-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
    }
   })
+}
 
+
+function canAddRules() {
+  $.get("/canAccess", function(data) {
+   if (data.roles.canCreateRules == false) {
+    console.log("no access!");
+    event.preventDefault();
+    document.getElementById("add-rules-form").style.display = "none";
+    document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
+   }
+  })   
 }

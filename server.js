@@ -129,7 +129,7 @@ app.get("/registerLock", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
     var email = req.query.email;
-    var fullname = req.query.email;
+    var fullname = req.query.fullname;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -313,7 +313,7 @@ app.get("/timeStatus", (req, res) => {
 	res.send(date);
 })
 
-app.get("/canAccessAddMembers", (req, res) => {
+app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
