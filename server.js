@@ -313,7 +313,7 @@ app.get("/timeStatus", (req, res) => {
 	res.send(date);
 })
 
-app.get("/canAccessAddMembers", (req, res) => {
+app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
