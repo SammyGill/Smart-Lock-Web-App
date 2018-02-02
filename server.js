@@ -354,7 +354,7 @@ app.get("/timeStatus", (req, res) => {
       res.send(date);
 })
 
-<<<<<<< HEAD
+
 app.get("/canAccessAddMembers", (req, res) => {
       var username = req.session.username;
       var lockId = req.session.lock;
@@ -363,7 +363,7 @@ app.get("/canAccessAddMembers", (req, res) => {
             //}
             })
       })
-=======
+
 app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
@@ -372,7 +372,7 @@ app.get("/canAccess", (req, res) => {
    //}
  })
 })
->>>>>>> 21b89f817861d6e4541e16624656d5be6117bc8f
+
 
 
 
@@ -514,6 +514,7 @@ app.post("/lock", (req, res) => {
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
+<<<<<<< HEAD
       var username = req.session.username;
 
       // id gets sent as a string, so we must parse it as an integer
@@ -549,6 +550,31 @@ app.post("/registerLock", (req, res) => {
             res.send({redirect: "failure"});
             }
             })
+=======
+	var username = req.session.username;
+
+  // id gets sent as a string, so we must parse it as an integer
+	var id = parseInt(req.body.id);
+	
+  db.collection("locks").find({lockId:  id}).toArray((err, result) => {
+    if(result[0].owner == null) {
+      db.collection("users").find({username: username}).toArray((err, result) => {
+			var idArray = result[0].locks
+			idArray.push(id);
+			req.session.lock = parseInt(id);
+			// lock does not have an owner? Then set the username and the owner properly
+			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
+			db.collection("users").update({username: username}, {$set: {locks: idArray}});
+			db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+			res.send({redirect: "/dashboard"});
+	  })
+    }
+    else {
+      // lock was already registered with someone so we send back a failure
+      res.send({redirect: "failure"});
+    }
+  })
+>>>>>>> df194ba70ba9b83f19af22e76e1bc0f7d4653108
 })
 
 //unlock function
