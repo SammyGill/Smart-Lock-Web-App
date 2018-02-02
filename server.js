@@ -459,30 +459,19 @@ app.post("/registerLock", (req, res) => {
 	var username = req.session.username;
 
   // id gets sent as a string, so we must parse it as an integer
-  var id = parseInt(req.body.id);
-
-
-  //look for user name
-  db.collection("users").find({username: username}).toArray((err, result) => {
-     db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-        res.send();
-     })
-
-     db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-     res.send();
-  })
-  })
+	var id = parseInt(req.body.id);
+	
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
     if(result[0].owner == null) {
-      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-		var idArray = result[0].locks
-		idArray.push(id);
-		req.session.lock = parseInt(id);
-		// lock does not have an owner? Then set the username and the owner properly
-		db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
-		db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
-		db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
-		res.send({redirect: "/dashboard"});
+      db.collection("users").find({username: username}).toArray((err, result) => {
+			var idArray = result[0].locks
+			idArray.push(id);
+			req.session.lock = parseInt(id);
+			// lock does not have an owner? Then set the username and the owner properly
+			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
+			db.collection("users").update({username: username}, {$set: {locks: idArray}});
+			db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+			res.send({redirect: "/dashboard"});
 	  })
     }
     else {
