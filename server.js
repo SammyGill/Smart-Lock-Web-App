@@ -224,7 +224,7 @@ app.get("/dashboard", (req, res) => {
  		if(members.length == 0){
  			members.push("There are no members currently associated with this lock");
  		}
- 		res.send({members: members, owner: result[0].owner});
+ 		res.send({members: members/*, owner: result[0].owner*/});
                                 // else{
                                 //      for (var i = 0; i < members.length; i++) {
                                 //              console.log("members: " + members[i]);
@@ -281,6 +281,7 @@ app.get("/memberRoleInfo", (req, res) => {
    }
  })
 })
+
 
 app.get("/selectLock", (req, res) => {
 	res.sendFile(dir + "/views/locks.html");
@@ -352,7 +353,33 @@ app.get("/canAccessAddMembers", (req, res) => {
  })
 })
 
+app.get("/showHistory", (req, res) => {
+  var id = req.session.lock;
+  var members = [];
+  var memActions = [];
+  var userActing = [];
 
+  db.collection("history").find({lockId: id}).toArray((err, result) => {
+    members = result[0].times;
+    memActions = result[0].actions;
+    //userActing = result[0].usernames;
+    members.push(result[0].owner);
+    memActions.push(result[0].owner);
+    //userActing.push(result[0].owner);
+    res.send({members: members, memActions: memActions/*, userActing: userActing*/});
+  })
+})
+
+ /*app.get("/showHistory", (req, res) => {
+  var id = req.session.lock;
+  var members1 = [];
+
+  db.collection("history").find({lockId: id}).toArray((err, result) => {
+    members = result[0].members;
+    members.push(result[0].owner);
+    res.send({members: members});
+  })
+})*/
 
 /* ---------------------- POST ROUTES BELOW ---------------------- */
 
@@ -479,13 +506,13 @@ app.post("/lock", (req, res) => {
 	date = date.toDateString();
 	time = (date + " at " + time);
 	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-		var names = result[0].names;
+		var names = result[0].usernames;
 		var actions = result[0].actions;
 		var times = result[0].times;
 		names.push(username);
 		actions.push("lock");
 		times.push(time);
-		db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
+		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
 	})
 
 	db.collection("users").find({username: username}).toArray((err, result) => {
@@ -544,13 +571,13 @@ app.post("/unlock", (req, res) => {
 	date = date.toDateString();
 	time = (date + " at " + time);
 	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-		var names = result[0].names;
+		var names = result[0].usernames;
 		var actions = result[0].actions;
 		var times = result[0].times;
 		names.push(username);
 		actions.push("unlock");
 		times.push(time);
-		db.collection("history").update({lockId: req.session.lock}, {$set: {names: names, actions: actions, times:times}});
+		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
 	})
 	db.collection("users").find({username: username}).toArray((err, result) => {
 		var id = req.session.lock;
