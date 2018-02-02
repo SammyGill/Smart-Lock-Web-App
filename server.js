@@ -17,6 +17,7 @@ function isLoggedIn(user) {
 	return((user != undefined));
 }
 
+
 function getTime() {
 	var d = new Date();
 	var minutes = d.getMinutes();
@@ -55,8 +56,18 @@ function convertToMilitary(time) {
   return (parseInt(timeArray[0] + timeArray[1]));
 }
 
-function checkRestrictions(arrayOne, arrayTwo) {
-
+function checkRestrictions(inputArray, dbArray) {
+	var inputStart = inputArray[0];
+	var inputEnd = inputArray[1];
+	for(var i = 0; i < dbArray.length; dbArray++) {
+		if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
+			return false;
+		}
+		if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
+			return false;
+		}
+	}
+	return true;
 }
 
 // Used to make the server look in our directory for
@@ -84,14 +95,14 @@ function checkRestrictions(arrayOne, arrayTwo) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-
 /*
-  var memberArray = [];
-	var usernamesArray = [];
-	var timesArray = [];
-	var actionsArray = [];
+	namesArray = [];
+	actionsArray = [];
+	timesArray = [];
+  memberArray = [];
   for(var i = 0; i < 50; i++) {
-    db.collection("history").insert({lockId: i, usernames: usernamesArray, actions: actionsArray, times: timesArray});
+	db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray});
+	db.collection("history").insert({lockId: i, names: namesArray, actions: actionsArray, times: timesArray});
   }
 */
   res.sendFile(dir + "/views/login.html");
@@ -118,7 +129,7 @@ app.get("/registerLock", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
     var email = req.query.email;
-    var fullname = req.query.email;
+    var fullname = req.query.fullname;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -132,28 +143,22 @@ app.get("/registerLock", (req, res) => {
    	req.session.username = email;
     req.session.fullname = fullname;
    	if(result.length) {
-   		console.log("found a user with this username");
       if(result[0].name == null) {
-        console.log("user have not saved the full name");
         db.collection("users").update({username: email}, {$set: {name: fullname}});
       }
    		if(result[0].locks.length == 0) {
-   			console.log("user does not have a lock associated");
    			res.send({locks: []});
    		}
    		else {
    			if(result[0].locks.length > 1) {
-   				console.log("user has more than 1 lock associated");
    			}
    			else {
    				req.session.lock = parseInt(result[0].locks[0]);
-   				console.log("user has just 1 lock associated");
    			}
    			res.send({locks: result[0].locks});
    		}
    	}
    	else {
-   		console.log("could not find user in database");
    		db.collection("users").insert({username: email, name: fullname, locks: []}, (err, doc) => {
    			res.send({locks: []});
    		})
@@ -180,15 +185,9 @@ app.get("/dashboard", (req, res) => {
  app.get("/dashboardInformation", (req, res) => {
   var lockName = undefined;
   var username = undefined;
-  console.log("lock id");
-  console.log(typeof(req.session.lock));
   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-     console.log("This is the problem:" + lockName);
     lockName = result[0].lockName;
     username = req.session.username;
-    console.log("current lockName: " + lockName);
-    console.log("current lockId: " + req.session.lock);
-    console.log({username: req.session.username, lockName: lockName});
     res.send({username: req.session.username, lockName: lockName});
   })
 
@@ -201,14 +200,11 @@ app.get("/dashboard", (req, res) => {
  		var locks = result[0].locks;
  		async.each(locks, function(file, callback) {
  			db.collection("locks").find({lockId: file}).toArray((err, result) => {
- 				console.log({lockId: file});
  				lockNames.push(result[0].lockName);
  				lockIds.push(file);
  				callback();
  			})
  		}, function(err) {
- 			console.log(lockNames);
- 			console.log(locks);
  			res.send({locks: lockIds, lockNames: lockNames});
  		})
  	})
@@ -224,7 +220,8 @@ app.get("/dashboard", (req, res) => {
  		if(members.length == 0){
  			members.push("There are no members currently associated with this lock");
  		}
- 		res.send({members: members/*, owner: result[0].owner*/});
+/*<<<<<<< HEAD
+ 		res.send({members: members/*, owner: result[0].owner});
                                 // else{
                                 //      for (var i = 0; i < members.length; i++) {
                                 //              console.log("members: " + members[i]);
@@ -237,7 +234,9 @@ app.get("/dashboard", (req, res) => {
                                 //      console.log({members: members, fullnames: fullnames});
                                 //      res.send({members: members, fullnames: fullnames});
  //      }
-})
+=======*/
+ 		res.send({members: members, owner: result[0].owner});
+  })
  })
 
  app.get("/getName", (req, res) => {
@@ -294,9 +293,7 @@ app.get("/selectDashboard", (req, res) => {
 
 app.get("/settings", (req, res) => {
 	lockId = req.session.lock;
-	console.log(lockId);
 	db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-		console.log(result[0].members);
 	})
 
 	res.sendFile(dir + "/views/settings.html");
@@ -332,22 +329,10 @@ app.get("/timeStatus", (req, res) => {
 	res.send(date);
 })
 
-app.get("/canAccessAddMembers", (req, res) => {
-  console.log("member member!");
+app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
-  console.log(username);
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-    //if(!result[0]) {
-      // did not find anyone with this username and lock that has a role
-      //var lockRestrictions = [];
-      //var unlockRestrictions = [];
-      //db.collection("roles").insert({username: username, lockId: lockId, lockRestrictions: lockRestrictions, unlockRestrictions: unlockRestrictions,
-        //canAddMembers: true, canCreateRules: true, canManageRoles: true});
-      //res.send({roles: false});
-    //}
-    //else {
-     console.log(result[0]);
      res.send({roles: result[0]});
    //}
  })
@@ -387,16 +372,13 @@ app.get("/showHistory", (req, res) => {
 app.post("/addMember", (req, res) => {
 	var username = req.body.username;
 	var lockId = req.session.lock
-	console.log(username);
 	db.collection("users").find({username: username}).toArray((err, result) => {
 		if(!result.length) {
-			console.log("no username found");
 			res.send({message: "No user found with this email"});
 			return;
 		}
 		else {
 			var locksArray = result[0].locks;
-      //console.log("THIS IS THE RESULT: " + result[0].locks);
       var lockExists = false;
       for (var i = 0; i < locksArray.length; i++) {
         if (locksArray[i] == lockId) {
@@ -416,7 +398,6 @@ app.post("/addMember", (req, res) => {
 						alreadyExists = true;
 					}
 				}
-				console.log(alreadyExists);
 				if (alreadyExists == false) {
 					members.push(username);
 					db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
@@ -440,7 +421,8 @@ app.post("/addTimeRestriction", (req, res) => {
 	var action = req.body.action;
 	var restrictions = undefined;
   var timeArray = [startTime, endTime];
-  var username = req.body.username;
+	var username = req.body.username;
+	var resultArray = undefined;
   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
     // If we found a user with the roles, check to see if there are any conflicts
     if(result[0]) {
@@ -455,31 +437,24 @@ app.post("/addTimeRestriction", (req, res) => {
 			// function to determine if there is an overlap in the lockRestrictions
 			if(checkRestrictions(timeArray, restrictions)) {
 				// If result is true, there is no error in the input and we can go ahead and add it
-
+				if(req.body.action == "lock") {
+					resultArray = result[0].lockRestrictions;
+	
+					resultArray.push(timeArray);
+					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
+				}
+				else {
+					resultArray = result[0].unlockRestrictions;
+					resultArray.push(timeArray);
+					db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
+				}
+				res.send();
 			}
 			else {
 				// Otherwise there was an error in the input that was provided and we should
 					// give an appropriate error back
+					res.send({error: "There is an error with your input!"});
 			}
-
-
-      var resultArray = undefined;
-      if(req.body.action == "lock") {
-        console.log("add lock restriction");
-        resultArray = result[0].lockRestrictions;
-        console.log(resultArray);
-        console.log(timeArray);
-
-        resultArray.push(timeArray);
-        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
-      }
-      else {
-        console.log("add unlock restriction");
-        resultArray = result[0].unlockRestrictions;
-        resultArray.push(timeArray);
-        console.log(resultArray);
-        db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
-      }
     }
   })
 })
@@ -493,8 +468,6 @@ app.post("/createRole", (req, res) => {
 })
 
 app.post("/createRule", (req, res) => {
-	console.log(req.body.action);
-	console.log(req.body.time);
 	var lockId = req.session.lock;
 	db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
 })
@@ -533,31 +506,28 @@ app.post("/registerLock", (req, res) => {
 
   //look for user name
   db.collection("users").find({username: username}).toArray((err, result) => {
-     console.log("ONE");
      db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-    console.log("TWO");
         res.send();
      })
 
      db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-        console.log("THREE");
      res.send();
   })
   })
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-    console.log(id);
     if(result[0].owner == null) {
-      var idArray = [];
-      idArray.push(id);
-      req.session.lock = parseInt(id);
-      // lock does not have an owner? Then set the username and the owner properly
-      db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
-      db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
-      db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
-      res.send({redirect: "/dashboard"});
+      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
+		var idArray = result[0].locks
+		idArray.push(id);
+		req.session.lock = parseInt(id);
+		// lock does not have an owner? Then set the username and the owner properly
+		db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
+		db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
+		db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+		res.send({redirect: "/dashboard"});
+	  })
     }
     else {
-     console.log("lock already taken");
       // lock was already registered with someone so we send back a failure
       res.send({redirect: "failure"});
     }
@@ -600,23 +570,3 @@ app.post("/updateRole", (req, res) => {
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
 
 // Template function to do whatever you want every minute
-var j = schedule.scheduleJob('*/1 * * * *', function(){
-	var time = getTime();
-	db.collection("rules").find({time: time}).toArray((err, result) => {
-		if(result.length) {
-			console.log("found rules")
-			async.each(result, function(lock, callback) {
-				console.log(lock);
-				if(lock.action == "unlock") {
-					db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "unlocked"}});
-				}
-				else {
-					db.collection("locks").update({lockId: lock.lockId}, {$set: {status: "locked"}});
-				}
-			})
-		}
-		else {
-			console.log("did not find rules");
-		}
-	})
-});
