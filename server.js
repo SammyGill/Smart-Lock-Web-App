@@ -412,7 +412,7 @@ app.get("/showHistory", (req, res) => {
 //add member who can access lock
 app.post("/addMember", (req, res) => {
       var username = req.body.username;
-      var lockId = req.session.lock
+      var lockId = req.session.lock;
       //find username(had to have account already)
       db.collection("users").find({username: username}).toArray((err, result) => {
             //if the length is not greater than 1
@@ -436,6 +436,8 @@ app.post("/addMember", (req, res) => {
             //update the users 
             db.collection("users").update({username: username}, {$set: {locks: locksArray}});
             db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+              var currentUser = req.session.username;
+              db.collection("roles").find({username: currentUser, lockId: lockId}).toArray((err, result2) => {
                   var members = result[0].members;
                   username = username.toString();
                   var alreadyExists = false;
@@ -444,15 +446,18 @@ app.post("/addMember", (req, res) => {
                   alreadyExists = true;
                   }
                   }
-                  if (alreadyExists == false) {
+                  if (alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
                   members.push(username);
                   db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
                         res.send({message: "User successfully assigned to lock"});
                         });
+                  } else if (alreadyExists == true) {
+                    res.send({message: "User already exists for this lock!"});
                   } else {
-                  res.send({message: "User already exists for this lock!"});
+                    res.send({message: "You do not have permission to add members!"});
                   }
                   })
+            })
             }
       })
 })
@@ -514,9 +519,18 @@ app.post("/createRole", (req, res) => {
 //rule for lock
 app.post("/createRule", (req, res) => {
       var lockId = req.session.lock;
-      db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
+      var username = req.session.username;
+      var message = "You can't create rules!";
+      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
+        if (result2[0].canCreateRules == false) {
+          console.log("I am in hereeee!");
+          res.send({message: "You can't create rules!"});
+        } else {
+          db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
+        }
+       
+        })
       })
-
 //lock function
 app.post("/lock", (req, res) => {
 	var username = req.session.username;

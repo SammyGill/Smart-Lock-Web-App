@@ -247,7 +247,17 @@ function createRule() {
   var periodSelect = document.getElementById("period")
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
-  $.post("/createRule", {action: action, time: time});
+  $.get("/canAccess", function(data) {
+     if (data.roles.canCreateRules == false) {
+       $.get("/createRule", function(data) {
+        console.log("Should be in here...");
+        event.preventDefault();
+        document.getElementById("response-message").innerHTML = data.message;
+      })
+     } else {
+       $.post("/createRule", {action: action, time: time});
+     }
+  })
 }
 
 function registerLock() {
@@ -395,7 +405,7 @@ function onLoad() {
   });
 }
 
-function createRule() {
+/*function createRule() {
   var hourSelect = document.getElementById("hour")
   var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
   var minuteSelect = document.getElementById("minute")
@@ -404,7 +414,7 @@ function createRule() {
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
   $.post("/createRule", {action: action, time: time});
-}
+}*/
 
 function updateRole() {
   var canAddMembers = document.getElementById("can-add-members").checked;
@@ -532,16 +542,17 @@ function addTimeRestriction() {
 function canAddMembers() {
   $.get("/canAccess", function(data) {
    if (data.roles.canAddMembers == false) {
+    console.log
+    console.log("I am in here");
     event.preventDefault();
-    document.getElementById("#add-member-form").style.display = "none";
+    document.getElementById("add-member-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-   } else {
+   } 
     //var line1 = '<div class="form-group col-md-4">';
     //var line1 = "<div id='member-form' class='form-group col-md-4'><h3 id='response-message'></h3><label for='exampleInputEmail1'>Email address</label><input type='email' class='form-control' id='username' aria-describedby='emailHelp' placeholder='Enter email'><small id='emailHelp' class='form-text text-muted'>We'll never share your email with anyone else.</small></div>";
     //var line7 = '<button onclick="addMember();" class="btn btn-primary">Submit</button>';
     //$("#add-member-form").after(line1, line7); 
     //$("#add-member-form").after(line7);
-   }
   })
 }
 
@@ -550,7 +561,7 @@ function canAddRules() {
   $.get("/canAccess", function(data) {
    if (data.roles.canCreateRules == false) {
     event.preventDefault();
-    document.getElementById("#add-rules-form").style.display = "none";
+    document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
    } else {
      //var line = '<div class="btn-group" data-toggle="buttons"><label class="btn btn-primary" style="background-color:grey;"><input type="radio" autocomplete="off" disabled > I want to...</label><label class="btn btn-primary active" aria-pressed="true" ><input type="radio" autocomplete="off" id="lock"> Lock </label><label class="btn btn-primary"><input type="radio" autocomplete="off" id="unlock"> Unlock</label></div><div class="form-group col-md-4"><label for="roleSelect">every day at...</label><br><select class="form-control col-md-3" id="hour" style="display:inline"></select><select class="form-control col-md-3" id="minute" style="display:inline"></select><select class="form-control col-md-3" id="period" style="display:inline"><option> AM </option><option> PM </option></select></div><button class="btn btn-primary" style="display:inline" onclick="createRule();">Submit</button>';
@@ -564,6 +575,7 @@ function canAddRoles() {
   $.get("/canAccess", function(data) {
    if (data.roles.canManageRoles == false) {
     event.preventDefault();
+    document.getElementById("addingRoles").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
    }
   })
