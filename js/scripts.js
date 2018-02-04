@@ -83,10 +83,18 @@ function getLockStatus() {
 
 function changeLock() {
   if (document.getElementById("lock-status").innerHTML == "locked") {
-    $.post("/unlock", getLockStatus);
+    $.post("/unlock", getLockStatus, function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+    });
   }
   else {
-    $.post("/lock", getLockStatus);
+    $.post("/lock", getLockStatus, function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+    });
   }
 }
 
