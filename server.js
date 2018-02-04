@@ -68,8 +68,6 @@ function checkRestrictions(inputArray, dbArray) {
 }
 
 function checkActionPermission(timesArray, currentTime) {
-      console.log(currentTime > timesArray[0]);
-      console.log(currentTime < timesArray[1]);
       if(currentTime > timesArray[0][0] && currentTime < timesArray[0][1]) {
             return false;
       }
@@ -524,14 +522,16 @@ app.post("/createRule", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
-
+      console.log("HERE");
 	var username = req.session.username;
       var time = getTime();
       
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+            var lockRestrictons = result[0].lockRestrictions;
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   owner = (result[0].owner == username);
-                  if(owner || checkActionPermission(result[0].lockRestrictions, convertToMilitary(time))) {
+     
+                  if(owner || checkActionPermission(lockRestrictons, convertToMilitary(time))) {
                         var date = new Date();
                         date = date.toDateString();
                         time = (date + " at " + time);
@@ -553,6 +553,7 @@ app.post("/lock", (req, res) => {
                         })
                   }
                   else {
+                        console.log("NO PERMISSION");
                         res.send({error:"You do not have permission to do this!"});
                   }
             })
@@ -607,10 +608,11 @@ app.post("/unlock", (req, res) => {
       var time = getTime();
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+            var unlockRestrictions = result[0].unlockRestrictions
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   var owner = (result[0].owner == username);
                         // If this returns true, then the user has permission to perform the actions
-                        if(owner || checkActionPermission(result[0].unlockRestrictions, convertToMilitary(time))) {
+                        if(owner || checkActionPermission(unlockRestrictions, convertToMilitary(time))) {
                               var date = new Date();
                               date = date.toDateString();
                               time = (date + " at " + time);

@@ -284,10 +284,24 @@ function getLockStatus() {
 
 function changeLock() {
   if (document.getElementById("lock-status").innerHTML == "locked") {
-    $.post("/unlock", getLockStatus);
+    $.post("/unlock", function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+      else {
+        getLockStatus();
+      }
+    });
   }
   else {
-    $.post("/lock", getLockStatus);
+    $.post("/lock", function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+      else {
+        getLockStatus();
+      }
+    });
   }
 }
 
