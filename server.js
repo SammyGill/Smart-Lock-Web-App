@@ -99,16 +99,6 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-      /*
-         namesArray = [];
-         actionsArray = [];
-         timesArray = [];
-         memberArray = [];
-         for(var i = 0; i < 50; i++) {
-         db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray});
-         db.collection("history").insert({lockId: i, names: namesArray, actions: actionsArray, times: timesArray});
-         }
-         */
       res.sendFile(dir + "/views/login.html");
       })
 
@@ -580,17 +570,19 @@ app.post("/registerLock", (req, res) => {
             }
             })
 
-
 	var username = req.session.username;
 
-  // id gets sent as a string, so we must parse it as an integer
+   //id gets sent as a string, so we must parse it as an integer
 	var id = parseInt(req.body.id);
-	
+  //go to locks collection and look in id array 	
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
+     //if there is no owner set up then set up in database 
     if(result[0].owner == null) {
       db.collection("users").find({username: username}).toArray((err, result) => {
+         //push lock id to lock array 
 			var idArray = result[0].locks
 			idArray.push(id);
+         //parse the id 
 			req.session.lock = parseInt(id);
 			// lock does not have an owner? Then set the username and the owner properly
 			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
