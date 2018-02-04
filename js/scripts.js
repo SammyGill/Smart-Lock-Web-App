@@ -83,10 +83,18 @@ function getLockStatus() {
 
 function changeLock() {
   if (document.getElementById("lock-status").innerHTML == "locked") {
-    $.post("/unlock", getLockStatus);
+    $.post("/unlock", getLockStatus, function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+    });
   }
   else {
-    $.post("/lock", getLockStatus);
+    $.post("/lock", getLockStatus, function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+    });
   }
 }
 
@@ -286,10 +294,24 @@ function getLockStatus() {
 
 function changeLock() {
   if (document.getElementById("lock-status").innerHTML == "locked") {
-    $.post("/unlock", getLockStatus);
+    $.post("/unlock", function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+      else {
+        getLockStatus();
+      }
+    });
   }
   else {
-    $.post("/lock", getLockStatus);
+    $.post("/lock", function(data) {
+      if(data.error) {
+        $(".error-message").text(data.error);
+      }
+      else {
+        getLockStatus();
+      }
+    });
   }
 }
 
@@ -574,6 +596,7 @@ function canAddRules() {
 function canAddRoles() {
   $.get("/canAccess", function(data) {
    if (data.roles.canManageRoles == false) {
+    document.getElementyId(          ).style.display="none";
     event.preventDefault();
     document.getElementById("addingRoles").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";

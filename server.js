@@ -10,21 +10,15 @@ var schedule = require('node-schedule');
 var d = new Date();
 //var google = require('googleapis');
 
-
-
-//check if user is logged in 
 function isLoggedIn(user) {
    return((user != undefined));
 }
 
-//get the time
+
 function getTime() {
-   //create new date
    var d = new Date();
-   //get mins + hours
    var minutes = d.getMinutes();
    var hours = d.getHours();
-   //format
    if (d.getMinutes() < 10) {
       minutes = "0" + minutes;
    }
@@ -40,7 +34,6 @@ function getTime() {
    return date;
 }
 
-//convert civilian to military time 
 function convertToMilitary(time) {
    if(time.indexOf("PM") != -1) {
       time = time.replace("PM", "");
@@ -74,15 +67,25 @@ function checkRestrictions(inputArray, dbArray) {
    return true;
 }
 
+function checkActionPermission(timesArray, currentTime) {
+      if(currentTime > timesArray[0][0] && currentTime < timesArray[0][1]) {
+            return false;
+      }
+      return true;
+}
+
 // Used to make the server look in our directory for
 // our javascript, css, and other files
 app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(session({
-cookieName: 'session',
-secret: 'random_string_goes_here',
-duration: 30 * 60 * 1000,
-}));
+      cookieName: 'session', // cookie name dictates the key name added to the request object 
+      secret: 'blargadeeblargblarg', // should be a large unguessable string 
+      duration: 600000000, // how long the session will stay valid in ms 
+    }));
+
+
 app.use(bodyParser.json());
 
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
@@ -99,16 +102,6 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-      /*
-         namesArray = [];
-         actionsArray = [];
-         timesArray = [];
-         memberArray = [];
-         for(var i = 0; i < 50; i++) {
-         db.collection("locks").insert({lockId: i, lockName: null, owner: null, status:"locked", members: memberArray});
-         db.collection("history").insert({lockId: i, names: namesArray, actions: actionsArray, times: timesArray});
-         }
-         */
       res.sendFile(dir + "/views/login.html");
       })
 
@@ -533,27 +526,44 @@ app.post("/createRule", (req, res) => {
       })
 //lock function
 app.post("/lock", (req, res) => {
+      console.log("HERE");
 	var username = req.session.username;
-	var time = getTime();
-	var date = new Date();
-	date = date.toDateString();
-	time = (date + " at " + time);
-	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-		var names = result[0].usernames;
-		var actions = result[0].actions;
-		var times = result[0].times;
-		names.push(username);
-		actions.push("lock");
-		times.push(time);
-		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-	})
+      var time = getTime();
+      
+      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+            var lockRestrictons = result[0].lockRestrictions;
+            db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+                  owner = (result[0].owner == username);
+     
+                  if(owner || checkActionPermission(lockRestrictons, convertToMilitary(time))) {
+                        var date = new Date();
+                        date = date.toDateString();
+                        time = (date + " at " + time);
+                        db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+                              var names = result[0].usernames;
+                              var actions = result[0].actions;
+                              var times = result[0].times;
+                              names.push(username);
+                              actions.push("lock");
+                              times.push(time);
+                              db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
+                        })
+                  
+                        db.collection("users").find({username: username}).toArray((err, result) => {
+                              var id = req.session.lock;
+                              db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+                                    res.send();
+                              })
+                        })
+                  }
+                  else {
+                        console.log("NO PERMISSION");
+                        res.send({error:"You do not have permission to do this!"});
+                  }
+            })
+      })
 
-	db.collection("users").find({username: username}).toArray((err, result) => {
-		var id = req.session.lock;
-		db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
-			res.send();
-		})
-	})
+
 })
 
 // Proccesses the lock registration in the database
@@ -594,17 +604,19 @@ app.post("/registerLock", (req, res) => {
             }
             })
 
-
 	var username = req.session.username;
 
-  // id gets sent as a string, so we must parse it as an integer
+   //id gets sent as a string, so we must parse it as an integer
 	var id = parseInt(req.body.id);
-	
+  //go to locks collection and look in id array 	
   db.collection("locks").find({lockId:  id}).toArray((err, result) => {
+     //if there is no owner set up then set up in database 
     if(result[0].owner == null) {
       db.collection("users").find({username: username}).toArray((err, result) => {
+         //push lock id to lock array 
 			var idArray = result[0].locks
 			idArray.push(id);
+         //parse the id 
 			req.session.lock = parseInt(id);
 			// lock does not have an owner? Then set the username and the owner properly
 			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
@@ -622,26 +634,46 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
+      console.log("unlock");
 	var username = req.session.username;
-	var time = getTime();
-	var date = new Date();
-	date = date.toDateString();
-	time = (date + " at " + time);
-	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-		var names = result[0].usernames;
-		var actions = result[0].actions;
-		var times = result[0].times;
-		names.push(username);
-		actions.push("unlock");
-		times.push(time);
-		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-	})
-	db.collection("users").find({username: username}).toArray((err, result) => {
-		var id = req.session.lock;
-		db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
-			res.send();
-		})
-	})
+      var time = getTime();
+
+      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+            var unlockRestrictions = result[0].unlockRestrictions
+            db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+                  var owner = (result[0].owner == username);
+                        // If this returns true, then the user has permission to perform the actions
+                        if(owner || checkActionPermission(unlockRestrictions, convertToMilitary(time))) {
+                              var date = new Date();
+                              date = date.toDateString();
+                              time = (date + " at " + time);
+                              db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+                                    var names = result[0].usernames;
+                                    var actions = result[0].actions;
+                                    var times = result[0].times;
+                                    names.push(username);
+                                    actions.push("unlock");
+                                    times.push(time);
+                                    db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
+                              })
+                              db.collection("users").find({username: username}).toArray((err, result) => {
+                                    var id = req.session.lock;
+                                    db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+                                          res.send();
+                                    })
+                              })
+                        }
+                        else {
+                              // Send them an error message saying they do not have permission 
+                              console.log("does not have permission");
+                              res.send({error:"You do not have permission to do this!"});
+                        }
+            })
+            // We were able to find a role associated with this lock and user
+      })
+
+
+
 })
 
 //update role in data base
