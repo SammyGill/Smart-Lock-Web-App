@@ -12,16 +12,19 @@ var d = new Date();
 
 
 
-
+//check if user is logged in 
 function isLoggedIn(user) {
    return((user != undefined));
 }
 
-
+//get the time
 function getTime() {
+   //create new date
    var d = new Date();
+   //get mins + hours
    var minutes = d.getMinutes();
    var hours = d.getHours();
+   //format
    if (d.getMinutes() < 10) {
       minutes = "0" + minutes;
    }
@@ -37,6 +40,7 @@ function getTime() {
    return date;
 }
 
+//convert civilian to military time 
 function convertToMilitary(time) {
    if(time.indexOf("PM") != -1) {
       time = time.replace("PM", "");
@@ -575,6 +579,31 @@ app.post("/registerLock", (req, res) => {
             res.send({redirect: "failure"});
             }
             })
+
+
+	var username = req.session.username;
+
+  // id gets sent as a string, so we must parse it as an integer
+	var id = parseInt(req.body.id);
+	
+  db.collection("locks").find({lockId:  id}).toArray((err, result) => {
+    if(result[0].owner == null) {
+      db.collection("users").find({username: username}).toArray((err, result) => {
+			var idArray = result[0].locks
+			idArray.push(id);
+			req.session.lock = parseInt(id);
+			// lock does not have an owner? Then set the username and the owner properly
+			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
+			db.collection("users").update({username: username}, {$set: {locks: idArray}});
+			db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+			res.send({redirect: "/dashboard"});
+	  })
+    }
+    else {
+      // lock was already registered with someone so we send back a failure
+      res.send({redirect: "failure"});
+    }
+  })
 })
 
 //unlock function
