@@ -1,0 +1,11 @@
+{
+  "name": "ersplock",
+  "version": "1.0.0",
+  "description": "Module for the smart lock",
+  "main": "index.js",
+  "scripts": {
+    "test": "lock"
+  },
+  "author": "",
+  "license": "ISC"
+}
