@@ -8,71 +8,10 @@ var session = require("client-sessions");
 var async = require("async");
 var schedule = require('node-schedule');
 var d = new Date();
+var module = require("ersplock");
 //var google = require('googleapis');
 
-function isLoggedIn(user) {
-   return((user != undefined));
-}
 
-
-function getTime() {
-   var d = new Date();
-   var minutes = d.getMinutes();
-   var hours = d.getHours();
-   if (d.getMinutes() < 10) {
-      minutes = "0" + minutes;
-   }
-   if (d.getHours() > 12) {
-      hours = hours % 12;
-   }
-   var date = hours + ":" + minutes
-      if (d.getHours()/12 == 0) {
-         date = date + " AM";
-      } else {
-         date = date + " PM";
-      }
-   return date;
-}
-
-function convertToMilitary(time) {
-   if(time.indexOf("PM") != -1) {
-      time = time.replace("PM", "");
-      time = time.replace(" ", "");
-      var timeArray = time.split(":");
-      timeArray[0] = parseInt(timeArray[0]);
-      if(timeArray[0] != 12) {
-         timeArray[0] += 12;
-      }
-
-      var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-      return timeString;
-   }
-   time = time.replace("AM", "");
-   time = time.replace(" ", "");
-   var timeArray = time.split(":");
-   return (parseInt(timeArray[0] + timeArray[1]));
-}
-
-function checkRestrictions(inputArray, dbArray) {
-   var inputStart = inputArray[0];
-   var inputEnd = inputArray[1];
-   for(var i = 0; i < dbArray.length; dbArray++) {
-      if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
-         return false;
-      }
-      if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
-         return false;
-      }
-   }
-   return true;
-}
-
-function checkActionPermission(timesArray, currentTime) {
-      if(currentTime > timesArray[0][0] && currentTime < timesArray[0][1]) {
-            return false;
-      }
-      return true;
-}
 
 // Used to make the server look in our directory for
 // our javascript, css, and other files
@@ -206,7 +145,7 @@ app.get("/authenticate", (req, res) => {
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
-      if(!isLoggedIn(req.session.username)) {
+      if(!module.isLoggedIn(req.session.username)) {
       res.redirect("/");
       return;
       }
@@ -269,7 +208,7 @@ app.get("/getName", (req, res) => {
 
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
-      if(!isLoggedIn(req.session.username)) {
+      if(!module.isLoggedIn(req.session.username)) {
       res.redirect("/");
       return;
       }
@@ -453,8 +392,8 @@ app.post("/addMember", (req, res) => {
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
-      var startTime = convertToMilitary(req.body.startTime);
-      var endTime = convertToMilitary(req.body.endTime);
+      var startTime = module.convertToMilitary(req.body.startTime);
+      var endTime = module.convertToMilitary(req.body.endTime);
       var action = req.body.action;
       var restrictions = undefined;
       var timeArray = [startTime, endTime];
@@ -472,7 +411,7 @@ app.post("/addTimeRestriction", (req, res) => {
             }
 
             // function to determine if there is an overlap in the lockRestrictions
-            if(checkRestrictions(timeArray, restrictions)) {
+            if(module.checkRestrictions(timeArray, restrictions)) {
             // If result is true, there is no error in the input and we can go ahead and add it
             if(req.body.action == "lock") {
             resultArray = result[0].lockRestrictions;
@@ -497,10 +436,6 @@ app.post("/addTimeRestriction", (req, res) => {
 })
 
 app.post("/createRole", (req, res) => {
-      console.log(req.body.timeOne);
-      console.log(req.body.timeTwo);
-      console.log(convertToMilitary(req.body.timeOne));
-      console.log(convertToMilitary(req.body.timeTwo));
       console.log("create role");
       })
 
@@ -514,14 +449,14 @@ app.post("/createRule", (req, res) => {
 app.post("/lock", (req, res) => {
       console.log("HERE");
 	var username = req.session.username;
-      var time = getTime();
+      var time = module.getTime();
       
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
             var lockRestrictons = result[0].lockRestrictions;
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   owner = (result[0].owner == username);
      
-                  if(owner || checkActionPermission(lockRestrictons, convertToMilitary(time))) {
+                  if(owner || module.checkActionPermission(lockRestrictons, module.convertToMilitary(time))) {
                         var date = new Date();
                         date = date.toDateString();
                         time = (date + " at " + time);
@@ -622,14 +557,14 @@ app.post("/registerLock", (req, res) => {
 app.post("/unlock", (req, res) => {
       console.log("unlock");
 	var username = req.session.username;
-      var time = getTime();
+      var time = module.getTime();
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
             var unlockRestrictions = result[0].unlockRestrictions
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   var owner = (result[0].owner == username);
                         // If this returns true, then the user has permission to perform the actions
-                        if(owner || checkActionPermission(unlockRestrictions, convertToMilitary(time))) {
+                        if(owner || module.checkActionPermission(unlockRestrictions, module.convertToMilitary(time))) {
                               var date = new Date();
                               date = date.toDateString();
                               time = (date + " at " + time);

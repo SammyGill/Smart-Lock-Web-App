@@ -289,6 +289,7 @@ function changeLock() {
         $(".error-message").text(data.error);
       }
       else {
+        $(".error-message").text("");
         getLockStatus();
       }
     });
@@ -299,6 +300,7 @@ function changeLock() {
         $(".error-message").text(data.error);
       }
       else {
+        $(".error-message").text("");
         getLockStatus();
       }
     });
