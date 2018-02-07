@@ -464,9 +464,12 @@ app.post("/lock", (req, res) => {
       console.log("HERE");
 	var username = req.session.username;
       var time = module.getTime();
-      
+      console.log(username);
+      console.log(req.session.lock);
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            var lockRestrictons = result[0].lockRestrictions;
+            if(result[0]) {
+                  var lockRestrictons = result[0].lockRestrictions;
+            }
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   owner = (result[0].owner == username);
      
@@ -574,7 +577,9 @@ app.post("/unlock", (req, res) => {
       var time = module.getTime();
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            var unlockRestrictions = result[0].unlockRestrictions
+           if(result[0]) {
+            var unlockRestrictions = result[0].unlockRestrictions;
+           }
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   var owner = (result[0].owner == username);
                         // If this returns true, then the user has permission to perform the actions
