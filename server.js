@@ -81,7 +81,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({
 cookieName: 'session',
 secret: 'random_string_goes_here',
-duration: 30 * 60 * 1000,
+duration: 7 * 24 * 60 * 1000,
 }));
 app.use(bodyParser.json());
 
@@ -128,47 +128,6 @@ app.get("/registerLock", (req, res) => {
       res.sendFile(dir + "/views/register.html");
       })
 // Route for authenticating users after they log in via Google
-// Determines whether or not the user has a lock associated with them
-app.get("/authenticate", (req, res) => {
-      // User email is obtained from the Javascript function after user has logged
-      // in viga Google
-      var email = req.query.email;
-      var fullname = req.query.email;
-      /**
-       * Determines whether or not the user has a lock associated through steps
-       * - Attempt to see if the user is in the database with their email
-       *    - If the resulting array != 0, then we found a user in the database
-       *      - If the lock id associated is null, then the user needs to register their lock
-       *      - Else the user has a lock associated and we can send them to the dashboard
-       *    - Else the resulting array size == 0, then we must first add the user to the
-       *      database before redirecting them to register their lock
-       */
-      db.collection("users").find({username: email}).toArray((err, result) => {
-            req.session.username = email;
-            req.session.fullname = fullname;
-            if(result.length) {
-            if(result[0].name == null) {
-            db.collection("users").update({username: email}, {$set: {name: fullname}});
-            }
-            if(result[0].locks.length == 0) {
-            res.send({locks: []});
-            }
-            else {
-            if(result[0].locks.length > 1) {
-            }
-            else {
-            req.session.lock = parseInt(result[0].locks[0]);
-            }
-            res.send({locks: result[0].locks});
-            }
-            }
-            else {
-            db.collection("users").insert({username: email, name: fullname, locks: []}, (err, doc) => {
-                  res.send({locks: []});
-                  })
-            }
-      })
-})
   // Determines whether or not the user has a lock associated with them
   app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
@@ -395,6 +354,11 @@ app.get("/showHistory", (req, res) => {
   })
 })
 
+app.get("/signOut", (req, res) => {
+   req.session.reset();
+   res.send();
+})
+
  /*app.get("/showHistory", (req, res) => {
   var id = req.session.lock;
   var members1 = [];
@@ -613,6 +577,7 @@ app.post("/unlock", (req, res) => {
 	var date = new Date();
 	date = date.toDateString();
 	time = (date + " at " + time);
+  console.log("session: " + req.session.username);
 	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
 		var names = result[0].usernames;
 		var actions = result[0].actions;
