@@ -1,3 +1,27 @@
+var mongoClient = require("mongodb").MongoClient;
+var db = undefined;
+
+exports.connectServer = function() {
+    mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
+        if(err) {
+        return console.log(err);
+        }
+  
+        console.log("hello");
+        module.exports.db =  database.db("smart-lock");
+   })
+}
+
+exports.findUser = function(user) {
+    db.collection("users").find({username: user}).toArray((err, result) => {
+        if(result[0]) {
+            console.log("found a user!!!");
+        }
+        else {
+            console.log("did not find a user!");
+        }
+    })
+}
 
 exports.isLoggedIn = function(user) {
     return((user != undefined));
