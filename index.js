@@ -1,6 +1,4 @@
 
-
-
 exports.isLoggedIn = function(user) {
     return((user != undefined));
  },
