@@ -1,6 +1,6 @@
 var express = require("express");
 var mongoClient = require("mongodb").MongoClient;
-var db = undefined;
+var db = "hello";
 var app = express();
 var dir = __dirname;
 var bodyParser = require('body-parser');
@@ -32,7 +32,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
       app.listen(3000, function() {
 
             console.log("listening on 3000");
-            db = module.connectServer();
+            module.connectServer();
             })
       })
 
@@ -40,6 +40,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
    //   module.findUser("spg002@ucsd.edu");
+      db = module.db;
       res.sendFile(dir + "/views/login.html");
       })
 
