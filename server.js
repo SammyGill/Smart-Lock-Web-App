@@ -8,7 +8,7 @@ var session = require("client-sessions");
 var async = require("async");
 var schedule = require('node-schedule');
 var d = new Date();
-var module = require("ersplock");
+var module = require("../Module/index.js");
 //var google = require('googleapis');
 
 
@@ -28,19 +28,18 @@ app.use(session({
 app.use(bodyParser.json());
 
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
-      if(err) {
-      return console.log(err);
-      }
 
-      db = database.db("smart-lock");
       app.listen(3000, function() {
+
             console.log("listening on 3000");
+            db = module.connectServer();
             })
       })
 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
+   //   module.findUser("spg002@ucsd.edu");
       res.sendFile(dir + "/views/login.html");
       })
 
