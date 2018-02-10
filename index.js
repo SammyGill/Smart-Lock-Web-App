@@ -100,11 +100,12 @@ exports.getLockMembers = function(lockId, callback) {
 
 exports.getLocks = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    //var members = result[0].members;
-    //if(members.length == 0){
-      //members.push("There are no members currently associated with this lock");
-    //}
     callback(result[0]);
   })
 }
 
+exports.getLockHistory = function(lockId, callback) {
+  db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+    callback(result[0]);
+  })
+}
