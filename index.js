@@ -11,6 +11,7 @@ exports.connectServer = function() {
   
         console.log("hello");
         module.exports.db =  database.db("smart-lock");
+				db = module.exports.db;
    })
 }
 
