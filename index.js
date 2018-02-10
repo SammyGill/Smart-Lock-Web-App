@@ -11,6 +11,7 @@ exports.connectServer = function() {
   
         console.log("hello");
         module.exports.db =  database.db("smart-lock");
+        db = module.exports.db;
    })
 }
 
@@ -68,7 +69,7 @@ exports.convertToMilitary = function(time) {
     return (parseInt(timeArray[0] + timeArray[1]));
  }
  
-exports.checkRestrictions = function(inputArray, dbArray) {
+checkRestrictions = function(inputArray, dbArray) {
     var inputStart = inputArray[0];
     var inputEnd = inputArray[1];
     for(var i = 0; i < dbArray.length; dbArray++) {
@@ -88,3 +89,56 @@ exports.checkActionPermission = function(timesArray, currentTime) {
        }
        return true;
  }
+
+function createRole(action, username, lock, start, end, callback) {
+    console.log("inside function");
+        //convert to military time
+        var restrictions = undefined;
+        var timeArray = [start, end];
+        var resultArray = undefined;
+        db.collection("roles").find({username: username, lockId: lock}).toArray((err, result) => {
+              // If we found a user with the roles, check to see if there are any conflicts
+              console.log(username);
+              console.log(lock);
+              if(result[0]) {
+              // check to see if there are any conflicts
+              if(action == "lock") {
+                restrictions = result[0].lockRestrictions;
+              }
+              else {
+                restrictions = result[0].unlockRestrictions;
+              }
+  
+              // function to determine if there is an overlap in the lockRestrictions
+              if(checkRestrictions(timeArray, restrictions)) {
+              // If result is true, there is no error in the input and we can go ahead and add it
+              if(action == "lock") {
+              resultArray = result[0].lockRestrictions;
+  
+              resultArray.push(timeArray);
+              db.collection("roles").update({username: username, lockId: lock}, {$set:{lockRestrictions: resultArray}});
+              }
+              else {
+                 resultArray = result[0].unlockRestrictions;
+                 resultArray.push(timeArray);
+                 db.collection("roles").update({username: username, lockId: lock}, {$set:{unlockRestrictions: resultArray}});
+              } 
+                console.log("returning true");
+                callback(true);
+                return true;
+              }
+              else {
+                 // Otherwise there was an error in the input that was provided and we should
+                 // give an appropriate error back
+                 console.log("returning false");
+                 callback(false);
+                 return false;
+              }
+              }
+              else {
+                  console.log("hello222");
+              }
+        })
+ }
+
+ module.exports.createRole = createRole;
