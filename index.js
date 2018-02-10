@@ -9,6 +9,7 @@ exports.connectServer = function() {
   
         console.log("hello");
         module.exports.db =  database.db("smart-lock");
+        db = database.db("smart-lock");
    })
 }
 
@@ -39,7 +40,7 @@ exports.getTime = function() {
        hours = hours % 12;
     }
     var date = hours + ":" + minutes
-       if (d.getHours()/12 == 0) {
+       if (d.getHours() < 12) {
           date = date + " AM";
        } else {
           date = date + " PM";
@@ -86,3 +87,23 @@ exports.checkActionPermission = function(timesArray, currentTime) {
        }
        return true;
  }
+
+exports.getLockMembers = function(lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    var members = result[0].members;
+    if(members.length == 0){
+      members.push("There are no members currently associated with this lock");
+    }
+    callback(result[0].members);
+  })
+}
+
+exports.getLocks = function(lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    //var members = result[0].members;
+    //if(members.length == 0){
+      //members.push("There are no members currently associated with this lock");
+    //}
+    callback(result[0]);
+  })
+}
