@@ -39,7 +39,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-   //   module.findUser("spg002@ucsd.edu");
+      module.findUser("spg002@ucsd.edu");
       db = module.db;
       res.sendFile(dir + "/views/login.html");
       })
@@ -145,13 +145,12 @@ app.get("/authenticate", (req, res) => {
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
-      if(!module.isLoggedIn(req.session.username)) {
-      res.redirect("/");
-      return;
-      }
-
-      res.sendFile(dir + "/views/dashboard.html");
-      })
+  if(!module.isLoggedIn(req.session.username)) {
+    res.redirect("/");
+    return;
+  }
+  res.sendFile(dir + "/views/dashboard.html");
+})
 
 /**
  * This route is only used to send back the personal data of the user
@@ -188,40 +187,29 @@ app.get("/getLocks", (req, res) => {
       })
 
 app.get("/getMembers", (req, res) => {
-      var id = req.session.lock;
-      var members = [];
-      var fullnames = [];
-
-      db.collection("locks").find({lockId: id}).toArray((err, result) => {
-            members = result[0].members;
-            if(members.length == 0){
-            members.push("There are no members currently associated with this lock");
-            }
-            res.send({members: members, owner: result[0].owner});
-            })
-      })
+  var id = req.session.lock;
+  module.getLockMembers(id, function(members) {res.send({members: members});});
+})
 
 app.get("/getName", (req, res) => {
-      res.send(req.session.username);
-      })
+  res.send(req.session.username);
+})
 
 
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
-      if(!module.isLoggedIn(req.session.username)) {
-      res.redirect("/");
-      return;
-      }
-      res.sendFile(dir + "/views/register.html");
-      })
+  if(!module.isLoggedIn(req.session.username)) {
+    res.redirect("/");
+    return;
+  }
+  res.sendFile(dir + "/views/register.html");
+})
 
 
 app.get("/lockStatus", (req, res) => {
       db.collection("users").find({username: req.session.username}).toArray((err, result) => {
             var id = req.session.lock;
-            db.collection("locks").find({lockId: id}).toArray((err, result) => {
-                  res.send(result[0]);
-                  })
+            module.getLocks(id, function(locks) {res.send(locks);});
             })
       })
 
@@ -269,26 +257,8 @@ app.get("/switchLock", (req, res) => {
 
 
 app.get("/timeStatus", (req, res) => {
-      d = new Date();
-      var minutes = d.getMinutes();
-      var hours = d.getHours();
-      var seconds = d.getSeconds();
-      if (d.getMinutes() < 10) {
-      minutes = "0" + minutes;
-      }
-      if (d.getHours() > 12) {
-      hours = hours % 12;
-      }
-      if (d.getSeconds() < 10) {
-      seconds = "0" + seconds;
-      }
-      var date = hours + ":" + minutes + ":" + seconds;
-      if (d.getHours()/12 == 0) {
-      date = date + " AM";
-      } else {
-      date = date + " PM";
-      }
-      res.send(date);
+      var time = module.getTime();
+      res.send(time);
 })
 
 
@@ -383,11 +353,13 @@ app.post("/addMember", (req, res) => {
                   db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
                         res.send({message: "User successfully assigned to lock"});
                         });
+                  } else if (result2[0].canAddMembers == false) {
+                    res.send({message: "You do not have permission to add members!"});
                   } else if (alreadyExists == true) {
                     res.send({message: "User already exists for this lock!"});
-                  } else {
-                    res.send({message: "You do not have permission to add members!"});
-                  }
+                  } //else {
+                    //res.send({message: "You do not have permission to add members!"});
+                  //}
                   })
             })
             }
