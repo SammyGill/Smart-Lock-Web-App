@@ -11,8 +11,6 @@ var d = new Date();
 var module = require("../Module/index.js");
 //var google = require('googleapis');
 
-
-
 // Used to make the server look in our directory for
 // our javascript, css, and other files
 app.use(express.static(dir));
@@ -39,7 +37,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-   //   module.findUser("spg002@ucsd.edu");
+      module.findUser("spg002@ucsd.edu");
       db = module.db;
       res.sendFile(dir + "/views/login.html");
       })
@@ -145,13 +143,12 @@ app.get("/authenticate", (req, res) => {
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
-      if(!module.isLoggedIn(req.session.username)) {
-      res.redirect("/");
-      return;
-      }
-
-      res.sendFile(dir + "/views/dashboard.html");
-      })
+  if(!module.isLoggedIn(req.session.username)) {
+    res.redirect("/");
+    return;
+  }
+  res.sendFile(dir + "/views/dashboard.html");
+})
 
 /**
  * This route is only used to send back the personal data of the user
@@ -188,42 +185,29 @@ app.get("/getLocks", (req, res) => {
       })
 
 app.get("/getMembers", (req, res) => {
-      var id = req.session.lock;
-      var members = [];
-      var fullnames = [];
-
-      db.collection("locks").find({lockId: id}).toArray((err, result) => {
-            members = result[0].members;
-            if(members.length == 0){
-            members.push("There are no members currently associated with this lock");
-            }
-            res.send({members: members, owner: result[0].owner});
-            })
-      })
+  var id = req.session.lock;
+  module.getLockMembers(id, function(members) {res.send({members: members});});
+})
 
 app.get("/getName", (req, res) => {
-      res.send(req.session.username);
-      })
+  res.send(req.session.username);
+})
 
 
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
-      if(!module.isLoggedIn(req.session.username)) {
-      res.redirect("/");
-      return;
-      }
-      res.sendFile(dir + "/views/register.html");
-      })
+  if(!module.isLoggedIn(req.session.username)) {
+    res.redirect("/");
+    return;
+  }
+  res.sendFile(dir + "/views/register.html");
+})
 
 
 app.get("/lockStatus", (req, res) => {
-      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-            var id = req.session.lock;
-            db.collection("locks").find({lockId: id}).toArray((err, result) => {
-                  res.send(result[0]);
-                  })
-            })
-      })
+  var id = req.session.lock;
+  module.getLocks(id, function(locks) {res.send(locks);});
+})
 
 app.get("/memberRoleInfo", (req, res) => {
       var username = req.query.username;
@@ -269,26 +253,8 @@ app.get("/switchLock", (req, res) => {
 
 
 app.get("/timeStatus", (req, res) => {
-      d = new Date();
-      var minutes = d.getMinutes();
-      var hours = d.getHours();
-      var seconds = d.getSeconds();
-      if (d.getMinutes() < 10) {
-      minutes = "0" + minutes;
-      }
-      if (d.getHours() > 12) {
-      hours = hours % 12;
-      }
-      if (d.getSeconds() < 10) {
-      seconds = "0" + seconds;
-      }
-      var date = hours + ":" + minutes + ":" + seconds;
-      if (d.getHours()/12 == 0) {
-      date = date + " AM";
-      } else {
-      date = date + " PM";
-      }
-      res.send(date);
+      var time = module.getTime();
+      res.send(time);
 })
 
 
@@ -312,19 +278,11 @@ app.get("/canAccess", (req, res) => {
 
 app.get("/showHistory", (req, res) => {
   var id = req.session.lock;
-  var members = [];
-  var memActions = [];
-  var userActing = [];
-
-  db.collection("history").find({lockId: id}).toArray((err, result) => {
-    members = result[0].times;
-    memActions = result[0].actions;
-    //userActing = result[0].usernames;
-    members.push(result[0].owner);
-    memActions.push(result[0].owner);
-    //userActing.push(result[0].owner);
-    res.send({members: members, memActions: memActions/*, userActing: userActing*/});
-  })
+  module.getLockHistory(id, function(history) {
+    history.times.push(history.owner);
+    history.actions.push(history.owner);
+    res.send({members: history.times, memActions: history.actions});
+  });
 })
 
  /*app.get("/showHistory", (req, res) => {
@@ -383,11 +341,13 @@ app.post("/addMember", (req, res) => {
                   db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
                         res.send({message: "User successfully assigned to lock"});
                         });
+                  } else if (result2[0].canAddMembers == false) {
+                    res.send({message: "You do not have permission to add members!"});
                   } else if (alreadyExists == true) {
                     res.send({message: "User already exists for this lock!"});
-                  } else {
-                    res.send({message: "You do not have permission to add members!"});
-                  }
+                  } //else {
+                    //res.send({message: "You do not have permission to add members!"});
+                  //}
                   })
             })
             }
@@ -397,52 +357,22 @@ app.post("/addMember", (req, res) => {
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
-      var startTime = module.convertToMilitary(req.body.startTime);
-      var endTime = module.convertToMilitary(req.body.endTime);
-      var action = req.body.action;
-      var restrictions = undefined;
-      var timeArray = [startTime, endTime];
-      var username = req.body.username;
-      var resultArray = undefined;
-      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            // If we found a user with the roles, check to see if there are any conflicts
-            if(result[0]) {
-            // check to see if there are any conflicts
-            if(action == "lock") {
-            restrictions = result[0].lockRestrictions;
-            }
-            else {
-            restrictions = result[0].unlockRestrictions;
-            }
 
-            // function to determine if there is an overlap in the lockRestrictions
-            if(module.checkRestrictions(timeArray, restrictions)) {
-            // If result is true, there is no error in the input and we can go ahead and add it
-            if(req.body.action == "lock") {
-            resultArray = result[0].lockRestrictions;
+      var start = module.convertToMilitary(req.body.startTime);
+      var end = module.convertToMilitary(req.body.endTime);
 
-            resultArray.push(timeArray);
-            db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
+      module.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
+            console.log(result);
+            if(result) {
+                  console.log("successful role");
+                  res.send();
             }
             else {
-               resultArray = result[0].unlockRestrictions;
-               resultArray.push(timeArray);
-               db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
-            }
-            res.send();
-            }
-            else {
-               // Otherwise there was an error in the input that was provided and we should
-               // give an appropriate error back
-               res.send({error: "There is an error with your input!"});
-            }
+                  console.log("unsuccessful lock");
+                  res.send({error: "error message"});
             }
       })
 })
-
-app.post("/createRole", (req, res) => {
-      console.log("create role");
-      })
 
 //rule for lock
 app.post("/createRule", (req, res) => {
@@ -451,7 +381,6 @@ app.post("/createRule", (req, res) => {
       var message = "You can't create rules!";
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
         if (result2[0].canCreateRules == false) {
-          console.log("I am in hereeee!");
           res.send({message: "You can't create rules!"});
         } else {
           db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
@@ -461,11 +390,8 @@ app.post("/createRule", (req, res) => {
       })
 //lock function
 app.post("/lock", (req, res) => {
-      console.log("HERE");
 	var username = req.session.username;
       var time = module.getTime();
-      console.log(username);
-      console.log(req.session.lock);
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
             if(result[0]) {
                   var lockRestrictons = result[0].lockRestrictions;
@@ -495,7 +421,6 @@ app.post("/lock", (req, res) => {
                         })
                   }
                   else {
-                        console.log("NO PERMISSION");
                         res.send({error:"You do not have permission to do this!"});
                   }
             })
@@ -572,9 +497,9 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-      console.log("unlock");
 	var username = req.session.username;
       var time = module.getTime();
+      console.log(" unlock time " + time);
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
            if(result[0]) {
@@ -605,7 +530,6 @@ app.post("/unlock", (req, res) => {
                         }
                         else {
                               // Send them an error message saying they do not have permission 
-                              console.log("does not have permission");
                               res.send({error:"You do not have permission to do this!"});
                         }
             })

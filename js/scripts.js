@@ -598,7 +598,7 @@ function canAddRules() {
 function canAddRoles() {
   $.get("/canAccess", function(data) {
    if (data.roles.canManageRoles == false) {
-    document.getElementyId(          ).style.display="none";
+    //document.getElementyId().style.display="none";
     event.preventDefault();
     document.getElementById("addingRoles").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
