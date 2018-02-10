@@ -11,63 +11,6 @@ var d = new Date();
 var module = require("../Module/index.js");
 //var google = require('googleapis');
 
-function isLoggedIn(user) {
-   return((user != undefined));
-}
-
-
-function getTime() {
-   var d = new Date();
-   var minutes = d.getMinutes();
-   var hours = d.getHours();
-   if (d.getMinutes() < 10) {
-      minutes = "0" + minutes;
-   }
-   if (d.getHours() > 12) {
-      hours = hours % 12;
-   }
-   var date = hours + ":" + minutes
-      if (d.getHours()/12 == 0) {
-         date = date + " AM";
-      } else {
-         date = date + " PM";
-      }
-   return date;
-}
-
-function convertToMilitary(time) {
-   if(time.indexOf("PM") != -1) {
-      time = time.replace("PM", "");
-      time = time.replace(" ", "");
-      var timeArray = time.split(":");
-      timeArray[0] = parseInt(timeArray[0]);
-      if(timeArray[0] != 12) {
-         timeArray[0] += 12;
-      }
-
-      var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-      return timeString;
-   }
-   time = time.replace("AM", "");
-   time = time.replace(" ", "");
-   var timeArray = time.split(":");
-   return (timeArray[0] + timeArray[1]);
-}
-
-function checkRestrictions(inputArray, dbArray) {
-   var inputStart = inputArray[0];
-   var inputEnd = inputArray[1];
-   for(var i = 0; i < dbArray.length; dbArray++) {
-      if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
-         return false;
-      }
-      if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
-         return false;
-      }
-   }
-   return true;
-}
-
 // Used to make the server look in our directory for
 // our javascript, css, and other files
 app.use(express.static(dir));
@@ -452,52 +395,22 @@ app.post("/addMember", (req, res) => {
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
-      var startTime = module.convertToMilitary(req.body.startTime);
-      var endTime = module.convertToMilitary(req.body.endTime);
-      var action = req.body.action;
-      var restrictions = undefined;
-      var timeArray = [startTime, endTime];
-      var username = req.body.username;
-      var resultArray = undefined;
-      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            // If we found a user with the roles, check to see if there are any conflicts
-            if(result[0]) {
-            // check to see if there are any conflicts
-            if(action == "lock") {
-            restrictions = result[0].lockRestrictions;
-            }
-            else {
-            restrictions = result[0].unlockRestrictions;
-            }
 
-            // function to determine if there is an overlap in the lockRestrictions
-            if(module.checkRestrictions(timeArray, restrictions)) {
-            // If result is true, there is no error in the input and we can go ahead and add it
-            if(req.body.action == "lock") {
-            resultArray = result[0].lockRestrictions;
+      var start = module.convertToMilitary(req.body.startTime);
+      var end = module.convertToMilitary(req.body.endTime);
 
-            resultArray.push(timeArray);
-            db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{lockRestrictions: resultArray}});
+      module.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
+            console.log(result);
+            if(result) {
+                  console.log("successful role");
+                  res.send();
             }
             else {
-               resultArray = result[0].unlockRestrictions;
-               resultArray.push(timeArray);
-               db.collection("roles").update({username: username, lockId: req.session.lock}, {$set:{unlockRestrictions: resultArray}});
-            }
-            res.send();
-            }
-            else {
-               // Otherwise there was an error in the input that was provided and we should
-               // give an appropriate error back
-               res.send({error: "There is an error with your input!"});
-            }
+                  console.log("unsuccessful lock");
+                  res.send({error: "error message"});
             }
       })
 })
-
-app.post("/createRole", (req, res) => {
-      console.log("create role");
-      })
 
 //rule for lock
 app.post("/createRule", (req, res) => {
@@ -506,7 +419,6 @@ app.post("/createRule", (req, res) => {
       var message = "You can't create rules!";
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
         if (result2[0].canCreateRules == false) {
-          console.log("I am in hereeee!");
           res.send({message: "You can't create rules!"});
         } else {
           db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
@@ -516,11 +428,8 @@ app.post("/createRule", (req, res) => {
       })
 //lock function
 app.post("/lock", (req, res) => {
-      console.log("HERE");
 	var username = req.session.username;
       var time = module.getTime();
-      console.log(username);
-      console.log(req.session.lock);
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
             if(result[0]) {
                   var lockRestrictons = result[0].lockRestrictions;
@@ -550,7 +459,6 @@ app.post("/lock", (req, res) => {
                         })
                   }
                   else {
-                        console.log("NO PERMISSION");
                         res.send({error:"You do not have permission to do this!"});
                   }
             })
@@ -627,9 +535,9 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-      console.log("unlock");
 	var username = req.session.username;
       var time = module.getTime();
+      console.log(" unlock time " + time);
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
            if(result[0]) {
@@ -660,7 +568,6 @@ app.post("/unlock", (req, res) => {
                         }
                         else {
                               // Send them an error message saying they do not have permission 
-                              console.log("does not have permission");
                               res.send({error:"You do not have permission to do this!"});
                         }
             })
