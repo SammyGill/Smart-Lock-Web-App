@@ -9,11 +9,7 @@ exports.connectServer = function() {
   
         console.log("hello");
         module.exports.db =  database.db("smart-lock");
-<<<<<<< HEAD
         db = database.db("smart-lock");
-=======
-				db = module.exports.db;
->>>>>>> 5bb66f2e5db6dd77edf23c6763013d9da1758bab
    })
 }
 
