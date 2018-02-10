@@ -19,19 +19,12 @@ app.use(express.static(dir));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
-<<<<<<< HEAD
 cookieName: 'session',
 secret: 'random_string_goes_here',
 duration: 7 * 24 * 60 * 1000,
 }));
-=======
-      cookieName: 'session', // cookie name dictates the key name added to the request object 
-      secret: 'blargadeeblargblarg', // should be a large unguessable string 
-      duration: 600000000, // how long the session will stay valid in ms 
-    }));
 
 
->>>>>>> 6cdb73df3cbe2c24c310e5241e19df75770a38fb
 app.use(bodyParser.json());
 
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
@@ -545,28 +538,6 @@ app.post("/registerLock", (req, res) => {
 app.post("/unlock", (req, res) => {
       console.log("unlock");
 	var username = req.session.username;
-<<<<<<< HEAD
-	var time = getTime();
-	var date = new Date();
-	date = date.toDateString();
-	time = (date + " at " + time);
-  console.log("session: " + req.session.username);
-	db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-		var names = result[0].usernames;
-		var actions = result[0].actions;
-		var times = result[0].times;
-		names.push(username);
-		actions.push("unlock");
-		times.push(time);
-		db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-	})
-	db.collection("users").find({username: username}).toArray((err, result) => {
-		var id = req.session.lock;
-		db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
-			res.send();
-		})
-	})
-=======
       var time = module.getTime();
 
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
@@ -604,10 +575,6 @@ app.post("/unlock", (req, res) => {
             })
             // We were able to find a role associated with this lock and user
       })
-
-
-
->>>>>>> 6cdb73df3cbe2c24c310e5241e19df75770a38fb
 })
 
 //update role in data base
