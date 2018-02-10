@@ -205,11 +205,9 @@ app.get("/register", (req, res) => {
 
 
 app.get("/lockStatus", (req, res) => {
-      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-            var id = req.session.lock;
-            module.getLocks(id, function(locks) {res.send(locks);});
-            })
-      })
+  var id = req.session.lock;
+  module.getLocks(id, function(locks) {res.send(locks);});
+})
 
 app.get("/memberRoleInfo", (req, res) => {
       var username = req.query.username;
@@ -280,19 +278,11 @@ app.get("/canAccess", (req, res) => {
 
 app.get("/showHistory", (req, res) => {
   var id = req.session.lock;
-  var members = [];
-  var memActions = [];
-  var userActing = [];
-
-  db.collection("history").find({lockId: id}).toArray((err, result) => {
-    members = result[0].times;
-    memActions = result[0].actions;
-    //userActing = result[0].usernames;
-    members.push(result[0].owner);
-    memActions.push(result[0].owner);
-    //userActing.push(result[0].owner);
-    res.send({members: members, memActions: memActions/*, userActing: userActing*/});
-  })
+  module.getLockHistory(id, function(history) {
+    history.times.push(history.owner);
+    history.actions.push(history.owner);
+    res.send({members: history.times, memActions: history.actions});
+  });
 })
 
  /*app.get("/showHistory", (req, res) => {
