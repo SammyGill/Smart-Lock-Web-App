@@ -1,6 +1,7 @@
 var mongoClient = require("mongodb").MongoClient;
 var db = undefined;
 
+
 exports.connectServer = function() {
     mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
         if(err) {
@@ -68,10 +69,13 @@ exports.convertToMilitary = function(time) {
  }
  
 checkRestrictions = function(inputArray, dbArray) {
+
+  console.log(inputArray);
     var inputStart = inputArray[0];
     var inputEnd = inputArray[1];
     for(var i = 0; i < dbArray.length; dbArray++) {
        if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
+          
           return false;
        }
        if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
@@ -82,11 +86,37 @@ checkRestrictions = function(inputArray, dbArray) {
  }
  
 exports.checkActionPermission = function(timesArray, currentTime) {
-       if(currentTime > timesArray[0][0] && currentTime < timesArray[0][1]) {
-             return false;
-       }
+  for(var i = 0; i < timesArray.length; i++) {
+    if(currentTime > timesArray[i][0] && currentTime < timesArray[i][1]) {
+      return false;
+    }
+  }
+
        return true;
  }
+
+function createRule(lockId, username, action, time) {
+  var owner = undefined;
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    owner = (result[0].owner == username);
+    db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
+      if(!owner) {
+        if (result2[0].canCreateRules == false) {
+          res.send({message: "You can't create rules!"});
+        } 
+        else {
+          db.collection("rules").insert({lockId: lockId, action: action, time: time});
+        }
+      }
+      else {
+        console.log("created");
+          db.collection("rules").insert({lockId: lockId, action: action, time: time});
+        }
+      })
+  })
+
+
+}
 
 function createRole(action, username, lock, start, end, callback) {
     console.log("inside function");
@@ -139,7 +169,7 @@ function createRole(action, username, lock, start, end, callback) {
         })
  }
 
- module.exports.createRole = createRole;
+
 exports.getLockMembers = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     var members = result[0].members;
@@ -160,3 +190,5 @@ exports.getLocks = function(lockId, callback) {
   })
 }
 
+module.exports.createRole = createRole;
+module.exports.createRule = createRule;
