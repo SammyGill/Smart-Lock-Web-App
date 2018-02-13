@@ -263,19 +263,31 @@ app.get("/timeStatus", (req, res) => {
 app.get("/canAccessAddMembers", (req, res) => {
       var username = req.session.username;
       var lockId = req.session.lock;
+      db.collection
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
             res.send({roles: result[0]});
-            //}
-            })
       })
+})
 
 app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
-  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-     res.send({roles: result[0]});
-   //}
- })
+  console.log(username);
+  console.log(lockId);
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+      var owner = (username = result[0].owner);
+      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+            if(owner || result[0].canCreateRules) {
+                  console.log("has access");
+                  res.send({access: true});
+            }
+            else {
+                  console.log("no access");
+                  res.send({access:false});
+            }
+        })
+  })
+
 })
 
 app.get("/showHistory", (req, res) => {
@@ -342,9 +354,9 @@ app.post("/addMember", (req, res) => {
                   username = username.toString();
                   var alreadyExists = false;
                   for (var i = 0; i < members.length; i++) {
-                  if (members[i] == username || result[0].owner == username) {
-                  alreadyExists = true;
-                  }
+                        if (members[i] == username || result[0].owner == username) {
+                              alreadyExists = true;
+                        }
                   }
                   if (alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
                   members.push(username);
@@ -374,11 +386,9 @@ app.post("/addTimeRestriction", (req, res) => {
       module.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
             console.log(result);
             if(result) {
-                  console.log("successful role");
                   res.send();
             }
             else {
-                  console.log("unsuccessful lock");
                   res.send({error: "error message"});
             }
       })
@@ -386,18 +396,10 @@ app.post("/addTimeRestriction", (req, res) => {
 
 //rule for lock
 app.post("/createRule", (req, res) => {
-      var lockId = req.session.lock;
-      var username = req.session.username;
-      var message = "You can't create rules!";
-      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
-        if (result2[0].canCreateRules == false) {
-          res.send({message: "You can't create rules!"});
-        } else {
-          db.collection("rules").insert({lockId: lockId, action: req.body.action, time: req.body.time});
-        }
-       
-        })
-      })
+      console.log("createRule");
+      module.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
+})
+
 //lock function
 app.post("/lock", (req, res) => {
 	var username = req.session.username;
@@ -515,8 +517,11 @@ app.post("/unlock", (req, res) => {
            if(result[0]) {
             var unlockRestrictions = result[0].unlockRestrictions;
            }
+           console.log(unlockRestrictions);
             db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
                   var owner = (result[0].owner == username);
+                        console.log(owner);
+                        console.log(module.checkActionPermission(unlockRestrictions, module.convertToMilitary(time)));
                         // If this returns true, then the user has permission to perform the actions
                         if(owner || module.checkActionPermission(unlockRestrictions, module.convertToMilitary(time))) {
                               var date = new Date();
