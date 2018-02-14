@@ -1,3 +1,10 @@
+/**
+ * Some stuff to do: create a document for the owner inside the role collection
+ *
+ *
+ *
+ *
+ */
 var mongoClient = require("mongodb").MongoClient;
 var db = undefined;
 
@@ -138,6 +145,10 @@ exports.createRule = function(lockId, username, action, time) {
 }
 
 exports.createRole = function(action, username, lock, start, end, callback) {
+<<<<<<< HEAD
+    console.log("inside function");
+=======
+>>>>>>> 8bf5086df4a586316b53aeb26dd3f15c6dbdd008
         //convert to military time
         var restrictions = undefined;
         var timeArray = [start, end];
@@ -198,19 +209,113 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
-
 exports.getLocks = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
 
-//module.exports.createRule = createRule;
+exports.lock = function(username, lockId, callback) {
+  lockTime = this.getTime();
+  //check the lock restrictions
+  db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
+    if (result[0]) {
+    var lockRestrictions = result[0].lockRestrictions;
+    }
+    //check if the user is the owner of the lock
+    db.collection("locks").find({lockId: lockId}).toArray((err,result) => {
+      isOwner = (result[0].owner == username);
+
+    if(isOwner || this.checkActionPermission(lockRestrictions, this.convertToMilitary(lockTime))) {
+      var date = new Date();
+      date = date.toDateString();
+      time = (date + " at " + lockTime);
+      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+        var names = result[0].usernames;
+        var actions = result[0].actions;
+        var times = result[0].times;s
+        names.push(username);
+        actions.push("lock");
+        times.push(time);
+        db.collection("history").update({lockId: lockId}, {$set: {status: "locked"}},
+          (err, numberAffected, rawResponse) => {
+        })
+        db.collection("users").find({username: username}).toArray((err, result) => {
+          db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
+            (err, numberAffected, rawResponse) => {
+            console.log("bingo!");
+            callback(true);
+          })
+        })
+      })
+    }
+    else {
+        callback(false);
+    }
+  })
+  })
+}
+
 exports.getLockHistory = function(lockId, callback) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
+
+exports.addMember = function(username, lockId) {
+   //find username(have to have existing account
+   db.collection("users").find({username: username}).toArray((err,result) => {
+      //if the length is not greater than 1
+      if(!result.length){
+         //display message 
+         return false;
+      }
+      else{
+         var locksArray = result[0].locks;
+         var lockExists = false;
+         //look for lock in the array
+         for(var i=0; i< locksArray.length; i++){
+            //if found update boolean
+            if(locksArray[i] ==lockId){
+               locksExists = true;
+            }
+         }
+         if(lockExists==false){
+            //if it doesn't alreafy exist for member then add 
+            locksArray.push(lockId)
+         }
+         //update the users
+         db.collection("users").update({username}, {$set: {locks: locksArray}});
+         db.collection("locks").find({lockId: lockId}).toArray((err, result) =>{
+            //use the passed in param for username
+            var currentUser = username;
+            console.log(currentUser);
+            console.log(lockId);
+            db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
+               var members = result[0].members;
+               username = username.toString();
+               var alreadyExists = false;
+               for(var i =0; i< members.length; i++){
+                  if(members[i]==username || result[0].owner == username){
+                     alreadyExists = true;
+                  }
+               }
+               if(alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
+                  members.push(username);
+                  db.collection("locks").update({lockId: lockId}, {$set: {membbers: members}}, (err, numberAffected, rawResponse) => {
+
+                    return true;
+                  });
+               }
+               else if (result2[0].canAddMembers == false) {
+                  return false;
+               }else if (alreadyExists == true){
+                  return true;
+               }
+            })
+         })
+      }
+   })//end addMember 
 
 exports.unlock = function(username, lockId, callback) {
   var time = this.getTime();
@@ -250,6 +355,7 @@ exports.unlock = function(username, lockId, callback) {
   })
   // We were able to find a role associated with this lock and user
   })
+
 }
 
 exports.registerLock = function(username, lockId, lockName, callback) {
