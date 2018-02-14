@@ -17,7 +17,8 @@
   <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="canAddMembers();">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top"
+onload="canAddMembers(); getMembersDropDown();">
   <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="index.html">Smart Lock</a>
@@ -176,12 +177,36 @@
                       <small id='emailHelp' class='form-text text-muted'>We'll never share your email with anyone else.</small>
                     </div>
 
-                     <button onclick="addMember();" class="btn btn-primary">Submit</button>'
+                     <button onclick="addMember()" class="btn btn-primary">Submit</button>'
                     </form>
+                    
                     </div>
           </div>
         </div>
+        <div class="card">
+        <h5 class="card-header" style="text-align:center;">Remove Member</h5>
+        <div class="card-body">
+        <div id="form" align="center">
+        <p id="invalidAccess"></p>
+        <select class="custom-select" id="members" style="display:inline"
+        onchange="getMemberInfo;">
+        </select>
+        
+         <button class="btn btn-primary">Remove</button>
+         <br>
+         <br>
+
+         
+        </div>
+        <br>
+        <br>
     </div>
+
+   <br>
+   <br>
+   <br>
+   <br>
+   
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
     <footer class="sticky-footer">
