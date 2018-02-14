@@ -241,6 +241,10 @@ function onLoad() {
 }
 
 function createRule() {
+  $("#add-rules-form").submit(function(e) {
+    e.preventDefault();
+  })
+
   var action = undefined;
   if(document.getElementById("unlock").checked) {
     action = "unlock";
@@ -255,14 +259,17 @@ function createRule() {
   var periodSelect = document.getElementById("period")
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
+ 
+
   $.get("/canAccess", function(data) {
-     if (data.roles.canCreateRules == false) {
+     if (data.access == false) {
        $.get("/createRule", function(data) {
         console.log("Should be in here...");
         event.preventDefault();
         document.getElementById("response-message").innerHTML = data.message;
       })
      } else {
+       console.log("should create rule");
        $.post("/createRule", {action: action, time: time});
      }
   })
@@ -583,7 +590,7 @@ function canAddMembers() {
 
 function canAddRules() {
   $.get("/canAccess", function(data) {
-   if (data.roles.canCreateRules == false) {
+   if (data.access == false) {
     event.preventDefault();
     document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
@@ -597,7 +604,7 @@ function canAddRules() {
 
 function canAddRoles() {
   $.get("/canAccess", function(data) {
-   if (data.roles.canManageRoles == false) {
+   if (data.access == false) {
     //document.getElementyId().style.display="none";
     event.preventDefault();
     document.getElementById("addingRoles").style.display = "none";
