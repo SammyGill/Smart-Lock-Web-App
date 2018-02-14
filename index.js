@@ -30,6 +30,25 @@ exports.isLoggedIn = function(user) {
  },
  
  
+function getTime() {
+  var d = new Date();
+  var minutes = d.getMinutes();
+  var hours = d.getHours();
+  if (d.getMinutes() < 10) {
+     minutes = "0" + minutes;
+  }
+  if (d.getHours() > 12) {
+     hours = hours % 12;
+  }
+  var date = hours + ":" + minutes
+     if (d.getHours() < 12) {
+        date = date + " AM";
+     } else {
+        date = date + " PM";
+     }
+  return date;
+}
+
 exports.getTime = function() {
     var d = new Date();
     var minutes = d.getMinutes();
@@ -95,7 +114,7 @@ exports.checkActionPermission = function(timesArray, currentTime) {
        return true;
  }
 
-function createRule(lockId, username, action, time) {
+exports.createRule = function(lockId, username, action, time) {
   var owner = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     owner = (result[0].owner == username);
@@ -118,8 +137,7 @@ function createRule(lockId, username, action, time) {
 
 }
 
-function createRole(action, username, lock, start, end, callback) {
-    console.log("inside function");
+exports.createRole = function(action, username, lock, start, end, callback) {
         //convert to military time
         var restrictions = undefined;
         var timeArray = [start, end];
@@ -186,13 +204,49 @@ exports.getLocks = function(lockId, callback) {
   })
 }
 
-<<<<<<< HEAD
-module.exports.createRole = createRole;
-module.exports.createRule = createRule;
-=======
+//module.exports.createRule = createRule;
 exports.getLockHistory = function(lockId, callback) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
->>>>>>> f37a316fddc31641917f6ac430c443e1634b4539
+
+exports.unlock = function(username, lockId, callback) {
+  var time = this.getTime();
+
+  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+    if(result[0]) {
+      var unlockRestrictions = result[0].unlockRestrictions;
+    }
+    
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    var owner = (result[0].owner == username);
+                 
+    // If this returns true, then the user has permission to perform the actions
+    if(owner || this.checkActionPermission(unlockRestrictions, this.convertToMilitary(time))) {
+      var date = new Date();
+      date = date.toDateString();
+      time = (date + " at " + time);
+      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+        var names = result[0].usernames;
+        var actions = result[0].actions;
+        var times = result[0].times;
+        names.push(username);
+        actions.push("unlock");
+        times.push(time);
+        db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
+      })
+      db.collection("users").find({username: username}).toArray((err, result) => {
+        db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+          callback(true);
+        })
+      })
+    }
+    else {
+      // Send them an error message saying they do not have permission 
+      callback(false);
+    }
+  })
+  // We were able to find a role associated with this lock and user
+  })
+}
