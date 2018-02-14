@@ -398,6 +398,7 @@ app.post("/createRule", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
+      
 	var username = req.session.username;
       var time = module.getTime();
       db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
@@ -439,6 +440,8 @@ app.post("/lock", (req, res) => {
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
+      module.registerLock();
+
       var username = req.session.username;
 
       // id gets sent as a string, so we must parse it as an integer
@@ -505,50 +508,14 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-	var username = req.session.username;
-      var time = module.getTime();
-      console.log(" unlock time " + time);
-
-      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-           if(result[0]) {
-            var unlockRestrictions = result[0].unlockRestrictions;
-           }
-           console.log(unlockRestrictions);
-            db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-                  var owner = (result[0].owner == username);
-                        console.log(owner);
-                        console.log(module.checkActionPermission(unlockRestrictions, module.convertToMilitary(time)));
-                        // If this returns true, then the user has permission to perform the actions
-                        if(owner || module.checkActionPermission(unlockRestrictions, module.convertToMilitary(time))) {
-                              var date = new Date();
-                              date = date.toDateString();
-                              time = (date + " at " + time);
-                              db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-                                    var names = result[0].usernames;
-                                    var actions = result[0].actions;
-                                    var times = result[0].times;
-                                    names.push(username);
-                                    actions.push("unlock");
-                                    times.push(time);
-                                    db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-                              })
-                              db.collection("users").find({username: username}).toArray((err, result) => {
-                                    var id = req.session.lock;
-                                    db.collection("locks").update({lockId: id}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
-                                          res.send();
-                                    })
-                              })
-                        }
-                        else {
-                              // Send them an error message saying they do not have permission 
-                              res.send({error:"You do not have permission to do this!"});
-                        }
-            })
-            // We were able to find a role associated with this lock and user
+      module.unlock(req.session.username, req.session.lock, function(result) {
+            if(result) {
+                  res.send();
+            }
+            else {
+                  res.send({error:"You do not have permission to do this!"});
+            }
       })
-
-
-
 })
 
 //update role in data base
