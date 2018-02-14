@@ -1,3 +1,10 @@
+/**
+ * Some stuff to do: create a document for the owner inside the role collection
+ *
+ *
+ *
+ *
+ */
 var mongoClient = require("mongodb").MongoClient;
 var db = undefined;
 
@@ -95,7 +102,7 @@ exports.checkActionPermission = function(timesArray, currentTime) {
        return true;
  }
 
-function createRule(lockId, username, action, time) {
+exports.createRule = function(lockId, username, action, time) {
   var owner = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     owner = (result[0].owner == username);
@@ -118,7 +125,7 @@ function createRule(lockId, username, action, time) {
 
 }
 
-function createRole(action, username, lock, start, end, callback) {
+exports.createRole = function(action, username, lock, start, end, callback) {
     console.log("inside function");
         //convert to military time
         var restrictions = undefined;
@@ -180,20 +187,55 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
-
 exports.getLocks = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
 
-<<<<<<< HEAD
-module.exports.createRole = createRole;
-module.exports.createRule = createRule;
-=======
+exports.lock = function(username, lockId, callback) {
+  lockTime = this.getTime();
+  //check the lock restrictions
+  db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
+    if (result[0]) {
+    var lockRestrictions = result[0].lockRestrictions;
+    }
+    //check if the user is the owner of the lock
+    db.collection("locks").find({lockId: lockId}).toArray((err,result) => {
+      isOwner = (result[0].owner == username);
+
+    if(isOwner || this.checkActionPermission(lockRestrictions, this.convertToMilitary(lockTime))) {
+      var date = new Date();
+      date = date.toDateString();
+      time = (date + " at " + lockTime);
+      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+        var names = result[0].usernames;
+        var actions = result[0].actions;
+        var times = result[0].times;s
+        names.push(username);
+        actions.push("lock");
+        times.push(time);
+        db.collection("history").update({lockId: lockId}, {$set: {status: "locked"}},
+          (err, numberAffected, rawResponse) => {
+        })
+        db.collection("users").find({username: username}).toArray((err, result) => {
+          db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
+            (err, numberAffected, rawResponse) => {
+            console.log("bingo!");
+            callback(true);
+          })
+        })
+      })
+    }
+    else {
+        callback(false);
+    }
+  })
+  })
+}
+
 exports.getLockHistory = function(lockId, callback) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
->>>>>>> f37a316fddc31641917f6ac430c443e1634b4539
