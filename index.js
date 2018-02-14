@@ -187,13 +187,67 @@ exports.getLocks = function(lockId, callback) {
   })
 }
 
-<<<<<<< HEAD
 module.exports.createRole = createRole;
 module.exports.createRule = createRule;
-=======
 exports.getLockHistory = function(lockId, callback) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
->>>>>>> f37a316fddc31641917f6ac430c443e1634b4539
+
+
+exports.addMember = function(username, lockId) {
+   //find username(have to have existing account
+   db.collection("users").find({username: username}).toArray((err,result) => {
+      //if the length is not greater than 1
+      if(!result.length){
+         //display message 
+         return false;
+      }
+      else{
+         var locksArray = result[0].locks;
+         var lockExists = false;
+         //look for lock in the array
+         for(var i=0; i< locksArray.length; i++){
+            //if found update boolean
+            if(locksArray[i] ==lockId){
+               locksExists = true;
+            }
+         }
+         if(lockExists==false){
+            //if it doesn't alreafy exist for member then add 
+            locksArray.push(lockId)
+         }
+         //update the users
+         db.collection("users").update({username}, {$set: {locks: locksArray}});
+         db.collection("locks").find({lockId: lockId}).toArray((err, result) =>{
+            //use the passed in param for username
+            var currentUser = username;
+            console.log(currentUser);
+            console.log(lockId);
+            db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
+               var members = result[0].members;
+               username = username.toString();
+               var alreadyExists = false;
+               for(var i =0; i< members.length; i++){
+                  if(members[i]==username || result[0].owner == username){
+                     alreadyExists = true;
+                  }
+               }
+               if(alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
+                  members.push(username);
+                  db.collection("locks").update({lockId: lockId}, {$set: {membbers: members}}, (err, numberAffected, rawResponse) => {
+
+                    return true;
+                  });
+               }
+               else if (result2[0].canAddMembers == false) {
+                  return false;
+               }else if (alreadyExists == true){
+                  return true;
+               }
+            })
+         })
+      }
+   })//end addMember 
+}
