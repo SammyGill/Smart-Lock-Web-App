@@ -145,10 +145,6 @@ exports.createRule = function(lockId, username, action, time) {
 }
 
 exports.createRole = function(action, username, lock, start, end, callback) {
-<<<<<<< HEAD
-    console.log("inside function");
-=======
->>>>>>> 8bf5086df4a586316b53aeb26dd3f15c6dbdd008
         //convert to military time
         var restrictions = undefined;
         var timeArray = [start, end];
@@ -233,7 +229,7 @@ exports.lock = function(username, lockId, callback) {
       db.collection("history").find({lockId: lockId}).toArray((err, result) => {
         var names = result[0].usernames;
         var actions = result[0].actions;
-        var times = result[0].times;s
+        var times = result[0].times;
         names.push(username);
         actions.push("lock");
         times.push(time);
@@ -316,6 +312,7 @@ exports.addMember = function(username, lockId) {
          })
       }
    })//end addMember 
+  }
 
 exports.unlock = function(username, lockId, callback) {
   var time = this.getTime();
@@ -359,7 +356,7 @@ exports.unlock = function(username, lockId, callback) {
 }
 
 exports.registerLock = function(username, lockId, lockName, callback) {
-
+console.log(lockId);
 db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
     if(result[0].owner == null) {
     db.collection("users").find({username: username}).toArray((err, result) => {
@@ -368,7 +365,7 @@ db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
           // lock does not have an owner? Then set the username and the owner properly
           db.collection("locks").update({lockId: lockId}, {$set: {owner: username}});
           db.collection("users").update({username: username}, {$set: {locks: idArray}});
-          db.collection("locks").update({lockId: id}, {$set: {lockName: lockName}});
+          db.collection("locks").update({lockId: lockId}, {$set: {lockName: lockName}});
           callback(true);
           })
     }
@@ -378,3 +375,4 @@ db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
     }
   })
 }
+
