@@ -356,41 +356,50 @@ app.post("/createRule", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
-	var username = req.session.username;
-      var time = module.getTime();
-      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            if(result[0]) {
-                  var lockRestrictons = result[0].lockRestrictions;
-            }
-            db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-                  owner = (result[0].owner == username);
+  module.lock(req.session.username, req.session.lock, function(result){
+    if(result){
+      console.log("TIRED");
+      res.send();
+    }
+    else{
+      res.send({error: "You do not have permission to lock!"});
+    }
+  })
+
+
+//   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
+//     if(result[0]) {
+//       var lockRestrictons = result[0].lockRestrictions;
+//     }
+//   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+//   owner = (result[0].owner == username);
      
-                  if(owner || module.checkActionPermission(lockRestrictons, module.convertToMilitary(time))) {
-                        var date = new Date();
-                        date = date.toDateString();
-                        time = (date + " at " + time);
-                        db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-                              var names = result[0].usernames;
-                              var actions = result[0].actions;
-                              var times = result[0].times;
-                              names.push(username);
-                              actions.push("lock");
-                              times.push(time);
-                              db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-                        })
+//   if(owner || module.checkActionPermission(lockRestrictons, module.convertToMilitary(time))) {
+//     var date = new Date();
+//     date = date.toDateString();
+//     time = (date + " at " + time);
+//     db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
+//     var names = result[0].usernames;
+//     var actions = result[0].actions;
+//     var times = result[0].times;
+//     names.push(username);
+//     actions.push("lock");
+//     times.push(time);
+//     db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
+//   })
                   
-                        db.collection("users").find({username: username}).toArray((err, result) => {
-                              var id = req.session.lock;
-                              db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
-                                    res.send();
-                              })
-                        })
-                  }
-                  else {
-                        res.send({error:"You do not have permission to do this!"});
-                  }
-            })
-      })
+//     db.collection("users").find({username: username}).toArray((err, result) => {
+//       var id = req.session.lock;
+//       db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+//       res.send();
+//    })
+//   })
+// }
+//   else {
+//     res.send({error:"You do not have permission to do this!"});
+//     }
+//   })
+// })
 
 
 })
