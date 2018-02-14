@@ -317,6 +317,11 @@ app.get("/showHistory", (req, res) => {
 app.post("/addMember", (req, res) => {
       var username = req.body.username;
       var lockId = req.session.lock;
+      //call the module
+      module.addMember(username,lockId, function(members) {res.send({members: members});});
+      })
+/*
+      
       //find username(had to have account already)
       db.collection("users").find({username: username}).toArray((err, result) => {
             //if the length is not greater than 1
@@ -366,8 +371,7 @@ app.post("/addMember", (req, res) => {
             })
             }
       })
-})
-
+*/
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
