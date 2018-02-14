@@ -150,6 +150,7 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
+
 exports.getLocks = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
