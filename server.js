@@ -188,6 +188,8 @@ app.get("/getMembers", (req, res) => {
   var id = req.session.lock;
   module.getLockMembers(id, function(members) {res.send({members: members});});
 })
+ 
+   
 
 app.get("/getName", (req, res) => {
   res.send(req.session.username);
