@@ -251,3 +251,24 @@ exports.unlock = function(username, lockId, callback) {
   // We were able to find a role associated with this lock and user
   })
 }
+
+exports.registerLock = function(username, lockId, lockName, callback) {
+
+db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
+    if(result[0].owner == null) {
+    db.collection("users").find({username: username}).toArray((err, result) => {
+          var idArray = result[0].locks
+          idArray.push(lockId);
+          // lock does not have an owner? Then set the username and the owner properly
+          db.collection("locks").update({lockId: lockId}, {$set: {owner: username}});
+          db.collection("users").update({username: username}, {$set: {locks: idArray}});
+          db.collection("locks").update({lockId: id}, {$set: {lockName: lockName}});
+          callback(true);
+          })
+    }
+    else {
+    // lock was already registered with someone so we send back a failure
+    callback(false);
+    }
+  })
+}
