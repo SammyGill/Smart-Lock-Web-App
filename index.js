@@ -145,8 +145,7 @@ exports.createRule = function(lockId, username, action, time) {
 }
 
 exports.createRole = function(action, username, lock, start, end, callback) {
-    console.log("inside function");
-        //convert to military time
+	//convert to military time
         var restrictions = undefined;
         var timeArray = [start, end];
         var resultArray = undefined;
@@ -353,3 +352,25 @@ exports.unlock = function(username, lockId, callback) {
   // We were able to find a role associated with this lock and user
   })
 }
+
+exports.registerLock = function(username, lockId, lockName, callback) {
+console.log(lockId);
+db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
+    if(result[0].owner == null) {
+    db.collection("users").find({username: username}).toArray((err, result) => {
+          var idArray = result[0].locks
+          idArray.push(lockId);
+          // lock does not have an owner? Then set the username and the owner properly
+          db.collection("locks").update({lockId: lockId}, {$set: {owner: username}});
+          db.collection("users").update({username: username}, {$set: {locks: idArray}});
+          db.collection("locks").update({lockId: lockId}, {$set: {lockName: lockName}});
+          callback(true);
+          })
+    }
+    else {
+    // lock was already registered with someone so we send back a failure
+    callback(false);
+    }
+  })
+}
+
