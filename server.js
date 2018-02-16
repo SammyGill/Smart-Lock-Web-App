@@ -231,17 +231,13 @@ app.get("/canAccessAddMembers", (req, res) => {
 app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
-  console.log(username);
-  console.log(lockId);
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
       var owner = (username = result[0].owner);
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
             if(owner || result[0].canCreateRules) {
-                  console.log("has access");
                   res.send({access: true});
             }
             else {
-                  console.log("no access");
                   res.send({access:false});
             }
         })
@@ -284,58 +280,7 @@ app.post("/addMember", (req, res) => {
       //call the module
       module.addMember(username,lockId, function(members) {res.send({members: members});});
       })
-/*
-      
-      //find username(had to have account already)
-      db.collection("users").find({username: username}).toArray((err, result) => {
-            //if the length is not greater than 1
-            if(!result.length) {
-            //display message 
-            res.send({message: "No user found with this email"});
-            return;
-            }
-            else {
-            var locksArray = result[0].locks;
-            var lockExists = false;
-            //look for lock in the array
-            for (var i = 0; i < locksArray.length; i++) {
-            if (locksArray[i] == lockId) {
-            lockExists = true;
-            }
-            }
-            if (lockExists == false) {
-            locksArray.push(lockId);
-            }
-            //update the users 
-            db.collection("users").update({username: username}, {$set: {locks: locksArray}});
-            db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-              var currentUser = req.session.username;
-              db.collection("roles").find({username: currentUser, lockId: lockId}).toArray((err, result2) => {
-                  var members = result[0].members;
-                  username = username.toString();
-                  var alreadyExists = false;
-                  for (var i = 0; i < members.length; i++) {
-                        if (members[i] == username || result[0].owner == username) {
-                              alreadyExists = true;
-                        }
-                  }
-                  if (alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
-                  members.push(username);
-                  db.collection("locks").update({lockId: lockId}, {$set: {members: members}}, (err, numberAffected, rawResponse) => {
-                        res.send({message: "User successfully assigned to lock"});
-                        });
-                  } else if (result2[0].canAddMembers == false) {
-                    res.send({message: "You do not have permission to add members!"});
-                  } else if (alreadyExists == true) {
-                    res.send({message: "User already exists for this lock!"});
-                  } //else {
-                    //res.send({message: "You do not have permission to add members!"});
-                  //}
-                  })
-            })
-            }
-      })
-*/
+
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
@@ -344,7 +289,6 @@ app.post("/addTimeRestriction", (req, res) => {
       var end = module.convertToMilitary(req.body.endTime);
 
       module.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
-            console.log(result);
             if(result) {
                   res.send();
             }
@@ -356,7 +300,6 @@ app.post("/addTimeRestriction", (req, res) => {
 
 //rule for lock
 app.post("/createRule", (req, res) => {
-      console.log("createRule");
       module.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
 })
 
@@ -364,14 +307,12 @@ app.post("/createRule", (req, res) => {
 app.post("/lock", (req, res) => {
   module.lock(req.session.username, req.session.lock, function(result){
     if(result){
-      console.log("TIRED");
       res.send();
     }
     else{
       res.send({error: "You do not have permission to lock!"});
     }
   })
-
 
 //   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
 //     if(result[0]) {
@@ -406,75 +347,19 @@ app.post("/lock", (req, res) => {
 //   })
 // })
 
-
 })
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
-      module.registerLock();
-
-      var username = req.session.username;
-
-      // id gets sent as a string, so we must parse it as an integer
       var id = parseInt(req.body.id);
-
-
-      //look for user name
-      db.collection("users").find({username: username}).toArray((err, result) => {
-            //update locks array by adding new id 
-            db.collection("locks").update( {$set: {lockId: id}}, (err, numberAffected, rawResponse) => {
-                  res.send();
-                  })
-            //add the lockname to the lockname array in the data base
-            db.collection("locks").update({$set: {lockName: req.body.lockName}},( err, numberAffected, rawResponse) => {
-                  res.send();
-                  })
-            })
-      db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-            if(result[0].owner == null) {
-            db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-                  var idArray = result[0].locks
-                  idArray.push(id);
-                  req.session.lock = parseInt(id);
-                  // lock does not have an owner? Then set the username and the owner properly
-                  db.collection("locks").update({lockId: id}, {$set: {owner: req.session.username}});
-                  db.collection("users").update({username: req.session.username}, {$set: {locks: idArray}});
-                  db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
+      module.registerLock(req.session.username, id, req.body.lockName, function(result) {
+            if(result) {
                   res.send({redirect: "/dashboard"});
-                  })
             }
             else {
-            // lock was already registered with someone so we send back a failure
-            res.send({redirect: "failure"});
+                  res.send({redirect:"failure"});
             }
-            })
-
-	var username = req.session.username;
-
-   //id gets sent as a string, so we must parse it as an integer
-	var id = parseInt(req.body.id);
-  //go to locks collection and look in id array 	
-  db.collection("locks").find({lockId:  id}).toArray((err, result) => {
-     //if there is no owner set up then set up in database 
-    if(result[0].owner == null) {
-      db.collection("users").find({username: username}).toArray((err, result) => {
-         //push lock id to lock array 
-			var idArray = result[0].locks
-			idArray.push(id);
-         //parse the id 
-			req.session.lock = parseInt(id);
-			// lock does not have an owner? Then set the username and the owner properly
-			db.collection("locks").update({lockId: id}, {$set: {owner: username}});
-			db.collection("users").update({username: username}, {$set: {locks: idArray}});
-			db.collection("locks").update({lockId: id}, {$set: {lockName: req.body.lockName}});
-			res.send({redirect: "/dashboard"});
-	  })
-    }
-    else {
-      // lock was already registered with someone so we send back a failure
-      res.send({redirect: "failure"});
-    }
-  })
+      });
 })
 
 //unlock function
