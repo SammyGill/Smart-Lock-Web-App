@@ -187,14 +187,15 @@ onload="canAddMembers(); getMembersDropDown();">
         <h5 class="card-header" style="text-align:center;">Remove Member</h5>
         <div class="card-body">
         <div id="form" align="center">
-        <p id="invalidAccess"></p>
-        <select class="custom-select" id="members" style="display:inline"
-        onchange="getMemberInfo;">
-        </select>
-        
-         <button class="btn btn-primary">Remove</button>
-         <br>
-         <br>
+        <form id="remove-member-form">
+          <select class="custom-select" id="members" style="display:inline"
+          onchange="getMemberInfo();">
+          </select>
+          
+           <button class="btn btn-primary">Remove</button>
+           <br>
+           <br>
+        </form>
 
          
         </div>
