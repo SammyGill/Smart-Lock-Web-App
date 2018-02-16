@@ -200,8 +200,8 @@ app.get("/selectDashboard", (req, res) => {
 
 app.get("/settings", (req, res) => {
       lockId = req.session.lock;
-      db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-            })
+      //db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+        //    })
 
       res.sendFile(dir + "/views/settings.html");
       })
@@ -219,18 +219,22 @@ app.get("/timeStatus", (req, res) => {
 })
 
 
-app.get("/canAccessAddMembers", (req, res) => {
+/*app.get("/canAccessAddMembers", (req, res) => {
       var username = req.session.username;
       var lockId = req.session.lock;
       db.collection
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
             res.send({roles: result[0]});
       })
-})
+})*/
 
 app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
+  module.canAccess(username, lockId, function(roles) {
+    res.send({roles: roles});
+  });
+/*
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
       var owner = (username = result[0].owner);
       db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
@@ -241,7 +245,7 @@ app.get("/canAccess", (req, res) => {
                   res.send({access:false});
             }
         })
-  })
+  })*/
 
 })
 

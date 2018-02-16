@@ -579,7 +579,9 @@ function canAddMembers() {
     console.log("I am in here");
     event.preventDefault();
     document.getElementById("add-member-form").style.display = "none";
+    document.getElementById("remove-member-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
+    //document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
    } 
     //var line1 = '<div class="form-group col-md-4">';
     //var line1 = "<div id='member-form' class='form-group col-md-4'><h3 id='response-message'></h3><label for='exampleInputEmail1'>Email address</label><input type='email' class='form-control' id='username' aria-describedby='emailHelp' placeholder='Enter email'><small id='emailHelp' class='form-text text-muted'>We'll never share your email with anyone else.</small></div>";
@@ -592,7 +594,7 @@ function canAddMembers() {
 
 function canAddRules() {
   $.get("/canAccess", function(data) {
-   if (data.access == false) {
+   if (data.roles.canCreateRules == false) {
     event.preventDefault();
     document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
@@ -606,7 +608,7 @@ function canAddRules() {
 
 function canAddRoles() {
   $.get("/canAccess", function(data) {
-   if (data.access == false) {
+   if (data.roles.canManageRoles == false) {
     //document.getElementyId().style.display="none";
     event.preventDefault();
     document.getElementById("addingRoles").style.display = "none";
