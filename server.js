@@ -362,7 +362,6 @@ app.post("/createRule", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
-<<<<<<< HEAD
   module.lock(req.session.username, req.session.lock, function(result){
     if(result){
       console.log("TIRED");
@@ -380,18 +379,6 @@ app.post("/lock", (req, res) => {
 //     }
 //   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
 //   owner = (result[0].owner == username);
-=======
-      
-	var username = req.session.username;
-      var time = module.getTime();
-      db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-            if(result[0]) {
-                  var lockRestrictons = result[0].lockRestrictions;
-            }
-            db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-                  owner = (result[0].owner == username);
->>>>>>> 08a5ffe8cc5f0fab5c4da488326ed818e2610608
-     
 //   if(owner || module.checkActionPermission(lockRestrictons, module.convertToMilitary(time))) {
 //     var date = new Date();
 //     date = date.toDateString();
