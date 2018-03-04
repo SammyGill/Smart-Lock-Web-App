@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+  <DOCTYPE html>
   <html lang="en">
 
   <head>
@@ -179,7 +179,7 @@
     </nav>
         <div class="row">
           <div class="col-md-3">
-            <div class="card mb-3 lock-control" onclick="changeLock()" >
+            <div id="light" class="card mb-3 lock-control" onclick="changeLock()" >
               <div class="card-header">
                 <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
               </div>
@@ -195,8 +195,7 @@
             <div class="card-body">
               <div align="center">
                 <ul id="membersList">
-
-                </ul>
+              </ul>
               </div>
             </div>
           </div>
@@ -258,6 +257,15 @@
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="js/scripts.js"></script>
-  </body>
+   	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		var socket = io(); //load socket.io-client and connect to the host that serves the page
+		socket.on('light', function (data) { //get button status from client
+    document.getElementById("light").checked = data; //change checkbox according to push button on Raspberry Pi
+    socket.emit("light", data); //send push button status to back to server
+  });
+  </script>
+
+	</body>
 
   </html>
