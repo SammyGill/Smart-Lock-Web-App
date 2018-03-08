@@ -52,8 +52,8 @@ dashboard.on("connection", function(socket) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-  module.findUser("spg002@ucsd.edu");
-  //db = mod.db;
+  mod.findUser("spg002@ucsd.edu");
+  db = mod.db;
 //   for (var i = 50; i >= 1; i--) {
 //   db.collection("locks").insert({lockId: i, lockName: null, owner: null, status: "locked", members: [], }, (err, doc) => {
 //         res.send();
@@ -386,8 +386,8 @@ app.post("/registerLock", (req, res) => {
   mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
     if(result) {
       db.collection("locks").find({owner: username}).toArray((err, result) => {
-      let lockId = result[0].lockId;
-      //console.log("lockId in server.js: " + lockId);
+      var lockId = parseInt(result[0].lockId);
+      console.log("lockId in server.js: " + lockId);
       req.session.lock = lockId;
       res.send({redirect: "/dashboard"});
     })}

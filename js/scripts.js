@@ -67,7 +67,7 @@ function registerLock() {
   //Check if the email entered is valid
   console.log("lock name in html: " +document.getElementById("lock-name").value);
     console.log("user name in html: " +document.getElementById("email").value);
-    userName = document.getElementById("email").value
+    var userName = document.getElementById("email").value
   if(userName) {
     console.log("lock name in html: " +document.getElementById("lock-name").value);
     console.log("user name in html: " +document.getElementById("email").value);
