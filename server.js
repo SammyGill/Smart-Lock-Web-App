@@ -106,6 +106,7 @@ app.get("/authenticate", (req, res) => {
       }
       else {
        req.session.lock = parseInt(result[0].locks[0]);
+       console.log("req.session")
        res.send({locks: result[0].locks});
      }
    }
