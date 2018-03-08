@@ -1,4 +1,4 @@
-var name;
+"use strict";
 
 function onSignIn(googleUser) {
   if(googleUser) {
@@ -96,21 +96,8 @@ function getLockStatus() {
   })
 }
 
-function changeLock() {
-  if (document.getElementById("lock-status").innerHTML == "locked") {
-    $.post("/unlock", getLockStatus, function(data) {
-      if(data.error) {
-        $(".error-message").text(data.error);
-      }
-    });
-  }
-  else {
-    $.post("/lock", getLockStatus, function(data) {
-      if(data.error) {
-        $(".error-message").text(data.error);
-      }
-    });
-  }
+function request() {
+  
 }
 
 
@@ -319,6 +306,13 @@ function getLockStatus() {
 }
 
 function changeLock() {
+  // Send request to change lock...
+  socket.emit("request", "Sent a request!");
+
+  // Response when the lock has been changed
+  socket.on("response", function(data) {
+    console.log("got a response");
+  }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {
       if(data.error) {
