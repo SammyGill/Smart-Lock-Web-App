@@ -196,6 +196,7 @@ exports.createRole = function(action, username, lock, start, end, callback) {
 
 
 exports.getLockMembers = function(lockId, callback) {
+  console.log("line 199 on index.js: lockId is :" + lockId);
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     var members = result[0].members;
     if(members.length == 0){
@@ -353,16 +354,28 @@ exports.unlock = function(username, lockId, callback) {
   })
 }
 
-exports.registerLock = function(username, lockId, lockName, callback) {
-console.log(lockId);
-db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
-    if(result[0].owner == null) {
-    db.collection("users").find({username: username}).toArray((err, result) => {
-          var idArray = result[0].locks
+exports.registerLock = function(lockId, lockName, userName, callback) {
+console.log("lockId is: " + lockId);
+db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+  console.log("result is: " + result[0]);
+    if(result[0].owner == undefined) {
+      console.log("username is : " + userName);
+      console.log("lock name is : " + lockName);
+    db.collection("users").find({username: userName}).toArray((err, result) => {
+          var idArray = result[0].locks;
+          var roleArray = result[0].roles;
+          var lockResArray = result[0].lockRestrictions;
+          var unlockResArray = result[0].unlockRestrictions;
           idArray.push(lockId);
+          roleArray.push(0);
+          lockResArray.push([-1, -1]);
+          unlockResArray.push([-1, -1]);
+
+          db.collection("users").update({username: userName}, {$set: {locks: idArray, roles: roleArray,
+          lockRestrictions: lockResArray, unlockRestrictions: unlockResArray}});
           // lock does not have an owner? Then set the username and the owner properly
-          db.collection("locks").update({lockId: lockId}, {$set: {owner: username}});
-          db.collection("users").update({username: username}, {$set: {locks: idArray}});
+          db.collection("locks").update({lockId: lockId}, {$set: {owner: userName}});
+          //db.collection("users").update({username: username}, {$set: {locks: idArray}});
           db.collection("locks").update({lockId: lockId}, {$set: {lockName: lockName}});
           callback(true);
           })
