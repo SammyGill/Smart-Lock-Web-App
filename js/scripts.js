@@ -58,14 +58,29 @@ function switchLock() {
 // }
 
 function registerLock() {
-  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-    if(data.redirect == "failure") {
-      $(".lockTaken").text("Taken");
-    }
-    else {
-      window.location = data.redirect;
-    }
-  })
+  // var lockId = ;
+  // var lockName = document.getElementById("lock-name").value;
+  // var userName = document.getElementById("email").value
+  // console.log("userName in scrips is : " + userName);
+  // console.log("lockName in scrips is : " + lockName);
+  // console.log("lockId in scrips is : " + lockId);
+  //Check if the email entered is valid
+  console.log("lock name in html: " +document.getElementById("lock-name").value);
+    console.log("user name in html: " +document.getElementById("email").value);
+    userName = document.getElementById("email").value
+  if(userName) {
+    console.log("lock name in html: " +document.getElementById("lock-name").value);
+    console.log("user name in html: " +document.getElementById("email").value);
+    $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value, 
+      userName: document.getElementById("email").value}, function(data) {
+      if(data.redirect == "failure") {
+        $(".lockTaken").text("Taken");
+      }
+      else {
+        window.location = data.redirect;
+      }
+    })
+  }
 }
 
 function getLockStatus() {
@@ -261,32 +276,34 @@ function createRule() {
   var periodSelect = document.getElementById("period")
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
- 
+
 
   $.get("/canAccess", function(data) {
-     if (data.access == false) {
-       $.get("/createRule", function(data) {
-        console.log("Should be in here...");
-        event.preventDefault();
-        document.getElementById("response-message").innerHTML = data.message;
-      })
-     } else {
-       console.log("should create rule");
-       $.post("/createRule", {action: action, time: time});
-     }
-  })
+   if (data.access == false) {
+     $.get("/createRule", function(data) {
+      console.log("Should be in here...");
+      event.preventDefault();
+      document.getElementById("response-message").innerHTML = data.message;
+    })
+   } else {
+     console.log("should create rule");
+     $.post("/createRule", {action: action, time: time});
+   }
+ })
 }
 
-function registerLock() {
-  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-    if(data.redirect == "failure") {
-      $(".lockTaken").text("Taken");
-    }
-    else {
-      window.location = data.redirect;
-    }
-  })
-}
+// function registerLock() {
+//   $.post("/registerLock", {id: document.getElementById("id").value, 
+//     lockName: document.getElementById("lock-name").value, userName: document.getElementById("lock-name").value, 
+//   }, function(data) {
+//     if(data.redirect == "failure") {
+//       $(".lockTaken").text("Taken");
+//     }
+//     else {
+//       window.location = data.redirect;
+//     }
+//   })
+// }
 
 function getLockStatus() {
   $.get("/lockStatus", function(data) {
@@ -355,6 +372,7 @@ function addTimer() {
 function getName() {
   $.get("/getName", function(name) {
     document.getElementById("lock-name").value = (name + "'s Lock");
+    document.getElementById("email").value = (name);
   })
 
 }
@@ -558,16 +576,16 @@ function addTimeRestriction() {
     document.getElementById("invalidTime").innerHTML="That is an invalid time. Please try again!";
     //})
   }
-    event.preventDefault();
-    $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
-      if(data.error) {
-        $(".error-message").text(data.error);
-      }
-      else {
-        $(".error-message").text("");
-      }
+  event.preventDefault();
+  $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
+    if(data.error) {
+      $(".error-message").text(data.error);
+    }
+    else {
+      $(".error-message").text("");
+    }
 
-    })  
+  })  
 
 }
 
@@ -582,7 +600,7 @@ function canAddMembers() {
     document.getElementById("remove-member-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
     //document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-   } 
+  } 
     //var line1 = '<div class="form-group col-md-4">';
     //var line1 = "<div id='member-form' class='form-group col-md-4'><h3 id='response-message'></h3><label for='exampleInputEmail1'>Email address</label><input type='email' class='form-control' id='username' aria-describedby='emailHelp' placeholder='Enter email'><small id='emailHelp' class='form-text text-muted'>We'll never share your email with anyone else.</small></div>";
     //var line7 = '<button onclick="addMember();" class="btn btn-primary">Submit</button>';
@@ -598,10 +616,10 @@ function canAddRules() {
     event.preventDefault();
     document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-   } else {
+  } else {
      //var line = '<div class="btn-group" data-toggle="buttons"><label class="btn btn-primary" style="background-color:grey;"><input type="radio" autocomplete="off" disabled > I want to...</label><label class="btn btn-primary active" aria-pressed="true" ><input type="radio" autocomplete="off" id="lock"> Lock </label><label class="btn btn-primary"><input type="radio" autocomplete="off" id="unlock"> Unlock</label></div><div class="form-group col-md-4"><label for="roleSelect">every day at...</label><br><select class="form-control col-md-3" id="hour" style="display:inline"></select><select class="form-control col-md-3" id="minute" style="display:inline"></select><select class="form-control col-md-3" id="period" style="display:inline"><option> AM </option><option> PM </option></select></div><button class="btn btn-primary" style="display:inline" onclick="createRule();">Submit</button>';
       //$("#add-rules-form").after(line);
-   }
+    }
   })   
 }
 
@@ -613,7 +631,7 @@ function canAddRoles() {
     event.preventDefault();
     document.getElementById("addingRoles").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-   }
-  })
+  }
+})
 }
 
