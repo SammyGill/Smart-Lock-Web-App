@@ -2,8 +2,6 @@ var express = require("express");
 var mongoClient = require("mongodb").MongoClient;
 var db = "hello";
 var app = express();
-
-var server = require("http").createServer(app);
 var dir = __dirname;
 var bodyParser = require('body-parser');
 var session = require("client-sessions");
@@ -11,11 +9,9 @@ var async = require("async");
 var schedule = require('node-schedule');
 var d = new Date();
 var module = require("../Module/index.js");
-var io = require("socket.io")(server);
-var Gpio = require("onoff").Gpio;
-var greenLED = new Gpio(4, "out");
-var pushButton = new Gpio(17, "in", "both");
-var redLED = new Gpio(27, "out");
+var server = require("http").Server(app);
+var socket = require("socket.io")(server);
+//var google = require('googleapis');
 
 // Used to make the server look in our directory for
 // our javascript, css, and other files
@@ -41,48 +37,19 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
       })
 
 
+var dashboard = socket.of("/dashboardConnection");
+dashboard.on("connection", function(socket) {
+      console.log("Connected to dashboard socket from server end");
+      socket.on("request", function(data) {
+            console.log(data);
 
+            // Do all of the lock stuff here....
 
+            socket.emit("response", "response string");
+      })
+})
 
-
-  io.sockets.on('connection', function (socket) {// WebSocket Connection
-		console.log("socket.io connect");
-    var lightvalue = 0; //static variable for current status
-    pushButton.watch(function (err, value) { //Watch for hardware interrupts on pushButton
-      if (err) { //if an error
-        console.error('There was an error', err); //output error message to console
-        return;
-     }
-			console.log("light valus is " + lightvalue);
-      lightvalue = value;
-      socket.emit('light', lightvalue); //send button status to client
-    });
-    socket.on('light', function(data) { //get light switch status from client
-      console.log("light status: " + data);
-			lightvalue = data;
-      if (lightvalue != greenLED.readSync()) { //only change LED if status has changed
-        greenLED.writeSync(lightvalue); //turn redLED on or off
-				redLED.writeSync(1-lightvalue); //turn greenLED opposite of redLED
-      }
-    });
-  });
-  
-  process.on('SIGINT', function () { //on ctrl+c
-    redLED.writeSync(0); // Turn redLED off
-		greenLED.writeSync(0); //Turn greenLED off
-    redLED.unexport(); // Unexport LED redGPIO to free resources
-		greenLED.unexport(); //Unexport greenLED GPIO to free resources
-    pushButton.unexport(); // Unexport Button GPIO to free resources
-    process.exit(); //exit completely
-  });
-
-
-
-
-
-
-
-
+// Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
       module.findUser("spg002@ucsd.edu");
       db = module.db;
@@ -320,7 +287,6 @@ app.get("/signOut", (req, res) => {
     res.send({members: members});
   })
 })*/
-
 
 
 /* ---------------------- POST ROUTES BELOW ---------------------- */

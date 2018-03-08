@@ -81,29 +81,8 @@ function getLockStatus() {
   })
 }
 
-function changeLock() {
-	console.log("scripts");
-	var socket = io();
-	$.get("/lockStatus", function(data) {
-    $.post("/unlock", getLockStatus, function(data) {
-      if(data.error) {
-        $(".error-message").text(data.error);
-      }
-    });
-		if (data.status == "locked") {
-			//change status to unlocked
-			socket.emit("light", 0);
-		}
-    $.post("/lock", getLockStatus, function(data) {
-      if(data.error) {
-        $(".error-message").text(data.error);
-      }
-    });
-		if (data.status == "unlocked") {
-			//change status to locked
-			socket.emit("light", 1);
-		}
-  });
+function request() {
+  
 }
 
 
@@ -310,6 +289,13 @@ function getLockStatus() {
 }
 
 function changeLock() {
+  // Send request to change lock...
+  socket.emit("request", "Sent a request!");
+
+  // Response when the lock has been changed
+  socket.on("response", function(data) {
+    console.log("got a response");
+  }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {
       if(data.error) {
