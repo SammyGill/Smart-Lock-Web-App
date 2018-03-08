@@ -137,16 +137,10 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
  app.get("/dashboardInformation", (req, res) => {
-  var lockName = undefined;
-  var username = undefined;
-  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-    if(result[0].lockName == undefined){
-      lockName = result[0].lockId;}
-      else{
-        lockName = result[0].lockName;}
-        username = req.session.username;
-        res.send({username: req.session.username, lockName: lockName});
-      })
+
+  mod.getLockInfo(req.session.lock, req.session.username, function(data) {
+    res.send(data);
+  })
 
 })
 
