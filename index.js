@@ -384,3 +384,20 @@ db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
   })
 }
 
+exports.canAccess = function(username, lockId, callback) {
+    //db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+      //console.log("this is the result in index for locks "  + result[0].owner);
+      //var owner = (username = result[0].owner);
+      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
+            //console.log("this is the result in index"  + result);
+            callback(result[0]);
+            /*if(owner || result[0].canCreateRules) {
+                  res.send({access: true});
+            }
+            else {
+                  res.send({access:false});
+            }*/
+        })
+  //})
+}
+
