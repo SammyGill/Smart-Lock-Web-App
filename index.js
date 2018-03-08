@@ -358,7 +358,7 @@ exports.unlock = function(username, lockId, callback) {
 exports.registerLock = function(username, lockId, lockName, callback) {
 console.log(lockId);
 db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
-    if(result[0].owner == null) {
+    if(result[0] == null) {
     db.collection("users").find({username: username}).toArray((err, result) => {
           var idArray = result[0].locks
           idArray.push(lockId);
