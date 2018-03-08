@@ -1,17 +1,17 @@
-var express = require("express");
-var mongoClient = require("mongodb").MongoClient;
+"use strict";
+const express = require("express");
+const mongoClient = require("mongodb").MongoClient;
 var db = "hello";
-var app = express();
-var dir = __dirname;
-var bodyParser = require('body-parser');
-var session = require("client-sessions");
-var async = require("async");
-var schedule = require('node-schedule');
+const app = express();
+const dir = __dirname;
+const bodyParser = require('body-parser');
+const session = require("client-sessions");
+const async = require("async");
+const schedule = require('node-schedule');
 var d = new Date();
-var module = require("../Module/index.js");
-var server = require("http").Server(app);
-var socket = require("socket.io")(server);
-//var google = require('googleapis');
+const mod = require("../Module/index.js");
+const server = require("http").Server(app);
+const socket = require("socket.io")(server);
 
 // Used to make the server look in our directory for
 // our javascript, css, and other files
@@ -32,7 +32,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
       server.listen(3000, function() {
 
             console.log("listening on 3000");
-            module.connectServer();
+            mod.connectServer();
             })
       })
 
@@ -51,8 +51,8 @@ dashboard.on("connection", function(socket) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-      module.findUser("spg002@ucsd.edu");
-      db = module.db;
+      mod.findUser("spg002@ucsd.edu");
+     // db = mod.db;
       res.sendFile(dir + "/views/login.html");
       })
 
@@ -116,7 +116,7 @@ app.get("/registerLock", (req, res) => {
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
-  if(!module.isLoggedIn(req.session.username)) {
+  if(!mod.isLoggedIn(req.session.username)) {
     res.redirect("/");
     return;
   }
@@ -159,7 +159,7 @@ app.get("/getLocks", (req, res) => {
 
 app.get("/getMembers", (req, res) => {
   var id = req.session.lock;
-  module.getLockMembers(id, function(members) {res.send({members: members});});
+  mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
  
    
@@ -171,7 +171,7 @@ app.get("/getName", (req, res) => {
 
 // Route that redirects users to register their lock, sends registration page
 app.get("/register", (req, res) => {
-  if(!module.isLoggedIn(req.session.username)) {
+  if(!mod.isLoggedIn(req.session.username)) {
     res.redirect("/");
     return;
   }
@@ -181,7 +181,7 @@ app.get("/register", (req, res) => {
 
 app.get("/lockStatus", (req, res) => {
   var id = req.session.lock;
-  module.getLocks(id, function(locks) {res.send(locks);});
+  mod.getLocks(id, function(locks) {res.send(locks);});
 })
 
 app.get("/memberRoleInfo", (req, res) => {
@@ -228,7 +228,7 @@ app.get("/switchLock", (req, res) => {
 
 
 app.get("/timeStatus", (req, res) => {
-      var time = module.getTime();
+      var time = mod.getTime();
       res.send(time);
 })
 
@@ -245,7 +245,7 @@ app.get("/timeStatus", (req, res) => {
 app.get("/canAccess", (req, res) => {
   var username = req.session.username;
   var lockId = req.session.lock;
-  module.canAccess(username, lockId, function(roles) {
+  mod.canAccess(username, lockId, function(roles) {
     res.send({roles: roles});
   });
 /*
@@ -265,7 +265,7 @@ app.get("/canAccess", (req, res) => {
 
 app.get("/showHistory", (req, res) => {
   var id = req.session.lock;
-  module.getLockHistory(id, function(history) {
+  mod.getLockHistory(id, function(history) {
     history.times.push(history.owner);
     history.actions.push(history.owner);
     res.send({members: history.times, memActions: history.actions});
@@ -295,18 +295,18 @@ app.get("/signOut", (req, res) => {
 app.post("/addMember", (req, res) => {
       var username = req.body.username;
       var lockId = req.session.lock;
-      //call the module
-      module.addMember(username,lockId, function(members) {res.send({members: members});});
+      //call the mod
+      mod.addMember(username,lockId, function(members) {res.send({members: members});});
       })
 
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
 
-      var start = module.convertToMilitary(req.body.startTime);
-      var end = module.convertToMilitary(req.body.endTime);
+      var start = mod.convertToMilitary(req.body.startTime);
+      var end = mod.convertToMilitary(req.body.endTime);
 
-      module.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
+      mod.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
             if(result) {
                   res.send();
             }
@@ -318,12 +318,12 @@ app.post("/addTimeRestriction", (req, res) => {
 
 //rule for lock
 app.post("/createRule", (req, res) => {
-      module.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
+      mod.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
 })
 
 //lock function
 app.post("/lock", (req, res) => {
-  module.lock(req.session.username, req.session.lock, function(result){
+  mod.lock(req.session.username, req.session.lock, function(result){
     if(result){
       res.send();
     }
@@ -337,7 +337,7 @@ app.post("/lock", (req, res) => {
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
       var id = parseInt(req.body.id);
-      module.registerLock(req.session.username, id, req.body.lockName, function(result) {
+      mod.registerLock(req.session.username, id, req.body.lockName, function(result) {
             if(result) {
                   res.send({redirect: "/dashboard"});
             }
@@ -349,7 +349,7 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-      module.unlock(req.session.username, req.session.lock, function(result) {
+      mod.unlock(req.session.username, req.session.lock, function(result) {
             if(result) {
                   res.send();
             }

@@ -1,4 +1,4 @@
-var name;
+"use strict";
 
 function onSignIn(googleUser) {
   if(googleUser) {
