@@ -7,6 +7,7 @@
  */
 var mongoClient = require("mongodb").MongoClient;
 var db = undefined;
+const async = require("async");
 
 exports.getLockInfo = function(lockId, username, callback) {
   let lockName = undefined;
@@ -14,6 +15,21 @@ exports.getLockInfo = function(lockId, username, callback) {
     lockName = result[0].lockName;
     username = username;
     callback({username: username, lockName: lockName});
+  })
+}
+
+exports.getLocks = function(username, callback) {
+  db.collection("users").find({username: req.session.username}).toArray((err, result) => {
+    var locks = result[0].locks;
+    async.each(locks, function(file, callback) {
+      db.collection("locks").find({lockId: file}).toArray((err, result) => {
+        lockNames.push(result[0].lockName);
+        lockIds.push(file);
+        callback();
+      })
+    }, function(err) {
+      callback({locks: lockIds, lockNames: lockNames});
+    })
   })
 }
 
