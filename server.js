@@ -52,7 +52,6 @@ dashboard.on("connection", function(socket) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-<<<<<<< HEAD
   module.findUser("spg002@ucsd.edu");
   //db = mod.db;
 //   for (var i = 50; i >= 1; i--) {
