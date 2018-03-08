@@ -6,7 +6,7 @@ const app = express();
 const dir = __dirname;
 const bodyParser = require('body-parser');
 const session = require("client-sessions");
-const async = require("async");
+
 const schedule = require('node-schedule');
 var d = new Date();
 const mod = require("../Module/index.js");
@@ -144,19 +144,8 @@ app.get("/dashboard", (req, res) => {
 })
 
  app.get("/getLocks", (req, res) => {
-  var lockNames = [];
-  var lockIds = [];
-  db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-    var locks = result[0].locks;
-    async.each(locks, function(file, callback) {
-      db.collection("locks").find({lockId: file}).toArray((err, result) => {
-        lockNames.push(result[0].lockName);
-        lockIds.push(file);
-        callback();
-      })
-    }, function(err) {
-      res.send({locks: lockIds, lockNames: lockNames});
-    })
+  mod.getLocks(req.session.username, function(data) {
+    res.send(data);
   })
 })
 
