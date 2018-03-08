@@ -8,6 +8,14 @@
 var mongoClient = require("mongodb").MongoClient;
 var db = undefined;
 
+exports.getLockInfo = function(lockId, username, callback) {
+  let lockName = undefined;
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    lockName = result[0].lockName;
+    username = username;
+    callback({username: username, lockName: lockName});
+  })
+}
 
 exports.connectServer = function() {
     mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
