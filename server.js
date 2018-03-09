@@ -9,16 +9,8 @@ let  session = require("client-sessions");
 const async = require("async");
 const schedule = require('node-schedule');
 let  d = new Date();
-var module = require("../Module/index.js");
 //var google = require('googleapis');
-var db = "hello";
-const app = express();
-const dir = __dirname;
-const bodyParser = require('body-parser');
-const session = require("client-sessions");
 
-const schedule = require('node-schedule');
-var d = new Date();
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
@@ -176,12 +168,14 @@ app.get("/dashboardInformation", (req, res) => {
             username = req.session.username;
             res.send({username: req.session.username, lockName: lockName});
             })
+          })
 
  app.get("/dashboardInformation", (req, res) => {
 
   mod.getLockInfo(req.session.lock, req.session.username, function(data) {
     res.send(data);
   })
+})
 
 app.get("/getLocks", (req, res) => {
       let lockNames = [];
@@ -202,7 +196,7 @@ app.get("/getLocks", (req, res) => {
 
 app.get("/getMembers", (req, res) => {
   let id = req.session.lock;
-  module.getLockMembers(id, function(members) {res.send({members: members});});
+  mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
 
  app.get("/getLocks", (req, res) => {
@@ -238,34 +232,7 @@ app.get("/register", (req, res) => {
 app.get("/lockStatus", (req, res) => {
 
   let id = req.session.lock;
-  module.getLocks(id, function(locks) {res.send(locks);});
-})
-
-app.get("/memberRoleInfo", (req, res) => {
-      let username = req.query.username;
-      let lockId = req.session.lock;
-      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-            if(!result[0]) {
-  var id = req.session.lock;
   mod.getLocks(id, function(locks) {res.send(locks);});
-})
-
-app.get("/memberRoleInfo", (req, res) => {
-  var username = req.query.username;
-  var lockId = req.session.lock;
-  db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-    if(!result[0]) {
-            // did not find anyone with this username and lock that has a role
-            var lockRestrictions = [];
-            var unlockRestrictions = [];
-            db.collection("roles").insert({username: username, lockId: lockId, lockRestrictions: lockRestrictions, unlockRestrictions: unlockRestrictions,
-              canAddMembers: true, canCreateRules: true, canManageRoles: true});
-            res.send({roles: false});
-          }
-          else {
-            res.send({roles: result[0]});
-          }
-        })
 })
 
 
@@ -295,9 +262,8 @@ app.get("/switchLock", (req, res) => {
 
 app.get("/timeStatus", (req, res) => {
 
-      let time = module.getTime();
+      let time = mod.getTime();
 
-      var time = mod.getTime();
       res.send(time);
 })
 
@@ -317,12 +283,13 @@ app.get("/timeStatus", (req, res) => {
       mod.canAccess(username, lockId, function(roles) {
         res.send({roles: roles});
       });
+    });
 
 
 app.get("/canAccess", (req, res) => {
   let username = req.session.username;
   let lockId = req.session.lock;
-  module.canAccess(username, lockId, function(roles) {
+  mod.canAccess(username, lockId, function(roles) {
     res.send({roles: roles});
   });
 /*
@@ -342,7 +309,7 @@ app.get("/canAccess", (req, res) => {
 
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
-  module.getLockHistory(id, function(history) {
+  mod.getLockHistory(id, function(history) {
 
   var id = req.session.lock;
   mod.getLockHistory(id, function(history) {
@@ -350,6 +317,7 @@ app.get("/showHistory", (req, res) => {
     history.actions.push(history.owner);
     res.send({members: history.times, memActions: history.actions});
   });
+})
 })
 
     app.get("/signOut", (req, res) => {
@@ -377,9 +345,8 @@ app.post("/addMember", (req, res) => {
       let username = req.body.username;
       let lockId = req.session.lock;
       //call the module
-      module.addMember(username,lockId, function(members) {res.send({members: members});});
-      var username = req.body.username;
-      var lockId = req.session.lock;
+      mod.addMember(username,lockId, function(members) {res.send({members: members});});
+
       //call the mod
       mod.addMember(username,lockId, function(members) {res.send({members: members});});
       })
@@ -394,10 +361,9 @@ app.post("/addTimeRestriction", (req, res) => {
       //convert to military time
 
 
-      let start = module.convertToMilitary(req.body.startTime);
-      let end = module.convertToMilitary(req.body.endTime);
-      var start = mod.convertToMilitary(req.body.startTime);
-      var end = mod.convertToMilitary(req.body.endTime);
+      let start = mod.convertToMilitary(req.body.startTime);
+      let end = mod.convertToMilitary(req.body.endTime);
+
 
       mod.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
             if(result) {
@@ -424,46 +390,13 @@ app.post("/lock", (req, res) => {
       res.send({error: "You do not have permission to lock!"});
     }
   })
+});
 
-//   db.collection("roles").find({username: username, lockId: req.session.lock}).toArray((err, result) => {
-//     if(result[0]) {
-//       var lockRestrictons = result[0].lockRestrictions;
-//     }
-//   db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-//   owner = (result[0].owner == username);
-//   if(owner || module.checkActionPermission(lockRestrictons, module.convertToMilitary(time))) {
-//     var date = new Date();
-//     date = date.toDateString();
-//     time = (date + " at " + time);
-//     db.collection("history").find({lockId: req.session.lock}).toArray((err, result) => {
-//     var names = result[0].usernames;
-//     var actions = result[0].actions;
-//     var times = result[0].times;
-//     names.push(username);
-//     actions.push("lock");
-//     times.push(time);
-//     db.collection("history").update({lockId: req.session.lock}, {$set: {usernames: names, actions: actions, times:times}});
-//   })
-
-//     db.collection("users").find({username: username}).toArray((err, result) => {
-//       var id = req.session.lock;
-//       db.collection("locks").update({lockId: id}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
-//       res.send();
-//    })
-//   })
-// }
-//   else {
-//     res.send({error:"You do not have permission to do this!"});
-//     }
-//   })
-// })
-
-})
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
       let id = parseInt(req.body.id);
-      module.registerLock(req.session.username, id, req.body.lockName, function(result) {
+      mod.registerLock(req.session.username, id, req.body.lockName, function(result) {
             if(result) {
                   res.send({redirect: "/dashboard"});
             }
@@ -471,7 +404,6 @@ app.post("/registerLock", (req, res) => {
                   res.send({redirect:"failure"});
             }
       });
-  var id = parseInt(req.body.id);
 
   let username = req.session.username;
   console.log("user Name in server.js: " + req.session.username);
@@ -507,15 +439,14 @@ app.post("/unlock", (req, res) => {
 app.post("/updateRole", (req, res) => {
       let username = req.body.username;
       let lockId = req.session.lock;
-  var username = req.body.username;
-  var lockId = req.session.lock;
+
       //use boolean values to set roles 
       let canAddMembers = (req.body.canAddMembers == "true");
       let canCreateRules = (req.body.canCreateRules == "true");
       let canManageRoles = (req.body.canManageRoles == "true");
       //update 
       db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles}})
-    })
+    });
 
 
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
