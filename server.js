@@ -145,7 +145,9 @@ app.get("/dashboard", (req, res) => {
 })
 
  app.get("/getLocks", (req, res) => {
+  console.log("lockId in server.js: " + req.session.username);
   mod.getLocks(req.session.username, function(data) {
+    console.log("data in server.js: " + data);
     res.send(data);
   })
 })
@@ -364,10 +366,10 @@ app.post("/lock", (req, res) => {
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
   var id = parseInt(req.body.id);
-  let username = req.body.username;
-  //console.log("user Name in server.js: " + req.body.userName);
-  //console.log("lock Name in server.js: " + req.body.lockName);
-  mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
+  let username = req.session.username;
+  console.log("user Name in server.js: " + req.session.username);
+  console.log("lock Name in server.js: " + req.body.lockName);
+  mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
     if(result) {
       db.collection("locks").find({owner: username}).toArray((err, result) => {
       var lockId = parseInt(result[0].lockId);
