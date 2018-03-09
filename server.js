@@ -55,7 +55,7 @@ app.get("/", (req, res) => {
 
   db = mod.db;
 
-  db.collection("users").find({"locks.lockId": 49}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
+  /*db.collection("users").find({"locks.lockId":}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
     if(result.length > 0) {
       console.log("found some locks");
       console.log(result);
@@ -64,7 +64,7 @@ app.get("/", (req, res) => {
       console.log("could not find any locks");
       console.log(result);
     }
-  })
+  })*/
 
 //   for (var i = 50; i >= 1; i--) {
 //   db.collection("locks").insert({lockId: i, lockName: null, owner: null, status: "locked", members: [], }, (err, doc) => {
@@ -145,7 +145,7 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
  app.get("/dashboardInformation", (req, res) => {
-
+	console.log("lock is " + req.session.lock);
   mod.getLockInfo(req.session.lock, req.session.username, function(data) {
     res.send(data);
   })
