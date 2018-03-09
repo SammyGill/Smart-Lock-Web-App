@@ -370,28 +370,18 @@ app.post("/lock", (req, res) => {
 
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
-      let id = parseInt(req.body.id);
-      mod.registerLock(req.session.username, id, req.body.lockName, function(result) {
-            if(result) {
-                  res.send({redirect: "/dashboard"});
-            }
-            else {
-                  res.send({redirect:"failure"});
-            }
-      });
-
+  let id = parseInt(req.body.id);
   let username = req.session.username;
+  
   console.log("user Name in server.js: " + req.session.username);
   console.log("lock Name in server.js: " + req.body.lockName);
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
   // let username = req.body.username;
   // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
     if(result) {
-      db.collection("locks").find({owner: username}).toArray((err, result) => {
-      var lockId = parseInt(result[0].lockId);
-      req.session.lock = lockId;
+      req.session.lock = id;
       res.send({redirect: "/dashboard"});
-    })}
+    }
     else {
       res.send({redirect:"failure"});
     }
