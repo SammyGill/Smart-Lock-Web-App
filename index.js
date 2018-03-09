@@ -8,7 +8,18 @@
 "use strict";
 const mongoClient = require("mongodb").MongoClient;
 let db = undefined;
+var mongoClient = require("mongodb").MongoClient;
+var db = undefined;
+const async = require("async");
 
+exports.getLockInfo = function(lockId, username, callback) {
+  let lockName = undefined;
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    lockName = result[0].lockName;
+    username = username;
+    callback({username: username, lockName: lockName});
+  })
+}
 
 exports.connectServer = function() {
     mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
@@ -16,7 +27,6 @@ exports.connectServer = function() {
         return console.log(err);
         }
   
-        console.log("hello");
         module.exports.db =  database.db("smart-lock");
         db = database.db("smart-lock");
    })
@@ -101,6 +111,9 @@ let checkRestrictions = function(inputArray, dbArray) {
     let inputStart = inputArray[0];
     let inputEnd = inputArray[1];
     for(let i = 0; i < dbArray.length; dbArray++) {
+    var inputStart = inputArray[0];
+    var inputEnd = inputArray[1];
+    for(var i = 0; i < dbArray.length; dbArray++) {
        if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
           
           return false;
@@ -136,7 +149,6 @@ exports.createRule = function(lockId, username, action, time) {
         }
       }
       else {
-        console.log("created");
           db.collection("rules").insert({lockId: lockId, action: action, time: time});
         }
       })
@@ -150,10 +162,12 @@ exports.createRole = function(action, username, lock, start, end, callback) {
         let restrictions = undefined;
         let timeArray = [start, end];
         let resultArray = undefined;
+	//convert to military time
+        var restrictions = undefined;
+        var timeArray = [start, end];
+        var resultArray = undefined;
         db.collection("roles").find({username: username, lockId: lock}).toArray((err, result) => {
               // If we found a user with the roles, check to see if there are any conflicts
-              console.log(username);
-              console.log(lock);
               if(result[0]) {
               // check to see if there are any conflicts
               if(action == "lock") {
@@ -177,20 +191,17 @@ exports.createRole = function(action, username, lock, start, end, callback) {
                  resultArray.push(timeArray);
                  db.collection("roles").update({username: username, lockId: lock}, {$set:{unlockRestrictions: resultArray}});
               } 
-                console.log("returning true");
                 callback(true);
                 return true;
               }
               else {
                  // Otherwise there was an error in the input that was provided and we should
                  // give an appropriate error back
-                 console.log("returning false");
                  callback(false);
                  return false;
               }
               }
               else {
-                  console.log("hello222");
               }
         })
  }
@@ -206,9 +217,25 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
-exports.getLocks = function(lockId, callback) {
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    callback(result[0]);
+exports.getLocks = function(username, callback) {
+
+  db.collection("users").find({username: username}).toArray((err, result) => {
+    var locks = result[0].locks;
+    var lockIds = [];
+    var lockNames = [];
+    let locksArray = [];
+    for(let i = 0; i < locks.length; i++) {
+      locksArray.push(locks[i].lockId);
+    }
+    async.each(locksArray, function(file, callback) {
+      db.collection("locks").find({lockId: file}).toArray((err, result) => {
+        lockNames.push(result[0].lockName);
+        lockIds.push(file);;
+        callback();
+      })
+    }, function(err) {
+      callback({locks: lockIds, lockNames: lockNames});
+    })
   })
 }
 
@@ -240,7 +267,6 @@ exports.lock = function(username, lockId, callback) {
         db.collection("users").find({username: username}).toArray((err, result) => {
           db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
             (err, numberAffected, rawResponse) => {
-            console.log("bingo!");
             callback(true);
           })
         })
@@ -288,6 +314,7 @@ exports.addMember = function(username, lockId) {
             let currentUser = username;
             console.log(currentUser);
             console.log(lockId);
+            var currentUser = username;
             db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
                let members = result[0].members;
                username = username.toString();
@@ -312,8 +339,8 @@ exports.addMember = function(username, lockId) {
             })
          })
       }
-   })//end addMember 
-  }
+   })
+  }//end addMember 
 
 exports.unlock = function(username, lockId, callback) {
   var time = this.getTime();
@@ -353,20 +380,40 @@ exports.unlock = function(username, lockId, callback) {
   })
   // We were able to find a role associated with this lock and user
   })
-
 }
 
-exports.registerLock = function(username, lockId, lockName, callback) {
-console.log(lockId);
-db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
-    if(result[0].owner == null) {
-    db.collection("users").find({username: username}).toArray((err, result) => {
-          var idArray = result[0].locks
-          idArray.push(lockId);
+exports.registerLock = function(lockId, lockName, userName, callback) {
+
+  db.collection("users").find({"locks.lockId": lockId}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
+    if(result.length > 0) {
+      // There are people with this lock so it must have been registered
+      console.log(result);
+    }
+    else {
+      // First person to try to register this lock
+      console.log("could not find any locks");
+      console.log(result);
+    }
+  })
+
+
+db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    if(result[0].owner == undefined) {
+
+      // add the user to the lock
+    db.collection("users").find({username: userName}).toArray((err, result) => {
+      var locksArray = result[0].locks;
+      var lockObject = {
+                        "lockId": lockId, 
+                        "role": 0, 
+                        "lockRestrictions": [[-1, -1]], 
+                        "unlockRestrictions": [[-1, -1]]
+                       };
+      locksArray.push(lockObject);
+
+          db.collection("users").update({username: userName}, {$set: {locks: locksArray}});
           // lock does not have an owner? Then set the username and the owner properly
-          db.collection("locks").update({lockId: lockId}, {$set: {owner: username}});
-          db.collection("users").update({username: username}, {$set: {locks: idArray}});
-          db.collection("locks").update({lockId: lockId}, {$set: {lockName: lockName}});
+          db.collection("locks").update({lockId: lockId}, {$set: {owner: userName, lockName: lockName, status: "locked"}});
           callback(true);
           })
     }
