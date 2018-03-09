@@ -1,9 +1,12 @@
 "use strict";
-
+var email;
+var name;
 function onSignIn(googleUser) {
   if(googleUser) {
     var profile = googleUser.getBasicProfile();
     name = profile.getName();
+    email = profile.getEmail();
+    console.log("email in onSignIn: " + email);
     $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
@@ -58,21 +61,8 @@ function switchLock() {
 // }
 
 function registerLock() {
-  // var lockId = ;
-  // var lockName = document.getElementById("lock-name").value;
-  // var userName = document.getElementById("email").value
-  // console.log("userName in scrips is : " + userName);
-  // console.log("lockName in scrips is : " + lockName);
-  // console.log("lockId in scrips is : " + lockId);
-  //Check if the email entered is valid
-  console.log("lock name in html: " +document.getElementById("lock-name").value);
-    console.log("user name in html: " +document.getElementById("email").value);
-    var userName = document.getElementById("email").value
-  if(userName) {
-    console.log("lock name in html: " +document.getElementById("lock-name").value);
-    console.log("user name in html: " +document.getElementById("email").value);
-    $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value, 
-      userName: document.getElementById("email").value}, function(data) {
+  //console.log("user name in scripts.js is : " + email);
+    $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
       if(data.redirect == "failure") {
         $(".lockTaken").text("Taken");
       }
@@ -80,7 +70,6 @@ function registerLock() {
         window.location = data.redirect;
       }
     })
-  }
 }
 
 function getLockStatus() {
@@ -366,7 +355,7 @@ function addTimer() {
 function getName() {
   $.get("/getName", function(name) {
     document.getElementById("lock-name").value = (name + "'s Lock");
-    document.getElementById("email").value = (name);
+    //document.getElementById("email").value = (name);
   })
 
 }
