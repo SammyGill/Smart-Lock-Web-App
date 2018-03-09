@@ -8,8 +8,7 @@
 "use strict";
 const mongoClient = require("mongodb").MongoClient;
 let db = undefined;
-var mongoClient = require("mongodb").MongoClient;
-var db = undefined;
+
 const async = require("async");
 
 exports.getLockInfo = function(lockId, username, callback) {
@@ -105,14 +104,12 @@ exports.convertToMilitary = function(time) {
     return (parseInt(timeArray[0] + timeArray[1]));
  }
  
-let checkRestrictions = function(inputArray, dbArray) {
+exports.checkRestrictions = function(inputArray, dbArray) {
 
   console.log(inputArray);
     let inputStart = inputArray[0];
     let inputEnd = inputArray[1];
-    for(let i = 0; i < dbArray.length; dbArray++) {
-    var inputStart = inputArray[0];
-    var inputEnd = inputArray[1];
+
     for(var i = 0; i < dbArray.length; dbArray++) {
        if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
           
@@ -163,9 +160,7 @@ exports.createRole = function(action, username, lock, start, end, callback) {
         let timeArray = [start, end];
         let resultArray = undefined;
 	//convert to military time
-        var restrictions = undefined;
-        var timeArray = [start, end];
-        var resultArray = undefined;
+
         db.collection("roles").find({username: username, lockId: lock}).toArray((err, result) => {
               // If we found a user with the roles, check to see if there are any conflicts
               if(result[0]) {
@@ -314,7 +309,7 @@ exports.addMember = function(username, lockId) {
             let currentUser = username;
             console.log(currentUser);
             console.log(lockId);
-            var currentUser = username;
+
             db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
                let members = result[0].members;
                username = username.toString();
