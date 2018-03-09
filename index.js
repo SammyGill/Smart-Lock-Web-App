@@ -5,8 +5,9 @@
  *
  *
  */
-var mongoClient = require("mongodb").MongoClient;
-var db = undefined;
+"use strict";
+const mongoClient = require("mongodb").MongoClient;
+let db = undefined;
 
 
 exports.connectServer = function() {
@@ -38,16 +39,16 @@ exports.isLoggedIn = function(user) {
  
  
 function getTime() {
-  var d = new Date();
-  var minutes = d.getMinutes();
-  var hours = d.getHours();
+  let d = new Date();
+  let minutes = d.getMinutes();
+  let hours = d.getHours();
   if (d.getMinutes() < 10) {
      minutes = "0" + minutes;
   }
   if (d.getHours() > 12) {
      hours = hours % 12;
   }
-  var date = hours + ":" + minutes
+  let date = hours + ":" + minutes
      if (d.getHours() < 12) {
         date = date + " AM";
      } else {
@@ -57,16 +58,16 @@ function getTime() {
 }
 
 exports.getTime = function() {
-    var d = new Date();
-    var minutes = d.getMinutes();
-    var hours = d.getHours();
+    let d = new Date();
+    let minutes = d.getMinutes();
+    let hours = d.getHours();
     if (d.getMinutes() < 10) {
        minutes = "0" + minutes;
     }
     if (d.getHours() > 12) {
        hours = hours % 12;
     }
-    var date = hours + ":" + minutes
+    let date = hours + ":" + minutes
        if (d.getHours() < 12) {
           date = date + " AM";
        } else {
@@ -79,27 +80,27 @@ exports.convertToMilitary = function(time) {
     if(time.indexOf("PM") != -1) {
        time = time.replace("PM", "");
        time = time.replace(" ", "");
-       var timeArray = time.split(":");
+       let timeArray = time.split(":");
        timeArray[0] = parseInt(timeArray[0]);
        if(timeArray[0] != 12) {
           timeArray[0] += 12;
        }
  
-       var timeString = parseInt(timeArray[0].toString() + timeArray[1]);
+       let timeString = parseInt(timeArray[0].toString() + timeArray[1]);
        return timeString;
     }
     time = time.replace("AM", "");
     time = time.replace(" ", "");
-    var timeArray = time.split(":");
+    let timeArray = time.split(":");
     return (parseInt(timeArray[0] + timeArray[1]));
  }
  
-checkRestrictions = function(inputArray, dbArray) {
+let checkRestrictions = function(inputArray, dbArray) {
 
   console.log(inputArray);
-    var inputStart = inputArray[0];
-    var inputEnd = inputArray[1];
-    for(var i = 0; i < dbArray.length; dbArray++) {
+    let inputStart = inputArray[0];
+    let inputEnd = inputArray[1];
+    for(let i = 0; i < dbArray.length; dbArray++) {
        if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
           
           return false;
@@ -112,7 +113,7 @@ checkRestrictions = function(inputArray, dbArray) {
  }
  
 exports.checkActionPermission = function(timesArray, currentTime) {
-  for(var i = 0; i < timesArray.length; i++) {
+  for(let i = 0; i < timesArray.length; i++) {
     if(currentTime > timesArray[i][0] && currentTime < timesArray[i][1]) {
       return false;
     }
@@ -122,7 +123,7 @@ exports.checkActionPermission = function(timesArray, currentTime) {
  }
 
 exports.createRule = function(lockId, username, action, time) {
-  var owner = undefined;
+  let owner = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     owner = (result[0].owner == username);
     db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
@@ -146,9 +147,9 @@ exports.createRule = function(lockId, username, action, time) {
 
 exports.createRole = function(action, username, lock, start, end, callback) {
         //convert to military time
-        var restrictions = undefined;
-        var timeArray = [start, end];
-        var resultArray = undefined;
+        let restrictions = undefined;
+        let timeArray = [start, end];
+        let resultArray = undefined;
         db.collection("roles").find({username: username, lockId: lock}).toArray((err, result) => {
               // If we found a user with the roles, check to see if there are any conflicts
               console.log(username);
@@ -197,7 +198,7 @@ exports.createRole = function(action, username, lock, start, end, callback) {
 
 exports.getLockMembers = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    var members = result[0].members;
+    let members = result[0].members;
     if(members.length == 0){
       members.push("There are no members currently associated with this lock");
     }
@@ -216,20 +217,20 @@ exports.lock = function(username, lockId, callback) {
   //check the lock restrictions
   db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
     if (result[0]) {
-    var lockRestrictions = result[0].lockRestrictions;
+    let lockRestrictions = result[0].lockRestrictions;
     }
     //check if the user is the owner of the lock
     db.collection("locks").find({lockId: lockId}).toArray((err,result) => {
       isOwner = (result[0].owner == username);
 
     if(isOwner || this.checkActionPermission(lockRestrictions, this.convertToMilitary(lockTime))) {
-      var date = new Date();
+      let date = new Date();
       date = date.toDateString();
       time = (date + " at " + lockTime);
       db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-        var names = result[0].usernames;
-        var actions = result[0].actions;
-        var times = result[0].times;
+        let names = result[0].usernames;
+        let actions = result[0].actions;
+        let times = result[0].times;
         names.push(username);
         actions.push("lock");
         times.push(time);
@@ -267,10 +268,10 @@ exports.addMember = function(username, lockId) {
          return false;
       }
       else{
-         var locksArray = result[0].locks;
-         var lockExists = false;
+         let locksArray = result[0].locks;
+         let lockExists = false;
          //look for lock in the array
-         for(var i=0; i< locksArray.length; i++){
+         for(let i=0; i< locksArray.length; i++){
             //if found update boolean
             if(locksArray[i] ==lockId){
                locksExists = true;
@@ -284,14 +285,14 @@ exports.addMember = function(username, lockId) {
          db.collection("users").update({username}, {$set: {locks: locksArray}});
          db.collection("locks").find({lockId: lockId}).toArray((err, result) =>{
             //use the passed in param for username
-            var currentUser = username;
+            let currentUser = username;
             console.log(currentUser);
             console.log(lockId);
             db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
-               var members = result[0].members;
+               let members = result[0].members;
                username = username.toString();
-               var alreadyExists = false;
-               for(var i =0; i< members.length; i++){
+               let alreadyExists = false;
+               for(let i =0; i< members.length; i++){
                   if(members[i]==username || result[0].owner == username){
                      alreadyExists = true;
                   }
@@ -319,21 +320,21 @@ exports.unlock = function(username, lockId, callback) {
 
   db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
     if(result[0]) {
-      var unlockRestrictions = result[0].unlockRestrictions;
+      let unlockRestrictions = result[0].unlockRestrictions;
     }
     
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    var owner = (result[0].owner == username);
+    let owner = (result[0].owner == username);
                  
     // If this returns true, then the user has permission to perform the actions
     if(owner || this.checkActionPermission(unlockRestrictions, this.convertToMilitary(time))) {
-      var date = new Date();
+      let date = new Date();
       date = date.toDateString();
       time = (date + " at " + time);
       db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-        var names = result[0].usernames;
-        var actions = result[0].actions;
-        var times = result[0].times;
+        let names = result[0].usernames;
+        let actions = result[0].actions;
+        let times = result[0].times;
         names.push(username);
         actions.push("unlock");
         times.push(time);
