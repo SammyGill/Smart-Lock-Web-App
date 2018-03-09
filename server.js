@@ -52,8 +52,20 @@ dashboard.on("connection", function(socket) {
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-  mod.findUser("spg002@ucsd.edu");
+
   db = mod.db;
+
+  db.collection("users").find({"locks.lockId": 49}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
+    if(result.length > 0) {
+      console.log("found some locks");
+      console.log(result);
+    }
+    else {
+      console.log("could not find any locks");
+      console.log(result);
+    }
+  })
+
 //   for (var i = 50; i >= 1; i--) {
 //   db.collection("locks").insert({lockId: i, lockName: null, owner: null, status: "locked", members: [], }, (err, doc) => {
 //         res.send();
@@ -81,8 +93,8 @@ app.get("/registerLock", (req, res) => {
 app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
-    var email = req.query.email;
-    var fullname = req.query.fullname;
+  var email = req.query.email;
+  var fullname = req.query.fullname;
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -92,8 +104,7 @@ app.get("/authenticate", (req, res) => {
    *    - Else the resulting array size == 0, then we must first add the user to the
    *      database before redirecting them to register their lock
    */
-   db.collection("users").find({username: email}).toArray((err, result) => {
-    console.log("found a user!");
+  db.collection("users").find({username: email}).toArray((err, result) => {
    	req.session.username = email;
     req.session.fullname = fullname;
     //If the user exists, redirect the user according to the number of locks he has
@@ -106,19 +117,16 @@ app.get("/authenticate", (req, res) => {
       }
       else {
        req.session.lock = parseInt(result[0].locks[0]);
-       console.log("req.session")
        res.send({locks: result[0].locks});
-     }
-   }
+      }
+    }
    //If the user does not exist, create a document for the user in the database and redirect him to register page
-   else{
-    console.log("user not found, creating new document in the database");
-    db.collection("users").insert({username: email, name: fullname, locks: [], 
-      roles: [], lockRestrictions: [], unlockRestrictions: []}, (err, doc) => {
+    else {
+      db.collection("users").insert({username: email, name: fullname, locks: [], }, (err, doc) => {
         res.send({locks:[]});})
-  }
+    }
+  })
 })
- })
 
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
@@ -366,14 +374,16 @@ app.post("/lock", (req, res) => {
 // Proccesses the lock registration in the database
 app.post("/registerLock", (req, res) => {
   var id = parseInt(req.body.id);
+
   let username = req.session.username;
   console.log("user Name in server.js: " + req.session.username);
   console.log("lock Name in server.js: " + req.body.lockName);
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
+  // let username = req.body.username;
+  // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
     if(result) {
       db.collection("locks").find({owner: username}).toArray((err, result) => {
       var lockId = parseInt(result[0].lockId);
-      console.log("lockId in server.js: " + lockId);
       req.session.lock = lockId;
       res.send({redirect: "/dashboard"});
     })}
