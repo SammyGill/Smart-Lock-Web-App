@@ -98,19 +98,13 @@ app.get("/editAdmins", (req, res) => {
 
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
-  app.get("/authenticate", (req, res) => {
-  // User email is obtained from the Javascript function after user has logged
-    // in viga Google
-    let email = req.query.email;
-    let fullname = req.query.fullname;
-  res.sendFile(dir + "/views/register.html");
-})
 
 app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
   var email = req.query.email;
   var fullname = req.query.fullname;
+  console.log("EMAIL " + email);
   /**
    * Determines whether or not the user has a lock associated through steps
    * - Attempt to see if the user is in the database with their email
@@ -138,7 +132,7 @@ app.get("/authenticate", (req, res) => {
     }
    //If the user does not exist, create a document for the user in the database and redirect him to register page
     else {
-      db.collection("users").insert({username: email, name: fullname, locks: [], }, (err, doc) => {
+      db.collection("users").insert({username: req.session.username, name: fullname, locks: [], }, (err, doc) => {
         res.send({locks:[]});})
     }
   })
@@ -178,33 +172,14 @@ app.get("/dashboardInformation", (req, res) => {
 })
 
 app.get("/getLocks", (req, res) => {
-      let lockNames = [];
-      let lockIds = [];
-      db.collection("users").find({username: req.session.username}).toArray((err, result) => {
-            var locks = result[0].locks;
-            async.each(locks, function(file, callback) {
-                  db.collection("locks").find({lockId: file}).toArray((err, result) => {
-                        lockNames.push(result[0].lockName);
-                        lockIds.push(file);
-                        callback();
-                        })
-                  }, function(err) {
-                  res.send({locks: lockIds, lockNames: lockNames});
-                  })
-            })
-      })
+  mod.getLocks(req.session.username, function(data) {
+    res.send(data);
+  })
+})
 
 app.get("/getMembers", (req, res) => {
   let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
-})
-
- app.get("/getLocks", (req, res) => {
-  console.log("lockId in server.js: " + req.session.username);
-  mod.getLocks(req.session.username, function(data) {
-    console.log("data in server.js: " + data);
-    res.send(data);
-  })
 })
 
  app.get("/getMembers", (req, res) => {
@@ -230,9 +205,9 @@ app.get("/register", (req, res) => {
 
 
 app.get("/lockStatus", (req, res) => {
-
-  let id = req.session.lock;
-  mod.getLocks(id, function(locks) {res.send(locks);});
+  mod.getLockStatus(req.session.lock, function(data) {
+    res.send(data);
+  })
 })
 
 
