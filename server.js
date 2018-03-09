@@ -55,16 +55,16 @@ app.get("/", (req, res) => {
 
   db = mod.db;
 
-  db.collection("users").find({"locks.lockId": 49}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
-    if(result.length > 0) {
-      console.log("found some locks");
-      console.log(result);
-    }
-    else {
-      console.log("could not find any locks");
-      console.log(result);
-    }
-  })
+  // db.collection("users").find({"locks.lockId": 49}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
+  //   if(result.length > 0) {
+  //     console.log("found some locks");
+  //     console.log(result);
+  //   }
+  //   else {
+  //     console.log("could not find any locks");
+  //     console.log(result);
+  //   }
+  // })
 
 //   for (var i = 50; i >= 1; i--) {
 //   db.collection("locks").insert({lockId: i, lockName: null, owner: null, status: "locked", members: [], }, (err, doc) => {
@@ -109,14 +109,14 @@ app.get("/authenticate", (req, res) => {
     req.session.fullname = fullname;
     //If the user exists, redirect the user according to the number of locks he has
     if(result.length) {
-      if(result[0].name == undefined){
-        result[0].push(req.body.name);
-      }
+      // if(result[0].name == undefined){
+      //   result[0].push(req.body.name);
+      // }
       if(result[0].locks.length == 0) {
         res.send({locks: []});
       }
       else {
-       req.session.lock = parseInt(result[0].locks[0]);
+       req.session.lock = parseInt(result[0].locks[0].lockId);
        res.send({locks: result[0].locks});
       }
     }
