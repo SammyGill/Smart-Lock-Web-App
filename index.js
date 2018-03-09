@@ -213,8 +213,8 @@ exports.getLockMembers = function(lockId, callback) {
 }
 
 exports.getLocks = function(username, callback) {
-
   db.collection("users").find({username: username}).toArray((err, result) => {
+    console.log(result);
     var locks = result[0].locks;
     var lockIds = [];
     var lockNames = [];
@@ -235,7 +235,7 @@ exports.getLocks = function(username, callback) {
 }
 
 exports.lock = function(username, lockId, callback) {
-  lockTime = this.getTime();
+  let lockTime = this.getTime();
   //check the lock restrictions
   db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
     if (result[0]) {
@@ -243,12 +243,12 @@ exports.lock = function(username, lockId, callback) {
     }
     //check if the user is the owner of the lock
     db.collection("locks").find({lockId: lockId}).toArray((err,result) => {
-      isOwner = (result[0].owner == username);
+      let isOwner = (result[0].owner == username);
 
     if(isOwner || this.checkActionPermission(lockRestrictions, this.convertToMilitary(lockTime))) {
       let date = new Date();
       date = date.toDateString();
-      time = (date + " at " + lockTime);
+      let time = (date + " at " + lockTime);
       db.collection("history").find({lockId: lockId}).toArray((err, result) => {
         let names = result[0].usernames;
         let actions = result[0].actions;
@@ -256,9 +256,8 @@ exports.lock = function(username, lockId, callback) {
         names.push(username);
         actions.push("lock");
         times.push(time);
-        db.collection("history").update({lockId: lockId}, {$set: {status: "locked"}},
-          (err, numberAffected, rawResponse) => {
-        })
+        db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
+    
         db.collection("users").find({username: username}).toArray((err, result) => {
           db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
             (err, numberAffected, rawResponse) => {
@@ -434,5 +433,11 @@ exports.canAccess = function(username, lockId, callback) {
             }*/
         })
   //})
+}
+
+exports.getLockStatus = function(lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    callback({status: result[0].status});
+  })
 }
 
