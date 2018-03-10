@@ -93,7 +93,6 @@ app.get("/authenticate", (req, res) => {
     if(lockId) {
       res.session.lock = lockId;
     }
-    console.log(locks);
     res.send(locks);
   })
 })
@@ -115,13 +114,10 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
 app.get("/dashboardInformation", (req, res) => {
-  let lockName = undefined;
-  let username = undefined;
-  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-    lockName = result[0].lockName;
-    username = req.session.username;
-    res.send({username: req.session.username, lockName: lockName});
+  mod.getDashboardInformation(req.session.username, req.session.lock, function(data) {
+    res.send(data);
   })
+
 })
 
  app.get("/dashboardInformation", (req, res) => {
