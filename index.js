@@ -441,3 +441,34 @@ exports.getLockStatus = function(lockId, callback) {
   })
 }
 
+exports.authenticate = function(username, fullname,  callback) {
+    /**
+   * Determines whether or not the user has a lock associated through steps
+   * - Attempt to see if the user is in the database with their email
+   *    - If the resulting array != 0, then we found a user in the database
+   *      - If the lock id associated is null, then the user needs to register their lock
+   *      - Else the user has a lock associated and we can send them to the dashboard
+   *    - Else the resulting array size == 0, then we must first add the user to the
+   *      database before redirecting them to register their lock
+   */
+  db.collection("users").find({username: username}).toArray((err, result) => {
+   //If the user exists, redirect the user according to the number of locks he has
+   if(result.length) {
+     if(result[0].locks.length == 0) {
+       callback({locks: []}, undefined);
+     }
+     else if(result[0].locks.length == 1) {
+      callback({locks: result[0].locks}, result[0].locks[0].lockId);
+     }
+     else {
+       callback({lock: result[0].locks}, undefined)
+     }
+   }
+  //If the user does not exist, create a document for the user in the database and redirect him to register page
+   else {
+     db.collection("users").insert({username: username, name: fullname, locks: [], }, (err, doc) => {
+       callback({locks:[]});})
+   }
+ })
+}
+
