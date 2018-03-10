@@ -44,6 +44,10 @@ function loadLocks(){
   })
 }
 
+// function loadSettings() {
+  
+// }
+
 function switchLock() {
   $(document).on("click", ".locksonSiderbar", function(element){
     $.get("/switchLock", {lockId: event.target.id}, function() {
