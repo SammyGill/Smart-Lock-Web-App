@@ -154,6 +154,13 @@ exports.createRule = function(lockId, username, action, time) {
 
 }
 
+exports.getSettings = function(username, lock, callback) {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
+    console.log("in getSettings: " + result[0]);})
+
+
+
+}
 exports.createRole = function(action, username, lock, start, end, callback) {
         //convert to military time
         let restrictions = undefined;
@@ -378,7 +385,7 @@ exports.unlock = function(username, lockId, callback) {
 
 exports.registerLock = function(lockId, lockName, userName, callback) {
 
-  db.collection("users").find({"locks.lockId": lockId}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     if(result.length > 0) {
       // There are people with this lock so it must have been registered
       console.log(result);
