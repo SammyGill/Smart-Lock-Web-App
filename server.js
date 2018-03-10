@@ -9,7 +9,6 @@ let  session = require("client-sessions");
 const async = require("async");
 const schedule = require('node-schedule');
 let  d = new Date();
-//var google = require('googleapis');
 
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
@@ -91,7 +90,7 @@ app.get("/authenticate", (req, res) => {
   req.session.username = email;
   mod.authenticate(email, fullname, function(locks, lockId) {
     if(lockId) {
-      res.session.lock = lockId;
+      req.session.lock = lockId;
     }
     console.log(locks);
     res.send(locks);
