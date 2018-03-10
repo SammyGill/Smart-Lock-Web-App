@@ -136,13 +136,14 @@ app.get("/getLocks", (req, res) => {
   })
 })
 
-app.get("/getMembers", (req, res) => {
-  let id = req.session.lock;
-  mod.getLockMembers(id, function(members) {res.send({members: members});});
+app.get("getSettings", (req, res) => {
+  mod.getSettings(req.session.username, req.session.lock, function(data) {
+    res.send(data);
+  })
 })
 
- app.get("/getMembers", (req, res) => {
-  var id = req.session.lock;
+app.get("/getMembers", (req, res) => {
+  let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
  

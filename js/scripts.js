@@ -44,9 +44,12 @@ function loadLocks(){
   })
 }
 
-// function loadSettings() {
-  
-// }
+ function loadSettings() {
+  $.get("/getSettings", function(data) {
+    
+  })
+
+ }
 
 function switchLock() {
   $(document).on("click", ".locksonSiderbar", function(element){
