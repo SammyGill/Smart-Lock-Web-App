@@ -93,6 +93,7 @@ app.get("/authenticate", (req, res) => {
     if(lockId) {
       res.session.lock = lockId;
     }
+    console.log(locks);
     res.send(locks);
   })
 })
