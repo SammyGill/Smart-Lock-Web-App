@@ -56,23 +56,6 @@ dashboard.on("connection", function(socket) {
 app.get("/", (req, res) => {
 
   db = mod.db;
-
-  // db.collection("users").find({"locks.lockId": 49}, {"locks.$": 1, _id : 0 }).toArray((err, result) => {
-  //   if(result.length > 0) {
-  //     console.log("found some locks");
-  //     console.log(result);
-  //   }
-  //   else {
-  //     console.log("could not find any locks");
-  //     console.log(result);
-  //   }
-  // })
-
-//   for (var i = 50; i >= 1; i--) {
-//   db.collection("locks").insert({lockId: i, lockName: null, owner: null, status: "locked", members: [], }, (err, doc) => {
-//         res.send();
-//       })
-// }
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -90,7 +73,7 @@ app.get("/addRules", (req, res) => {
 
 app.get("/registerLock", (req, res) => {
       res.sendFile(dir + "/views/register.html");
-      })
+})
 
 app.get("/editAdmins", (req, res) => {
    res.sendFile(dir+ "/views/editAdmins.html");
@@ -155,14 +138,14 @@ app.get("/dashboard", (req, res) => {
  * to the user.
  */
 app.get("/dashboardInformation", (req, res) => {
-      let lockName = undefined;
-      let username = undefined;
-      db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
-            lockName = result[0].lockName;
-            username = req.session.username;
-            res.send({username: req.session.username, lockName: lockName});
-            })
-          })
+  let lockName = undefined;
+  let username = undefined;
+  db.collection("locks").find({lockId: req.session.lock}).toArray((err, result) => {
+    lockName = result[0].lockName;
+    username = req.session.username;
+    res.send({username: req.session.username, lockName: lockName});
+  })
+})
 
  app.get("/dashboardInformation", (req, res) => {
 
@@ -222,11 +205,9 @@ app.get("/selectDashboard", (req, res) => {
 
 app.get("/settings", (req, res) => {
   lockId = req.session.lock;
-      //db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-        //    })
 
         res.sendFile(dir + "/views/settings.html");
-      })
+})
 
 
 app.get("/switchLock", (req, res) => {
@@ -242,23 +223,13 @@ app.get("/timeStatus", (req, res) => {
       res.send(time);
 })
 
-
-/*app.get("/canAccessAddMembers", (req, res) => {
-      var username = req.session.username;
-      var lockId = req.session.lock;
-      db.collection
-      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-            res.send({roles: result[0]});
-      })
-    })*/
-
-    app.get("/canAccess", (req, res) => {
-      var username = req.session.username;
-      var lockId = req.session.lock;
-      mod.canAccess(username, lockId, function(roles) {
-        res.send({roles: roles});
-      });
-    });
+app.get("/canAccess", (req, res) => {
+  var username = req.session.username;
+  var lockId = req.session.lock;
+  mod.canAccess(username, lockId, function(roles) {
+    res.send({roles: roles});
+  });
+});
 
 
 app.get("/canAccess", (req, res) => {
@@ -267,20 +238,7 @@ app.get("/canAccess", (req, res) => {
   mod.canAccess(username, lockId, function(roles) {
     res.send({roles: roles});
   });
-/*
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-      var owner = (username = result[0].owner);
-      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-            if(owner || result[0].canCreateRules) {
-                  res.send({access: true});
-            }
-            else {
-                  res.send({access:false});
-            }
-        })
-      })*/
-
-    })
+});
 
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
@@ -299,17 +257,6 @@ app.get("/showHistory", (req, res) => {
      req.session.reset();
      res.send();
    })
-
- /*app.get("/showHistory", (req, res) => {
-  var id = req.session.lock;
-  var members1 = [];
-
-  db.collection("history").find({lockId: id}).toArray((err, result) => {
-    members = result[0].members;
-    members.push(result[0].owner);
-    res.send({members: members});
-  })
-})*/
 
 
 /* ---------------------- POST ROUTES BELOW ---------------------- */
