@@ -37,19 +37,6 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
             })
       })
 
-
-var dashboard = socket.of("/dashboardConnection");
-dashboard.on("connection", function(socket) {
-      console.log("Connected to dashboard socket from server end");
-      socket.on("request", function(data) {
-            console.log(data);
-
-            // Do all of the lock stuff here....
-
-            socket.emit("response", "response string");
-      })
-})
-
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
   mod.findUser("spg002@ucsd.edu");
@@ -120,6 +107,22 @@ app.get("/authenticate", (req, res) => {
 })
  })
 
+var dashboard = socket.of("/dashboardConnection");
+dashboard.on("connection", function(socket) {
+      console.log("Connected to dashboard socket from server end");
+      socket.on("request", function(data) {
+            console.log(data);
+            //check whether lock is locked/unlocked on server side
+            var currLock = req.session.lock;
+            var status = mod.getLockStatus(currLock, function(data) {});
+
+            //get status of lock from database/lights
+            //check if the current user has ability to lock/unlock or is a valid user
+            //if everything is okay then it will allow client to do action
+
+            socket.emit("response", "response string");
+      })
+})
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
