@@ -17,6 +17,23 @@ exports.getLockInfo = function(lockId, username, callback) {
   })
 }
 
+exports.getLockStatus = function(lockId, callback) {
+  let lockName = undefined;
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    console.log(result[0].status);
+    status = result[0].status;
+    callback({status: status});
+  })
+}
+
+exports.canLock = function(lockId, username, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    if (result[0] != null && result[0].owner == username) {
+      callback({canLock: true});
+    }
+  })
+}
+
 exports.connectServer = function() {
     mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
         if(err) {
@@ -362,14 +379,6 @@ exports.unlock = function(username, lockId, callback) {
   })
 }
 
-<<<<<<< HEAD
-exports.registerLock = function(username, lockId, lockName, callback) {
-console.log(lockId);
-db.collection("locks").find({lockId:  lockId}).toArray((err, result) => {
-    if(result[0] == null) {
-    db.collection("users").find({username: username}).toArray((err, result) => {
-          var idArray = result[0].locks
-=======
 exports.registerLock = function(lockId, lockName, userName, callback) {
 console.log("lockId is: " + lockId);
 db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
@@ -382,7 +391,6 @@ db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
           var roleArray = result[0].roles;
           var lockResArray = result[0].lockRestrictions;
           var unlockResArray = result[0].unlockRestrictions;
->>>>>>> 1c0664f4d4fb22d0793d705e9b210e69fbe005f0
           idArray.push(lockId);
           roleArray.push(0);
           lockResArray.push([-1, -1]);
