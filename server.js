@@ -1,7 +1,6 @@
 "use strict";
 const express = require("express");
 const mongoClient = require("mongodb").MongoClient;
-let db = "hello";
 const app = express();
 let dir = __dirname;
 let bodyParser = require('body-parser');
@@ -31,30 +30,28 @@ app.use(bodyParser.json());
 
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
 
-      server.listen(3000, function() {
+  server.listen(3000, function() {
 
-            console.log("listening on 3000");
-            mod.connectServer();
-            })
-      })
+    console.log("listening on 3000");
+    mod.connectServer();
+  })
+})
 
 
 var dashboard = socket.of("/dashboardConnection");
 dashboard.on("connection", function(socket) {
-      console.log("Connected to dashboard socket from server end");
-      socket.on("request", function(data) {
-            console.log(data);
+  console.log("Connected to dashboard socket from server end");
+  socket.on("request", function(data) {
+    console.log(data);
 
             // Do all of the lock stuff here....
 
             socket.emit("response", "response string");
-      })
+          })
 })
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
-
-  db = mod.db;
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -71,17 +68,17 @@ app.get("/addRules", (req, res) => {
 })
 
 app.get("/registerLock", (req, res) => {
-      res.sendFile(dir + "/views/register.html");
+  res.sendFile(dir + "/views/register.html");
 })
 
 app.get("/editAdmins", (req, res) => {
-   res.sendFile(dir+ "/views/editAdmins.html");
+ res.sendFile(dir+ "/views/editAdmins.html");
 })
 
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 
-app.get("/authenticate", (req, res) => {
+  app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
   var email = req.query.email;
@@ -94,7 +91,7 @@ app.get("/authenticate", (req, res) => {
     }
     res.send(locks);
   })
-})
+  })
 
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
@@ -112,13 +109,6 @@ app.get("/dashboard", (req, res) => {
  * is because the dashboard will contain some information personalized
  * to the user.
  */
-app.get("/dashboardInformation", (req, res) => {
-  mod.getDashboardInformation(req.session.username, req.session.lock, function(data) {
-    res.send(data);
-  })
-
-})
-
  app.get("/dashboardInformation", (req, res) => {
 
   mod.getLockInfo(req.session.lock, req.session.username, function(data) {
@@ -126,19 +116,21 @@ app.get("/dashboardInformation", (req, res) => {
   })
 })
 
-app.get("/getLocks", (req, res) => {
+ app.get("/getLocks", (req, res) => {
   mod.getLocks(req.session.username, function(data) {
     res.send(data);
   })
 })
 
-app.get("/getMembers", (req, res) => {
-  let id = req.session.lock;
-  mod.getLockMembers(id, function(members) {res.send({members: members});});
+ app.get("/getSettings", (req, res) => {
+  mod.getSettings(req.session.username, req.session.lock, function(data) {
+    console.log("getSettings in server.js: " + data);
+    res.send(data);
+  })
 })
 
  app.get("/getMembers", (req, res) => {
-  var id = req.session.lock;
+  let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
  
@@ -178,7 +170,7 @@ app.get("/selectDashboard", (req, res) => {
 app.get("/settings", (req, res) => {
   lockId = req.session.lock;
 
-        res.sendFile(dir + "/views/settings.html");
+  res.sendFile(dir + "/views/settings.html");
 })
 
 
@@ -187,12 +179,19 @@ app.get("/switchLock", (req, res) => {
   res.send();
 })
 
+app.get("/switchSettings", (req, res) => {
+  console.log("the botton clicked is: " + req.query.setting);
+  mod.switchSettings(req.query.setting, function(data) {
+    console.log("the data sent in server.js is: " + data);
+    res.send(data);
+  })
+})
 
 app.get("/timeStatus", (req, res) => {
 
-      let time = mod.getTime();
+  let time = mod.getTime();
 
-      res.send(time);
+  res.send(time);
 })
 
 app.get("/canAccess", (req, res) => {
@@ -216,19 +215,19 @@ app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
   mod.getLockHistory(id, function(history) {
 
-  var id = req.session.lock;
-  mod.getLockHistory(id, function(history) {
-    history.times.push(history.owner);
-    history.actions.push(history.owner);
-    res.send({members: history.times, memActions: history.actions});
-  });
-})
+    var id = req.session.lock;
+    mod.getLockHistory(id, function(history) {
+      history.times.push(history.owner);
+      history.actions.push(history.owner);
+      res.send({members: history.times, memActions: history.actions});
+    });
+  })
 })
 
-    app.get("/signOut", (req, res) => {
-     req.session.reset();
-     res.send();
-   })
+app.get("/signOut", (req, res) => {
+ req.session.reset();
+ res.send();
+})
 
 
 /* ---------------------- POST ROUTES BELOW ---------------------- */
@@ -236,17 +235,17 @@ app.get("/showHistory", (req, res) => {
 //add member who can access lock
 app.post("/addMember", (req, res) => {
 
-      let username = req.body.username;
-      let lockId = req.session.lock;
+  let username = req.body.username;
+  let lockId = req.session.lock;
       //call the module
       mod.addMember(username,lockId, function(members) {res.send({members: members});});
 
       //call the mod
       mod.addMember(username,lockId, function(members) {res.send({members: members});});
-      })
+    })
 //remove member from lock 
 app.post("/removeMember", (req, res) => {
-      
+  
 })
 
 
@@ -260,18 +259,18 @@ app.post("/addTimeRestriction", (req, res) => {
 
 
       mod.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
-            if(result) {
-                  res.send();
-            }
-            else {
-                  res.send({error: "error message"});
-            }
+        if(result) {
+          res.send();
+        }
+        else {
+          res.send({error: "error message"});
+        }
       })
     })
 
 //rule for lock
 app.post("/createRule", (req, res) => {
-      mod.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
+  mod.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
 })
 
 //lock function
@@ -292,8 +291,8 @@ app.post("/registerLock", (req, res) => {
   let id = parseInt(req.body.id);
   let username = req.session.username;
   
-  console.log("user Name in server.js: " + req.session.username);
-  console.log("lock Name in server.js: " + req.body.lockName);
+  //console.log("user Name in server.js: " + req.session.username);
+  //console.log("lock Name in server.js: " + req.body.lockName);
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
   // let username = req.body.username;
   // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
@@ -309,20 +308,20 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-      mod.unlock(req.session.username, req.session.lock, function(result) {
-            if(result) {
-                  res.send();
-            }
-            else {
-                  res.send({error:"You do not have permission to do this!"});
-            }
-      })
+  mod.unlock(req.session.username, req.session.lock, function(result) {
+    if(result) {
+      res.send();
+    }
+    else {
+      res.send({error:"You do not have permission to do this!"});
+    }
+  })
 })
 
 //update role in data base
 app.post("/updateRole", (req, res) => {
-      let username = req.body.username;
-      let lockId = req.session.lock;
+  let username = req.body.username;
+  let lockId = req.session.lock;
 
       //use boolean values to set roles 
       let canAddMembers = (req.body.canAddMembers == "true");

@@ -6,7 +6,7 @@ function onSignIn(googleUser) {
     var profile = googleUser.getBasicProfile();
     name = profile.getName();
     email = profile.getEmail();
-    console.log("email in onSignIn: " + email);
+    //console.log("email in onSignIn: " + email);
     $.get("/authenticate", {email: profile.getEmail(), fullname: profile.getName()}, function(data) {
       if(data.locks.length > 1) {
         window.location = "selectLock";
@@ -31,7 +31,7 @@ function loadDashboard() {
 
 function loadLocks(){
   $.get("/getLocks", function(data) {
-    var list = document.getElementById("dashboardComponents");
+    let list = document.getElementById("dashboardComponents");
     for(var i = 0; i < data.locks.length; i++) {
       var lock = document.createElement("a");
       lock.appendChild(document.createTextNode(data.lockNames[i]));
@@ -44,14 +44,36 @@ function loadLocks(){
   })
 }
 
-// function loadSettings() {
-  
-// }
-
 function switchLock() {
-  $(document).on("click", ".locksonSiderbar", function(element){
+  $(document).on("click", ".locksonSiderbar", function(element) {
     $.get("/switchLock", {lockId: event.target.id}, function() {
       window.location = "dashboard";
+    })
+  })
+}
+
+function loadSettings() {
+  $.get("/getSettings", function(data) {
+    let list = document.getElementById("settingsComponents");
+    for(var i = 0; i < data.setting.length; i++) {
+      var setting = document.createElement("a");
+      setting.appendChild(document.createTextNode(data.setting[i]));
+      setting.setAttribute("class", "sidenav-second-level collapse settingsonSiderbar");
+      setting.setAttribute("id", data.setting[i]);
+      var settingElement = document.createElement("li");
+      settingElement.appendChild(setting);
+      list.appendChild(settingElement);
+    }
+  })
+
+}
+
+
+function swtichSettings() {
+  $(document).on("click", ".settingsonSiderbar", function(element) {
+    $.get("/switchSettings", {setting: event.target.id}, function(data) {
+      // console.log("data in switchSettings is: " + data);
+      window.location = data;
     })
   })
 }
@@ -66,14 +88,14 @@ function switchLock() {
 
 function registerLock() {
   //console.log("user name in scripts.js is : " + email);
-    $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
-      if(data.redirect == "failure") {
-        $(".lockTaken").text("Taken");
-      }
-      else {
-        window.location = data.redirect;
-      }
-    })
+  $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
+    if(data.redirect == "failure") {
+      $(".lockTaken").text("Taken");
+    }
+    else {
+      window.location = data.redirect;
+    }
+  })
 }
 
 function getLockStatus() {
