@@ -11,6 +11,28 @@
 
  const async = require("async");
 
+function searchLocks(lockId, locks) {
+  for(let i = 0;  i < locks.length; i++) {
+    if(locks[i].lockId == lockId) {
+      return locks[i];
+    }
+  }
+}
+
+function isOwner(username, lockId) {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
+    let lock = searchLocks(lockId, result[0].locks);
+    return lock.role == 0;
+  })
+}
+
+function isAdmin(username, lockId) {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
+    let lock = searchLocks(lockId, result[0].locks);
+    return lock.role == 1;
+  })
+}
+
  exports.getLockInfo = function(lockId, username, callback) {
   let lockName = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
