@@ -315,7 +315,6 @@ exports.getLocks = function(username, callback) {
 
 exports.lock = function(username, lockId, callback) {
   let lockTime = this.getTime();
-  if(isOwner(username, lockId) || isAdmin(username, lockId) ||)
 
   //check the lock restrictions
   db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
