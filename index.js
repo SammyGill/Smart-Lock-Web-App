@@ -461,7 +461,7 @@ exports.authenticate = function(username, fullname,  callback) {
       callback({locks: result[0].locks}, result[0].locks[0].lockId);
      }
      else {
-       callback({lock: result[0].locks}, undefined)
+       callback({locks: result[0].locks}, undefined)
      }
    }
   //If the user does not exist, create a document for the user in the database and redirect him to register page
@@ -470,5 +470,12 @@ exports.authenticate = function(username, fullname,  callback) {
        callback({locks:[]});})
    }
  })
+}
+
+exports.getDashboardInformation = function(username, lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    let lockName = result[0].lockName;
+    callback({username: username, lockName: lockName});
+  })
 }
 
