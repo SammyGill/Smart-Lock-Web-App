@@ -98,7 +98,7 @@ function registerLock() {
   })
 }
 
-function getLockStatus() {
+/*function getLockStatus() {
   $.get("/lockStatus", function(data) {
     if(data.status == "locked") {
       $("#lock-action").text("unlock");
@@ -113,7 +113,7 @@ function getLockStatus() {
 
 function request() {
   
-}
+}*/
 
 
 function getTime() {
@@ -312,10 +312,12 @@ function getLockStatus() {
     if(data.status == "locked") {
       $("#lock-action").text("unlock");
       $("#lock-status").text("locked");
+			socket.emit("initial", 0);
     }
     else {
       $("#lock-action").text("lock");
       $("#lock-status").text("unlocked");
+			socket.emit("initial", 1);
     }
   })
 }
@@ -329,7 +331,7 @@ function changeLock() {
   }
   // Response when the lock has been changed
   socket.on("response", function(data) {
-    console.log("got a response");
+    console.log(data);
   }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {

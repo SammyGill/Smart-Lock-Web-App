@@ -173,23 +173,9 @@
           </li>
         </ol>
         <div class="row">
-<<<<<<< HEAD
-          <div class="col-md-3">
-            <div class="card mb-3 lock-control" onclick="changeLock()" >
-              <div class="card-header">
-                <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
-              </div>
-              <div class="card-body">
-                <img src="../imgs/lock.png" style="width:170px;height:170px;">
-              </div>
-              <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span>
-							</div>
-            </div>
-=======
           <div class="col-12">
             <h1> <span class="header"> </span> </h1>
             <p> Dashboard page creating from the blank page template.</p>
->>>>>>> 0be70243e580ab6d3eb129ccf1c92085f131778f
           </div>
         </div>
         <h1 class="error-message"></h1>
@@ -278,7 +264,6 @@
   <script src = "/socket.io/socket.io.js"></script>
   <script>
     var socket = io("/dashboardConnection");
-<<<<<<< HEAD
   	window.addEventListener("load", function(){ //when page loads
     var lightbox = document.getElementById("lock-status"); 
 		lightbox.addEventListener("change", function() { //add event listener for when checkbox changes
@@ -292,10 +277,6 @@
 
 
 	  </script>
-=======
-  </script>
->>>>>>> 0be70243e580ab6d3eb129ccf1c92085f131778f
-
   <script>
     request();
     
