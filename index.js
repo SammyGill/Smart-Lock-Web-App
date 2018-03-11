@@ -17,18 +17,31 @@ function searchLocks(lockId, locks) {
       return locks[i];
     }
   }
+
+  // Returns false if the person doesn't have this lock in their collection
+  return false;
 }
 
+// Checks to see if user is an owner of lock
 function isOwner(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
+    // returns false here if person isn't in lock
+    if(!lock) {
+      return false;
+    }
     return lock.role == 0;
   })
 }
 
+// checks to see if person is admin of lock
 function isAdmin(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
+    // returns false here if person isn't in lock
+    if(!lock) {
+      return false;
+    }
     return lock.role == 1;
   })
 }
@@ -302,6 +315,8 @@ exports.getLocks = function(username, callback) {
 
 exports.lock = function(username, lockId, callback) {
   let lockTime = this.getTime();
+  if(isOwner(username, lockId) || isAdmin(username, lockId) ||)
+
   //check the lock restrictions
   db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
     if (result[0]) {
