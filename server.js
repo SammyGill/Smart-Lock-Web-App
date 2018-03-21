@@ -37,9 +37,6 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
   })
 })
 
-<<<<<<< HEAD
-=======
-
 var dashboard = socket.of("/dashboardConnection");
 dashboard.on("connection", function(socket) {
   console.log("Connected to dashboard socket from server end");
@@ -52,7 +49,6 @@ dashboard.on("connection", function(socket) {
           })
 })
 
->>>>>>> a768deade061a275dea256586a70342003345199
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
   res.sendFile(dir + "/views/login.html");
