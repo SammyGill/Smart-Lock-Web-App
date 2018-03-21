@@ -68,7 +68,6 @@ function isAdmin(username, lockId) {
   })
 }
 
-<<<<<<< HEAD
 function withinBounds(username, lockId, state) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
@@ -92,7 +91,6 @@ function withinBounds(username, lockId, state) {
     }
     return true;
   })
-=======
 function canLock(username, lockId) {
   return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
 }
@@ -107,7 +105,6 @@ function canCreateLockEvent(username, lockId) {
 
 function canCreateUnlockEvent(username, lockId) {
   return canUnlock(username, lockId);
->>>>>>> 86aeab9161f1981d2a187966fadfde66d275260c
 }
 
  exports.getLockInfo = function(lockId, username, callback) {
