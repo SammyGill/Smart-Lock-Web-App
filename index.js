@@ -183,26 +183,11 @@ exports.checkActionPermission = function(timesArray, currentTime) {
   return true;
 }
 
-exports.createRule = function(lockId, username, action, time) {
-  let owner = undefined;
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    owner = (result[0].owner == username);
-    db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result2) => {
-      if(!owner) {
-        if (result2[0].canCreateRules == false) {
-          res.send({message: "You can't create rules!"});
-        } 
-        else {
-          db.collection("rules").insert({lockId: lockId, action: action, time: time});
-        }
-      }
-      else {
-        db.collection("rules").insert({lockId: lockId, action: action, time: time});
-      }
-    })
-  })
-
-
+exports.createEvent = function(lockId, username, action, time) {
+  if(isOwner(username, lockId) || isAdmin(username, lockId) 
+    || ((action == "lock" && canCreateLockEvent(username, lockId)) || action == "unlock" && canCreateUnlockEvent(username, lockId))) {
+    db.collection("rules").insert({lockId: lockId, action: action, time: time});
+  }
 }
 
 exports.getSettings = function(username, lockId, callback) {
