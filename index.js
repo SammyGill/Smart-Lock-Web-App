@@ -68,6 +68,31 @@ function isAdmin(username, lockId) {
   })
 }
 
+<<<<<<< HEAD
+function withinBounds(username, lockId, state) {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
+    let lock = searchLocks(lockId, result[0].locks);
+    // returns false here if person isn't in lock
+    if(!lock) {
+      return false;
+    }
+    let currentTime = convertToMilitary(getTime());
+    if (state == "locked") {
+      for(let i = 0; i < lock.lockRestrictions.length; i++) {
+        if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
+          return false;
+        }
+      }
+    } else {
+      for(let i = 0; i < lock.unlockRestrictions.length; i++) {
+        if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
+          return false;
+        }
+      }
+    }
+    return true;
+  })
+=======
 function canLock(username, lockId) {
   return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
 }
@@ -82,6 +107,7 @@ function canCreateLockEvent(username, lockId) {
 
 function canCreateUnlockEvent(username, lockId) {
   return canUnlock(username, lockId);
+>>>>>>> 86aeab9161f1981d2a187966fadfde66d275260c
 }
 
  exports.getLockInfo = function(lockId, username, callback) {
@@ -90,6 +116,23 @@ function canCreateUnlockEvent(username, lockId) {
     lockName = result[0].lockName;
     username = username;
     callback({username: username, lockName: lockName});
+  })
+}
+
+exports.getLockStatus = function(lockId, callback) {
+  let lockName = undefined;
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    console.log(result[0].status);
+    status = result[0].status;
+    callback({status: status});
+  })
+}
+
+exports.canLock = function(lockId, username, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    if (result[0] != null && result[0].owner == username) {
+      callback({canLock: true});
+    }
   })
 }
 
@@ -556,5 +599,22 @@ exports.getDashboardInformation = function(username, lockId, callback) {
     let lockName = result[0].lockName;
     callback({username: username, lockName: lockName});
   })
+}
+
+
+function canRevokeAdmin(username, lockId, otherUser) {
+  return (isOwner(username, lockId) && isAdmin(otherUser, lockId));
+}
+
+exports.revokeAdmin = function(username, lockId, otherUser, callback) {
+  if (canRevokeAdmin(username, lockID, otherUser)) {
+    db.collection("users").find({"username": otherUser, "locks.lockId": lockId}).toArray((err, result) => {
+      let lock = searchLocks(lockId, result[0].locks);
+      // returns false here if person isn't in lock
+      if(lock) {
+       //change the role number to 2 for that user and push into array
+      }
+    })
+  }
 }
 
