@@ -11,6 +11,13 @@
 
  const async = require("async");
 
+/**
+ * Searches through an array of locks and determines whether a particular
+ * lock ID is contained in the array
+ * 
+ * @param {int} lockId - id of the lock we are looking for
+ * @param {array of locks} locks - lock objects that belong to the user
+ */
 function searchLocks(lockId, locks) {
   for(let i = 0;  i < locks.length; i++) {
     if(locks[i].lockId == lockId) {
@@ -22,7 +29,14 @@ function searchLocks(lockId, locks) {
   return false;
 }
 
-// Checks to see if user is an owner of lock
+/**
+ * Determines whether a particular user is an owner of a lock. We query the user's 
+ * locks to see if it contains that particular lock and then check the user's role 
+ * under that lock.
+ * 
+ * @param {string} username - username for a particular user we are querying for
+ * @param {int} lockId - ID of the lock we are looking for 
+ */
 function isOwner(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
@@ -34,7 +48,15 @@ function isOwner(username, lockId) {
   })
 }
 
-// checks to see if person is admin of lock
+
+/**
+ * Determines whether a particular user is an admin of a lock. We query the user's
+ * locks to see if it contains that particular lock and then check the user's role
+ * under that lock.
+ * 
+ * @param {string} username - username for a particular user we are querying for
+ * @param {int} lockId - ID of the lock we are looking at
+ */
 function isAdmin(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
