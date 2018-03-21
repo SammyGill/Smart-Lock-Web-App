@@ -46,6 +46,22 @@ function isAdmin(username, lockId) {
   })
 }
 
+function canLock(username, lockId) {
+  return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
+}
+
+function canUnlock(username, lockId) {
+  return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
+}
+
+function canCreateLockEvent(username, lockId) {
+  return canLock(username, lockId);
+}
+
+function canCreateUnlockEvent(username, lockId) {
+  return canUnlock(username, lockId);
+}
+
  exports.getLockInfo = function(lockId, username, callback) {
   let lockName = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
@@ -317,40 +333,28 @@ exports.lock = function(username, lockId, callback) {
   let lockTime = this.getTime();
 
   //check the lock restrictions
-  db.collection("roles").find({username:  username, lockId: lockId}).toArray((err, result) => {
-    if (result[0]) {
-      let lockRestrictions = result[0].lockRestrictions;
-    }
-    //check if the user is the owner of the lock
-    db.collection("locks").find({lockId: lockId}).toArray((err,result) => {
-      let isOwner = (result[0].owner == username);
+    if(canLock(username, lockId)) {
+      let date = new Date();
+      date = date.toDateString();
+      let time = (date + " at " + lockTime);
+      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+        let names = result[0].usernames;
+        let actions = result[0].actions;
+        let times = result[0].times;
+        names.push(username);
+        actions.push("lock");
+        times.push(time);
+        db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
 
-      if(isOwner || this.checkActionPermission(lockRestrictions, this.convertToMilitary(lockTime))) {
-        let date = new Date();
-        date = date.toDateString();
-        let time = (date + " at " + lockTime);
-        db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-          let names = result[0].usernames;
-          let actions = result[0].actions;
-          let times = result[0].times;
-          names.push(username);
-          actions.push("lock");
-          times.push(time);
-          db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
-
-          db.collection("users").find({username: username}).toArray((err, result) => {
-            db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
-              (err, numberAffected, rawResponse) => {
-                callback(true);
-              })
-          })
+        db.collection("users").find({username: username}).toArray((err, result) => {
+          db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
+            (err, numberAffected, rawResponse) => {
+              callback(true);
+            })
         })
-      }
-      else {
-        callback(false);
-      }
-    })
-  })
+      })
+    }
+  callback(false);
 }
 
 exports.getLockHistory = function(lockId, callback) {
@@ -419,16 +423,8 @@ exports.addMember = function(username, lockId) {
   exports.unlock = function(username, lockId, callback) {
     var time = this.getTime();
 
-    db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-      if(result[0]) {
-        let unlockRestrictions = result[0].unlockRestrictions;
-      }
 
-      db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-        let owner = (result[0].owner == username);
-
-    // If this returns true, then the user has permission to perform the actions
-    if(owner || this.checkActionPermission(unlockRestrictions, this.convertToMilitary(time))) {
+    if(canUnlock(username, lockId)) {
       let date = new Date();
       date = date.toDateString();
       time = (date + " at " + time);
@@ -444,16 +440,12 @@ exports.addMember = function(username, lockId) {
       db.collection("users").find({username: username}).toArray((err, result) => {
         db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
           callback(true);
+          return;
         })
       })
     }
-    else {
-      // Send them an error message saying they do not have permission 
-      callback(false);
-    }
-  })
-  // We were able to find a role associated with this lock and user
-})
+    callback(false);
+    return;
   }
 
   exports.registerLock = function(lockId, lockName, userName, callback) {
