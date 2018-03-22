@@ -46,7 +46,21 @@ function isAdmin(username, lockId) {
   })
 }
 
-<<<<<<< HEAD
+/**
+ * Looks through array and determines if user is member
+ */
+function isMember(username, lockId) {
+   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
+      let lock= searchLocks(lockId, result[0].locks);
+      //return false here if person isn't in lock
+      if(!lock){
+         return false;
+      }
+      return lock.role ==2;
+   })
+}
+
+
 function withinBounds(username, lockId, state) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
@@ -70,7 +84,7 @@ function withinBounds(username, lockId, state) {
     }
     return true;
   })
-=======
+
 function canLock(username, lockId) {
   return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
 }
@@ -85,7 +99,6 @@ function canCreateLockEvent(username, lockId) {
 
 function canCreateUnlockEvent(username, lockId) {
   return canUnlock(username, lockId);
->>>>>>> 86aeab9161f1981d2a187966fadfde66d275260c
 }
 
  exports.getLockInfo = function(lockId, username, callback) {
@@ -261,6 +274,11 @@ exports.getSettings = function(username, lockId, callback) {
   })
 }
 
+/**
+ * Switch between setting tabs
+ * @param: settingName, callback
+ * @return:setting selected or error
+ */
 exports.switchSettings = function(settingName, callback) {
   if(settingName == "Add Users") {
     callback("addMembers");
@@ -277,6 +295,11 @@ exports.switchSettings = function(settingName, callback) {
   }
 }
 
+/**
+ * Creates role for user and adds associated restrictions
+ * @paramL action, username, lock, start, end, callback
+ * @return: true if role was created else false
+ */
 exports.createRole = function(action, username, lock, start, end, callback) {
         //convert to military time
         let restrictions = undefined;
@@ -324,7 +347,11 @@ exports.createRole = function(action, username, lock, start, end, callback) {
            })
 }
 
-
+/**
+ * Gets the members of a specific lock
+ * @param: lockId, callback
+ * @return: members or message saying there are no members
+ */
 exports.getLockMembers = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     let members = result[0].members;
@@ -335,6 +362,11 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
+/**
+ * Accesses the locks and gets the lockNames of a specified user
+ * @param: username, callback
+ * @return: locknames 
+ */
 exports.getLocks = function(username, callback) {
   db.collection("users").find({username: username}).toArray((err, result) => {
     //console.log(result);
@@ -357,6 +389,12 @@ exports.getLocks = function(username, callback) {
   })
 }
 
+/**
+ * Locks the lock, checks lock restrictions, adds action to 
+ * history
+ * @param: username, lockId, callback
+ * @return:true if locked, else false
+ */
 exports.lock = function(username, lockId, callback) {
   let lockTime = this.getTime();
 
@@ -385,12 +423,22 @@ exports.lock = function(username, lockId, callback) {
   callback(false);
 }
 
+/**
+ * Gets the history (past lock actions executed)
+ * @param: lockId, callback
+ * @return: history
+ */
 exports.getLockHistory = function(lockId, callback) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
 }
 
+/**
+ * Adds a member to lock by adding specified user to database
+ * @param: username, lockId
+ * @return: true if added sucessfully, else false
+ */
 exports.addMember = function(username, lockId) {
    //find username(have to have existing account
    db.collection("users").find({username: username}).toArray((err,result) => {
@@ -448,6 +496,11 @@ exports.addMember = function(username, lockId) {
      })
   }//end addMember 
 
+/**
+ * Unlock the lock and record any changes in the history
+ * @param: username, lockId, callback
+ * @return: false if not unlocked
+ */
   exports.unlock = function(username, lockId, callback) {
     var time = this.getTime();
 
@@ -476,6 +529,11 @@ exports.addMember = function(username, lockId) {
     return;
   }
 
+/**
+ * Registers lock to database by recording lockId, role and restrictions 
+ * if lock is already registered then send back failure 
+ * @param: lockId, lockName, userName, callback
+ */
   exports.registerLock = function(lockId, lockName, userName, callback) {
 
     db.collection("users").find({"username": userName, "locks.lockId": lockId}).toArray((err, result) => {
@@ -518,6 +576,7 @@ exports.addMember = function(username, lockId) {
 })
   }
 
+//Not being used anymore?
   exports.canAccess = function(username, lockId, callback) {
     //db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
       //console.log("this is the result in index for locks "  + result[0].owner);
@@ -535,6 +594,11 @@ exports.addMember = function(username, lockId) {
   //})
 }
 
+/**
+ * Gets the status of the lock (whether it is locked or unlocked)
+ * @param: lockId, callback
+ * @return: string either "locked" or "unlocked"
+ */
 exports.getLockStatus = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     callback({status: result[0].status});
@@ -572,6 +636,10 @@ exports.authenticate = function(username, fullname,  callback) {
 })
  }
 
+/**
+ * Gets dashoard info including lockname and username
+ * @param: username, lockId, callback
+ */
 exports.getDashboardInformation = function(username, lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     let lockName = result[0].lockName;
@@ -579,11 +647,30 @@ exports.getDashboardInformation = function(username, lockId, callback) {
   })
 }
 
-
+/**
+ * Checks if user can revoke admin priveldges 
+ * @param: username, lockId, otherUser
+ * return: true if can remove, else false
+ */
 function canRevokeAdmin(username, lockId, otherUser) {
   return (isOwner(username, lockId) && isAdmin(otherUser, lockId));
 }
 
+/**
+ * Check is user can remove members from lock 
+ * @param: username, lockId, otherUser
+ * retunr: true if can remove, else false
+ */
+function canRemoveMem(username, lockId, otherUser) {
+   return(isOwner(username, lockId) && isAdmin(otherUser, lockId) && isAdmin(user, lockId));
+}
+
+/**
+ * Checks if person can remove an admin, if they can then remove admin by
+ * changing role number to 2
+ * @param: username lockId, otherUser, callback
+ * @return none
+ */
 exports.revokeAdmin = function(username, lockId, otherUser, callback) {
   if (canRevokeAdmin(username, lockID, otherUser)) {
     db.collection("users").find({"username": otherUser, "locks.lockId": lockId}).toArray((err, result) => {
