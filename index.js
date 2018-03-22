@@ -11,6 +11,13 @@
 
  const async = require("async");
 
+/**
+ * Searches through an array of locks and determines whether a particular
+ * lock ID is contained in the array
+ * 
+ * @param {int} lockId - id of the lock we are looking for
+ * @param {array of locks} locks - lock objects that belong to the user
+ */
 function searchLocks(lockId, locks) {
   for(let i = 0;  i < locks.length; i++) {
     if(locks[i].lockId == lockId) {
@@ -22,7 +29,14 @@ function searchLocks(lockId, locks) {
   return false;
 }
 
-// Checks to see if user is an owner of lock
+/**
+ * Determines whether a particular user is an owner of a lock. We query the user's 
+ * locks to see if it contains that particular lock and then check the user's role 
+ * under that lock.
+ * 
+ * @param {string} username - username for a particular user we are querying for
+ * @param {int} lockId - ID of the lock we are looking for 
+ */
 function isOwner(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
@@ -34,7 +48,15 @@ function isOwner(username, lockId) {
   })
 }
 
-// checks to see if person is admin of lock
+
+/**
+ * Determines whether a particular user is an admin of a lock. We query the user's
+ * locks to see if it contains that particular lock and then check the user's role
+ * under that lock.
+ * 
+ * @param {string} username - username for a particular user we are querying for
+ * @param {int} lockId - ID of the lock we are looking at
+ */
 function isAdmin(username, lockId) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     let lock = searchLocks(lockId, result[0].locks);
@@ -46,8 +68,11 @@ function isAdmin(username, lockId) {
   })
 }
 
+
 /**
  * Looks through array and determines if user is member
+ * @param: username, lockId
+ * @return: role 2 or false
  */
 function isMember(username, lockId) {
    db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
@@ -85,23 +110,66 @@ function withinBounds(username, lockId, state) {
     return true;
   })
 
+  /**
+   * Determines where a user can perform the lock action at the particular time.
+   * A user can lock if:
+   *  1.) They are an owner of the lock
+   *  2.) They are an admin of the lock
+   *  3.) They are a member of the lock and do not conflict with any restrictions
+   * 
+   * @param {string} username - username of the user we are querying for
+   * @param {int} lockId - ID of the lock in question
+   */
 function canLock(username, lockId) {
   return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
 }
 
+  /**
+   * Determines where a user can perform the unlock action at the particular time.
+   * A user can lock if:
+   *  1.) They are an owner of the lock
+   *  2.) They are an admin of the lock
+   *  3.) They are a member of the lock and do not conflict with any restrictions
+   * 
+   * @param {string} username - username of the user we are querying for
+   * @param {int} lockId - ID of the lock in question
+   */
 function canUnlock(username, lockId) {
   return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
 }
 
+  /**
+   * Determines whether a user is allowed to create a lock event. A user
+   * can create a lock event at a specified time if they are able to
+   * lock at that time.
+   * 
+   * @param {string} username - username of the user we are querying for
+   * @param {int} lockId - ID of the lock we are checking 
+   */
 function canCreateLockEvent(username, lockId) {
   return canLock(username, lockId);
 }
 
+/**
+ * Determines whether a user is allowed to create an ulock event or not.
+ * A User can create an unlock event at a specified time if they are able
+ * to unlock at that time.
+ * 
+ * @param {string} username - user of the user we are querying for
+ * @param {int} lockId ID of the lock we are checking
+ */
 function canCreateUnlockEvent(username, lockId) {
   return canUnlock(username, lockId);
 }
 
- exports.getLockInfo = function(lockId, username, callback) {
+/**
+ * Given a lockId, returns the name of the lock
+ * 
+ * @param {int} lockId - ID of the lock we are getting information for
+ * @param {string} username - I THINK WE CAN DELETE THIS?
+ * @param {function} callback - callback function takine gusername and lock name
+ */
+exports.getLockInfo = function(lockId, username, callback) {
   let lockName = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     lockName = result[0].lockName;
@@ -110,20 +178,19 @@ function canCreateUnlockEvent(username, lockId) {
   })
 }
 
+
+/**
+ * Given a lockId, returns the status - lock or unlocked
+ * 
+ * @param {int} lockId - ID of the lock we are checking
+ * @param {function} callback - callback that takes the status of the lock
+ */
 exports.getLockStatus = function(lockId, callback) {
   let lockName = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     console.log(result[0].status);
     status = result[0].status;
     callback({status: status});
-  })
-}
-
-exports.canLock = function(lockId, username, callback) {
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    if (result[0] != null && result[0].owner == username) {
-      callback({canLock: true});
-    }
   })
 }
 
@@ -138,58 +205,32 @@ exports.connectServer = function() {
   })
 }
 
-exports.findUser = function(user) {
-  db.collection("users").find({username: user}).toArray((err, result) => {
-    if(result[0]) {
-      console.log("found a user!!!");
-    }
-    else {
-      console.log("did not find a user!");
-    }
-  })
-}
-
 exports.isLoggedIn = function(user) {
   return((user != undefined));
 },
 
 
-function getTime() {
-  let d = new Date();
-  let minutes = d.getMinutes();
-  let hours = d.getHours();
-  if (d.getMinutes() < 10) {
-   minutes = "0" + minutes;
- }
- if (d.getHours() > 12) {
-   hours = hours % 12;
- }
- let date = hours + ":" + minutes
- if (d.getHours() < 12) {
-  date = date + " AM";
-} else {
-  date = date + " PM";
-}
-return date;
-}
-
+/**
+ * Returns current time
+ */
 exports.getTime = function() {
   let d = new Date();
   let minutes = d.getMinutes();
   let hours = d.getHours();
   if (d.getMinutes() < 10) {
-   minutes = "0" + minutes;
- }
- if (d.getHours() > 12) {
-   hours = hours % 12;
- }
- let date = hours + ":" + minutes
- if (d.getHours() < 12) {
-  date = date + " AM";
-} else {
-  date = date + " PM";
-}
-return date;
+    minutes = "0" + minutes;
+  }
+  if (d.getHours() > 12) {
+    hours = hours % 12;
+  }
+  let date = hours + ":" + minutes
+  if (d.getHours() < 12) {
+    date = date + " AM";
+  } 
+  else {
+    date = date + " PM";
+  }
+  return date;
 };
 
 exports.convertToMilitary = function(time) {
@@ -204,11 +245,11 @@ exports.convertToMilitary = function(time) {
 
   let timeString = parseInt(timeArray[0].toString() + timeArray[1]);
   return timeString;
-}
-time = time.replace("AM", "");
-time = time.replace(" ", "");
-let timeArray = time.split(":");
-return (parseInt(timeArray[0] + timeArray[1]));
+  }
+  time = time.replace("AM", "");
+  time = time.replace(" ", "");
+  let timeArray = time.split(":");
+  return (parseInt(timeArray[0] + timeArray[1]));
 }
 
 exports.checkRestrictions = function(inputArray, dbArray) {
