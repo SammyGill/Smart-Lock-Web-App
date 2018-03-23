@@ -21,12 +21,10 @@
 function searchLocks(lockId, locks) {
   for(let i = 0;  i < locks.length; i++) {
     if(locks[i].lockId == lockId) {
-      return locks[i];
+      return locks[i].role;
     }
   }
 
-  // Returns false if the person doesn't have this lock in their collection
-  return false;
 }
 
 /**
@@ -37,14 +35,16 @@ function searchLocks(lockId, locks) {
  * @param {string} username - username for a particular user we are querying for
  * @param {int} lockId - ID of the lock we are looking for 
  */
-function isOwner(username, lockId) {
+function isOwner(username, lockId, callback) {
   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
-    let lock = searchLocks(lockId, result[0].locks);
+    let role = searchLocks(lockId, result[0].locks);
     // returns false here if person isn't in lock
-    if(!lock) {
-      return false;
+    if(role == undefined) {
+      callback(false);
+      return;
     }
-    return lock.role == 0;
+    callback(role == 0);
+    return;
   })
 }
 
@@ -109,6 +109,7 @@ function withinBounds(username, lockId, state) {
     }
     return true;
   })
+}
 
   /**
    * Determines where a user can perform the lock action at the particular time.
@@ -135,7 +136,13 @@ function canLock(username, lockId) {
    * @param {int} lockId - ID of the lock in question
    */
 function canUnlock(username, lockId) {
-  return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
+  //console.log("result is " + isOwner(username, lockId));
+  isOwner(username, lockId, handleCallback);
+  //return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
+}
+
+var handleCallback = function(result) {
+  console.log("handle callback result is " + result);
 }
 
   /**
@@ -207,13 +214,13 @@ exports.connectServer = function() {
 
 exports.isLoggedIn = function(user) {
   return((user != undefined));
-},
+};
 
 
 /**
  * Returns current time
  */
-exports.getTime = function() {
+var getTime = function() {
   let d = new Date();
   let minutes = d.getMinutes();
   let hours = d.getHours();
@@ -233,7 +240,7 @@ exports.getTime = function() {
   return date;
 };
 
-exports.convertToMilitary = function(time) {
+  var convertToMilitary = function(time) {
   if(time.indexOf("PM") != -1) {
    time = time.replace("PM", "");
    time = time.replace(" ", "");
@@ -437,7 +444,7 @@ exports.getLocks = function(username, callback) {
  * @return:true if locked, else false
  */
 exports.lock = function(username, lockId, callback) {
-  let lockTime = this.getTime();
+  let lockTime = getTime();
 
   //check the lock restrictions
     if(canLock(username, lockId)) {
@@ -543,7 +550,7 @@ exports.addMember = function(username, lockId) {
  * @return: false if not unlocked
  */
   exports.unlock = function(username, lockId, callback) {
-    var time = this.getTime();
+    var time = getTime();
 
 
     if(canUnlock(username, lockId)) {
@@ -724,3 +731,5 @@ exports.revokeAdmin = function(username, lockId, otherUser, callback) {
   }
 }
 
+module.exports.convertToMilitary = convertToMilitary;
+module.exports.getTime = getTime;
