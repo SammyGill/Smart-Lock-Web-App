@@ -27,6 +27,13 @@ function searchLocks(lockId, locks) {
 
 }
 
+
+function getUser(username, callback) {
+  db.collection("users").find({"username": username}).toArray((err, result) => {
+    callback(result[0]);
+  })
+}
+
 /**
  * Determines whether a particular user is an owner of a lock. We query the user's 
  * locks to see if it contains that particular lock and then check the user's role 
@@ -35,17 +42,13 @@ function searchLocks(lockId, locks) {
  * @param {string} username - username for a particular user we are querying for
  * @param {int} lockId - ID of the lock we are looking for 
  */
-function isOwner(username, lockId, callback) {
-  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
-    let role = searchLocks(lockId, result[0].locks);
+function isOwner(userObject, lockId) {
+    let role = searchLocks(lockId, userObject.locks);
     // returns false here if person isn't in lock
     if(role == undefined) {
-      callback(false);
-      return;
+      return false;
     }
-    callback(role == 0);
-    return;
-  })
+    return (role == 0);
 }
 
 
@@ -57,15 +60,13 @@ function isOwner(username, lockId, callback) {
  * @param {string} username - username for a particular user we are querying for
  * @param {int} lockId - ID of the lock we are looking at
  */
-function isAdmin(username, lockId) {
-  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
-    let lock = searchLocks(lockId, result[0].locks);
+function isAdmin(userObject, lockId) {
+    let role = searchLocks(lockId, userObject.locks);
     // returns false here if person isn't in lock
-    if(!lock) {
+    if(role == undefined) {
       return false;
     }
-    return lock.role == 1;
-  })
+    return (role == 1);
 }
 
 
@@ -86,9 +87,8 @@ function isMember(username, lockId) {
 }
 
 
-function withinBounds(username, lockId, state) {
-  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
-    let lock = searchLocks(lockId, result[0].locks);
+function withinBounds(userObject, lockId, state) {
+    let lock = searchLocks(lockId, userObject);
     // returns false here if person isn't in lock
     if(!lock) {
       return false;
@@ -108,7 +108,6 @@ function withinBounds(username, lockId, state) {
       }
     }
     return true;
-  })
 }
 
   /**
@@ -121,8 +120,11 @@ function withinBounds(username, lockId, state) {
    * @param {string} username - username of the user we are querying for
    * @param {int} lockId - ID of the lock in question
    */
-function canLock(username, lockId) {
-  return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "lock"));
+function canLock(user, lockId) {
+  console.log("isOwner " + isOwner(user, lockId));
+  console.log("isAdmin " + isAdmin(user, lockId));
+  console.log("withinBounds " + withinBounds(user, lockId));
+  return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId, "lock"));
 }
 
   /**
@@ -135,13 +137,16 @@ function canLock(username, lockId) {
    * @param {string} username - username of the user we are querying for
    * @param {int} lockId - ID of the lock in question
    */
-function canUnlock(username, lockId) {
-  //console.log("result is " + isOwner(username, lockId));
-  isOwner(username, lockId, handleCallback);
+function canUnlock(user, lockId) {
+  console.log("isOwner " + isOwner(user, lockId));
+  console.log("isAdmin " + isAdmin(user, lockId));
+  console.log("withinBounds " + withinBounds(user, lockId));
+  return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId));
   //return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
 }
 
 var handleCallback = function(result) {
+
   console.log("handle callback result is " + result);
 }
 
@@ -444,31 +449,37 @@ exports.getLocks = function(username, callback) {
  * @return:true if locked, else false
  */
 exports.lock = function(username, lockId, callback) {
-  let lockTime = getTime();
+  getUser(username, function(user) {
+    if(canLock(user, lockId)) {
+      console.log("user can lock!");
 
-  //check the lock restrictions
-    if(canLock(username, lockId)) {
-      let date = new Date();
-      date = date.toDateString();
-      let time = (date + " at " + lockTime);
-      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-        let names = result[0].usernames;
-        let actions = result[0].actions;
-        let times = result[0].times;
-        names.push(username);
-        actions.push("lock");
-        times.push(time);
-        db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
-
-        db.collection("users").find({username: username}).toArray((err, result) => {
-          db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
-            (err, numberAffected, rawResponse) => {
-              callback(true);
-            })
-        })
+      db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
+      (err, numberAffected, rawResponse) => {
+        if(!err) {
+          addToHistory(username, lockId, "lock");
+        }
+        callback(true);
+        return;
       })
     }
-  callback(false);
+  })
+}
+
+function addToHistory(username, lockId, action) {
+  db.collection("history").find({lockId: lockId}).toArray((err, result) => {
+    let time = getTime();
+    let date = new Date();
+    date = date.toDateString();
+    let dateTime = (date + " at " + time);
+
+    let names = result[0].usernames;
+    let actions = result[0].actions;
+    let times = result[0].times;
+    names.push(username);
+    actions.push(action);
+    times.push(dateTime);
+    db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
+  })
 }
 
 /**
@@ -550,30 +561,17 @@ exports.addMember = function(username, lockId) {
  * @return: false if not unlocked
  */
   exports.unlock = function(username, lockId, callback) {
-    var time = getTime();
-
-
-    if(canUnlock(username, lockId)) {
-      let date = new Date();
-      date = date.toDateString();
-      time = (date + " at " + time);
-      db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-        let names = result[0].usernames;
-        let actions = result[0].actions;
-        let times = result[0].times;
-        names.push(username);
-        actions.push("unlock");
-        times.push(time);
-        db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
-      })
-      db.collection("users").find({username: username}).toArray((err, result) => {
+    getUser(username, function(user) {
+      if(canUnlock(user, lockId)) {
         db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+          if(!err) {
+            addToHistory(username, lockId, "unlock");
+          }
           callback(true);
           return;
         })
-      })
-    }
-    callback(false);
+      }
+    })
     return;
   }
 
