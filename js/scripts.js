@@ -312,21 +312,26 @@ function getLockStatus() {
     if(data.status == "locked") {
       $("#lock-action").text("unlock");
       $("#lock-status").text("locked");
+      socket.emit("initial", 0);
     }
     else {
       $("#lock-action").text("lock");
       $("#lock-status").text("unlocked");
+      socket.emit("initial", 1);
     }
   })
 }
 
 function changeLock() {
-  // Send request to change lock...
-  socket.emit("request", "Sent a request!");
-
+ if (document.getElementById("lock-status").innerHTML == "locked") {
+ // Send request to change lock...
+  socket.emit("request", 1);
+  } else {
+  socket.emit("request", 0);
+  }
   // Response when the lock has been changed
   socket.on("response", function(data) {
-    console.log("got a response");
+    console.log(data);
   }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {
