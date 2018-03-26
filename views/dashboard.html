@@ -264,6 +264,16 @@
   <script src = "/socket.io/socket.io.js"></script>
   <script>
     var socket = io("/dashboardConnection");
+    window.addEventListener("load", function(){ //when page loads
+    var lightbox = document.getElementById("lock-status"); 
+    lightbox.addEventListener("change", function() { //add event listener for when checkbox changes
+      socket.emit("light", lightbox); //send button status to server (as 1 or 0)
+      });
+    });
+    socket.on('light', function (data) { //get button status from client
+    document.getElementById("light").checked = data; //change checkbox according to push button on Raspberry Pi
+    socket.emit("light", data); //send push button status to back to server
+  });
   </script>
 
   <script>

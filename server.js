@@ -13,6 +13,11 @@ const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
 
+const Gpio = require("onoff").Gpio;
+const greenLED = new Gpio(4, "out");
+const pushButton = new Gpio(17, "in", "both"); //may not need the button
+const redLED = new Gpio(27, "out");
+
 // Used to make the server look in our directory for
 // our javascript, css, and other files
 app.use(express.static(dir));
@@ -39,15 +44,48 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
 
 var dashboard = socket.of("/dashboardConnection");
 dashboard.on("connection", function(socket) {
-  console.log("Connected to dashboard socket from server end");
-  socket.on("request", function(data) {
-    console.log(data);
+  console.log("connected to dashboard socket from server end");
+  var lightvalue = 0; //static variable for current status
+  socket.on("initial", function(data) {
+    console.log("intiial light");
+    lightvalue = data;
+    greenLED.writeSync(lightvalue);
+    redLED.writeSync(1-lightvalue);
+  });
 
-            // Do all of the lock stuff here....
+  /*pushButton.watch(function (err, value) { //Watch for hardware interrupts     on pushButton
+  if (err) { //if an error
+    console.error('There was an error', err); //output error message to     console
+      return;
+  }
+  console.log("light valus is " + lightvalue);
+  lightvalue = value;
+  socket.emit('light', lightvalue); //send button status to client
+  });*/
 
-            socket.emit("response", "response string");
-          })
-})
+ 
+  socket.on("request", function(data) { //get light switch status from clien    t
+   console.log("light status: " + data);
+    lightvalue = data;
+    
+    if (lightvalue != greenLED.readSync()) { //only change LED if status has changed
+      greenLED.writeSync(lightvalue); //turn redLED on or off
+      redLED.writeSync(1-lightvalue); //turn greenLED opposite of redLED
+      socket.emit("response", "change was successful");
+    }
+    socket.emit("response", "you can't change the lock!");
+  });
+});
+
+//for turning the lights off when we press ctrl+c
+  process.on('SIGINT', function () { //on ctrl+c
+    redLED.writeSync(0); // Turn redLED off
+    greenLED.writeSync(0); //Turn greenLED off
+    redLED.unexport(); // Unexport LED redGPIO to free resources
+    greenLED.unexport(); //Unexport greenLED GPIO to free resources
+    pushButton.unexport(); // Unexport Button GPIO to free resources
+    process.exit(); //exit completely
+  });
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
