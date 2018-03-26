@@ -27,10 +27,40 @@ function searchLocks(lockId, locks) {
 
 }
 
-
 function getUser(username, callback) {
   db.collection("users").find({"username": username}).toArray((err, result) => {
     callback(result[0]);
+  })
+}
+
+function addUserToLock(userObject, lockId) {
+  let newLock = {
+                  "lockId": lockId,
+                  "role": 2,
+                  "lockRestrictions": [],
+                  "unlockRestrictions": []
+                };
+  userObject.locks.push(newLock);
+  db.collection("users").update({username: userObject.username}, {$set:{locks: userObject.locks}});
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    let lock = result[0];
+    lock.members.push(userObject.username);
+    db.collection("locks").update({lockId: lockId}, {$set: {members: lock.members}});
+  })
+
+}
+
+function lockContainsMember(username, lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    let membersArray = result[0].members;
+    for(let i = 0; i < membersArray.length; i++) {
+      if(username == membersArray[i]) {
+        callback(true);
+        return;
+      }
+    }
+    callback(false);
+    return;
   })
 }
 
@@ -138,11 +168,12 @@ function canLock(user, lockId) {
    * @param {int} lockId - ID of the lock in question
    */
 function canUnlock(user, lockId) {
-  console.log("isOwner " + isOwner(user, lockId));
-  console.log("isAdmin " + isAdmin(user, lockId));
-  console.log("withinBounds " + withinBounds(user, lockId));
   return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId));
   //return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
+}
+
+function canAddMembers(user, lockId) {
+  return (isOwner(user, lockId) || isAdmin(user, lockId));
 }
 
 var handleCallback = function(result) {
@@ -422,7 +453,7 @@ exports.getLockMembers = function(lockId, callback) {
  */
 exports.getLocks = function(username, callback) {
   db.collection("users").find({username: username}).toArray((err, result) => {
-    //console.log(result);
+    
     var locks = result[0].locks;
     var lockIds = [];
     var lockNames = [];
@@ -498,61 +529,40 @@ exports.getLockHistory = function(lockId, callback) {
  * @param: username, lockId
  * @return: true if added sucessfully, else false
  */
-exports.addMember = function(username, lockId) {
-   //find username(have to have existing account
-   db.collection("users").find({username: username}).toArray((err,result) => {
-      //if the length is not greater than 1
-      if(!result.length){
-         //display message 
-         return false;
-       }
-       else{
-         let locksArray = result[0].locks;
-         let lockExists = false;
-         //look for lock in the array
-         for(let i=0; i< locksArray.length; i++){
-            //if found update boolean
-            if(locksArray[i] ==lockId){
-             locksExists = true;
-           }
-         }
-         if(lockExists==false){
-            //if it doesn't alreafy exist for member then add 
-            locksArray.push(lockId)
-          }
-         //update the users
-         db.collection("users").update({username}, {$set: {locks: locksArray}});
-         db.collection("locks").find({lockId: lockId}).toArray((err, result) =>{
-            //use the passed in param for username
-            let currentUser = username;
-            console.log(currentUser);
-            console.log(lockId);
-
-            db.collection("roles").find({username: currentUser,lockId: lockId}).toArray((err,result2)=> {
-             let members = result[0].members;
-             username = username.toString();
-             let alreadyExists = false;
-             for(let i =0; i< members.length; i++){
-              if(members[i]==username || result[0].owner == username){
-               alreadyExists = true;
-             }
-           }
-           if(alreadyExists == false && result2 != null && result2[0].canAddMembers == true) {
-            members.push(username);
-            db.collection("locks").update({lockId: lockId}, {$set: {membbers: members}}, (err, numberAffected, rawResponse) => {
-
-              return true;
-            });
-          }
-          else if (result2[0].canAddMembers == false) {
-            return false;
-          }else if (alreadyExists == true){
-            return true;
-          }
-        })
+exports.addMember = function(username, userToAdd, lockId) {
+  /**
+   *  1.) See if the user can add members
+   *      - If not, return false
+   *  2.) See if username is in database
+   *      - If not, return false
+   * 
+   */
+  getUser(username, function(user) {
+    if(canAddMembers(user, lockId)) {
+      getUser(userToAdd, function(result) {
+        if(!result) {
+          // User does not exist in the database, return error
+          return({error: "User does not exist!"});
+        }
+        else {
+          lockContainsMember(userToAdd, lockId, function(alreadyContains) {
+            if(alreadyContains) {
+              // User already added to lock, return appropriate error
+              return({error: "User already added!"})
+            }
+            else {
+              // Everything good, add user to lock
+              addUserToLock(result, lockId);
+            }
           })
-       }
-     })
+        }
+      })
+      
+
+      
+    }
+  })
+
   }//end addMember 
 
 /**
