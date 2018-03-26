@@ -98,8 +98,8 @@ dashboard.on("connection", function(socket) {
       socket.on("request", function(data) {
             console.log(data);
             //check whether lock is locked/unlocked on server side
-          //  var currLock = req.session.lock;
-           // var status = mod.getLockStatus(currLock, function(data) {});
+            //var currLock = req.session.lock;
+            //var status = mod.getLockStatus(currLock, function(data) {});
 
             //get status of lock from database/lights
             //check if the current user has ability to lock/unlock or is a valid user
@@ -249,15 +249,12 @@ app.get("/signOut", (req, res) => {
 
 //add member who can access lock
 app.post("/addMember", (req, res) => {
-
-  let username = req.body.username;
+  let username = req.session.username;
+  let userToAdd = req.body.username;
   let lockId = req.session.lock;
-      //call the module
-      mod.addMember(username,lockId, function(members) {res.send({members: members});});
-
-      //call the mod
-      mod.addMember(username,lockId, function(members) {res.send({members: members});});
-    })
+  //call the module
+  mod.addMember(username, userToAdd, lockId);
+})
 //remove member from lock 
 app.post("/removeMember", (req, res) => {
   
