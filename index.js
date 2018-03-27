@@ -345,12 +345,12 @@ exports.getSettings = function(username, lockId, callback) {
         let role = locksArray[i].role;
         //If the user is admin
         if(role == 0) {
-          settings.push("Add Users");
+          settings.push("Add/Remove Users");
           settings.push("Edit Admins");
           settings.push("Create Event");
         }
         else if(role == 1) {
-          settings.push("Add Users");
+          settings.push("Add/Remove Users");
           settings.push("Create Event");
         }
         else{
@@ -368,7 +368,7 @@ exports.getSettings = function(username, lockId, callback) {
  * @return:setting selected or error
  */
 exports.switchSettings = function(settingName, callback) {
-  if(settingName == "Add Users") {
+  if(settingName == "Add/Remove Users") {
     callback("addMembers");
   }
   else if(settingName == "Edit Admins") {
