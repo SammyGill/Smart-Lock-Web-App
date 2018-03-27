@@ -201,13 +201,6 @@ app.get("/selectDashboard", (req, res) => {
   res.send();
 })
 
-app.get("/settings", (req, res) => {
-  lockId = req.session.lock;
-
-  res.sendFile(dir + "/views/settings.html");
-})
-
-
 app.get("/switchLock", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   res.send();
@@ -222,19 +215,19 @@ app.get("/switchSettings", (req, res) => {
 })
 
 app.get("/timeStatus", (req, res) => {
-
   let time = mod.getTime();
-
   res.send(time);
 })
 
-app.get("/canAccess", (req, res) => {
+
+//there is no mod.canAccess function so this might be a problem. not sure where it's being used
+/*app.get("/canAccess", (req, res) => {
   let username = req.session.username;
   let lockId = req.session.lock;
   mod.canAccess(username, lockId, function(roles) {
     res.send({roles: roles});
   });
-});
+});*/
 
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;

@@ -69,7 +69,7 @@ function loadSettings() {
 }
 
 
-function swtichSettings() {
+function switchSettings() {
   $(document).on("click", ".settingsonSiderbar", function(element) {
     $.get("/switchSettings", {setting: event.target.id}, function(data) {
       // console.log("data in switchSettings is: " + data);
@@ -163,7 +163,7 @@ function createRule() {
   var time = hourOption + ":" + minuteOption + " " + periodOption;
 
 
-  $.get("/canAccess", function(data) {
+  /*$.get("/canAccess", function(data) {
    if (data.access == false) {
      $.get("/createRule", function(data) {
       console.log("Should be in here...");
@@ -174,7 +174,7 @@ function createRule() {
      console.log("should create rule");
      $.post("/createRule", {action: action, time: time});
    }
- })
+ })*/
 }
 
 function getLockStatus() {
