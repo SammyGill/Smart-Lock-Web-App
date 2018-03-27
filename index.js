@@ -375,50 +375,23 @@ exports.switchSettings = function(settingName, callback) {
  * @return: true if role was created else false
  */
 exports.createRole = function(action, username, lock, start, end, callback) {
-        //convert to military time
-        let restrictions = undefined;
-        let timeArray = [start, end];
-        let resultArray = undefined;
-	//convert to military time
+  /**
+   * 
+   * Given user M who called the request
+   * upon user M', lock L, action A, start time s, end time e
+   *  
+   * M should be able to create a restriction for M' iff
+   *    - isOwner(M) or isAdmin (M) and !isOwner(M') and !isAdmin(M')
+   *    - s and e create a valid timeframe for an unlock (I think the checkRestrictions
+   *                                                      function handles this)
+   * 
+   * A couple of notes:
+   *    - the times may need to be converted to military if they already aren't
+   *    - we'll need to check if it is an unlock or lock restriction
+   *    - use the callback to return the success/failure
+   * 
+   */
 
-  db.collection("roles").find({username: username, lockId: lock}).toArray((err, result) => {
-              // If we found a user with the roles, check to see if there are any conflicts
-              if(result[0]) {
-              // check to see if there are any conflicts
-              if(action == "lock") {
-                restrictions = result[0].lockRestrictions;
-              }
-              else {
-                restrictions = result[0].unlockRestrictions;
-              }
-
-              // function to determine if there is an overlap in the lockRestrictions
-              if(checkRestrictions(timeArray, restrictions)) {
-              // If result is true, there is no error in the input and we can go ahead and add it
-              if(action == "lock") {
-                resultArray = result[0].lockRestrictions;
-
-                resultArray.push(timeArray);
-                db.collection("roles").update({username: username, lockId: lock}, {$set:{lockRestrictions: resultArray}});
-              }
-              else {
-               resultArray = result[0].unlockRestrictions;
-               resultArray.push(timeArray);
-               db.collection("roles").update({username: username, lockId: lock}, {$set:{unlockRestrictions: resultArray}});
-             } 
-             callback(true);
-             return true;
-           }
-           else {
-                 // Otherwise there was an error in the input that was provided and we should
-                 // give an appropriate error back
-                 callback(false);
-                 return false;
-               }
-             }
-             else {
-             }
-           })
 }
 
 /**
