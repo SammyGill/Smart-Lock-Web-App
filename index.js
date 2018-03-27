@@ -10,6 +10,7 @@
  let db = undefined;
 
  const async = require("async");
+ const assert = require("assert")
 
 /**
  * Searches through an array of locks and determines whether a particular
