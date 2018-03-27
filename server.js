@@ -12,6 +12,7 @@ let  d = new Date();
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
+ const assert = require("assert")
 
 /*const Gpio = require("onoff").Gpio;
 const greenLED = new Gpio(4, "out");
@@ -275,9 +276,6 @@ app.post("/removeMember", (req, res) => {
 
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
-      //convert to military time
-
-
       let start = mod.convertToMilitary(req.body.startTime);
       let end = mod.convertToMilitary(req.body.endTime);
 
@@ -293,8 +291,8 @@ app.post("/addTimeRestriction", (req, res) => {
     })
 
 //rule for lock
-app.post("/createRule", (req, res) => {
-  mod.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
+app.post("/createEvent", (req, res) => {
+  mod.createEvent(req.session.lock, req.session.username, req.body.action, req.body.time);
 })
 
 //lock function
@@ -342,18 +340,6 @@ app.post("/unlock", (req, res) => {
   })
 })
 
-//update role in data base
-app.post("/updateRole", (req, res) => {
-  let username = req.body.username;
-  let lockId = req.session.lock;
-
-      //use boolean values to set roles 
-      let canAddMembers = (req.body.canAddMembers == "true");
-      let canCreateRules = (req.body.canCreateRules == "true");
-      let canManageRoles = (req.body.canManageRoles == "true");
-      //update 
-      db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles}})
-    });
 
 
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
