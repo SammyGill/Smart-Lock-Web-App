@@ -99,10 +99,10 @@ app.get("/addMembers", (req, res) => {
 /*app.get("/addRoles", (req, res) => {
   res.sendFile(dir + "/views/addRoles.html");
 })
-
-app.get("/addRules", (req, res) => {
-  res.sendFile(dir + "/views/addRules.html");
-})*/
+*/
+app.get("/addEvents", (req, res) => {
+  res.sendFile(dir + "/views/addEvents.html");
+})
 
 app.get("/registerLock", (req, res) => {
   res.sendFile(dir + "/views/register.html");
@@ -263,7 +263,6 @@ app.post("/addMember", (req, res) => {
   let lockId = req.session.lock;
   //call the module
   mod.addMember(username, userToAdd, lockId, function(result) {
-    console.log("RESULT IS " + result.message);
     res.send(result);
   });
 
