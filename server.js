@@ -269,23 +269,25 @@ app.post("/removeMember", (req, res) => {
 
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
-      let start = mod.convertToMilitary(req.body.startTime);
-      let end = mod.convertToMilitary(req.body.endTime);
+  let start = mod.convertToMilitary(req.body.startTime);
+  let end = mod.convertToMilitary(req.body.endTime);
 
-
-      mod.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
-        if(result) {
-          res.send();
-        }
-        else {
-          res.send({error: "error message"});
-        }
-      })
-    })
+  mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
+                 start, end, function(result) {
+    if(result) {
+      res.send();
+    }
+    else {
+      res.send({error: "error message"});
+    }
+  })
+})
 
 //rule for lock
 app.post("/createEvent", (req, res) => {
-  mod.createEvent(req.session.lock, req.session.username, req.body.action, req.body.time);
+  mod.createEvent(req.session.lock, req.session.username, req.body.action, req.body.time, function(result) {
+    res.send(result);
+  });
 })
 
 //lock function

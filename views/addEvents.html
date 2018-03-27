@@ -60,14 +60,13 @@
         </li>
         <li class="breadcrumb-item active">Add Members</li>
       </ol>
+      <h2 style="text-align:center" id="response-message"> </h2>
       <div class="card">
         <h5 class="card-header" style="text-align:center;">Create a new rule for your lock</h5>
         <div class="card-body">
           <div id="form" align="center">
-            <p id="invalidAccess"> </p>
-            <p id="response-message"> </p>
             <form id="add-rules-form">
-              <div class="btn-group" data-toggle="buttons">      
+              <div class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary" style="background-color:grey;">
                   <input type="radio" autocomplete="off" disabled > I want to...
                 </label>
@@ -75,7 +74,7 @@
                   <input type="radio" autocomplete="off" id="lock"> Lock
                 </label>
                 <label class="btn btn-primary">
-                    <input type="radio" autocomplete="off" id="unlock"> Unlock
+                  <input type="radio" autocomplete="off" id="unlock"> Unlock
                 </label>
               </div>
               <div class="form-group col-md-4">
@@ -90,7 +89,7 @@
                   <option> PM </option>
                 </select>
               </div>
-              <button class="btn btn-primary" style="display:inline" onclick="createRule();">Submit</button>
+              <button class="btn btn-primary" style="display:inline" onclick="createLockEvent();">Submit</button>
             </form>
           </div>
         </div>
