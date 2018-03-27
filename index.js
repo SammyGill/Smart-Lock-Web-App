@@ -314,9 +314,22 @@ exports.checkActionPermission = function(timesArray, currentTime) {
 }
 
 exports.createEvent = function(lockId, username, action, time) {
+  /**
+   * User A can create event E for lock L for time T
+   *    - if owner(L) or admin(L) or (member(L) and withinBounds(t))
+   * 
+   *    *** THIS IS SEPARATE FROM THE EVENT ACTUALLY FIRING EVEN THOUGH
+   *        THE CHECKS TO SEE IF IT IS ALLOWED TO FIRE WILL BE THE SAME ***
+   * 
+   * Notes:
+   *    - We probably want to store the user who created the event along with
+   *      all of the other event information just to make sure that user 
+   *      is even allowed to perform that action at that time
+   */
+
   if(isOwner(username, lockId) || isAdmin(username, lockId) 
     || ((action == "lock" && canCreateLockEvent(username, lockId)) || action == "unlock" && canCreateUnlockEvent(username, lockId))) {
-    db.collection("rules").insert({lockId: lockId, action: action, time: time});
+    db.collection("events").insert({lockId: lockId, action: action, time: time});
   }
 }
 
