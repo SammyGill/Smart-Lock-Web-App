@@ -259,14 +259,13 @@ app.get("/signOut", (req, res) => {
 //add member who can access lock
 app.post("/addMember", (req, res) => {
 
-  let username = req.body.username;
+  let username = req.session.username;
+  let userToAdd = req.body.username;
   let lockId = req.session.lock;
-      //call the module
-      mod.addMember(username,lockId, function(members) {res.send({members: members});});
+  //call the module
+  mod.addMember(username, userToAdd, lockId);
 
-      //call the mod
-      mod.addMember(username,lockId, function(members) {res.send({members: members});});
-    })
+})
 
 //remove member from lock 
 app.post("/removeMember", (req, res) => {
