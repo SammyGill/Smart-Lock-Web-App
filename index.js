@@ -74,6 +74,7 @@ function lockContainsMember(username, lockId, callback) {
  * @param {int} lockId - ID of the lock we are looking for 
  */
 function isOwner(userObject, lockId) {
+    console.log("LOCK ID IS " + lockId);
     let role = searchLocks(lockId, userObject.locks);
     // returns false here if person isn't in lock
     if(role == undefined) {
@@ -314,7 +315,7 @@ exports.checkActionPermission = function(timesArray, currentTime) {
   return true;
 }
 
-exports.createEvent = function(lockId, username, action, time) {
+exports.createEvent = function(lockId, username, action, time, callback) {
   /**
    * User A can create event E for lock L for time T
    *    - if owner(L) or admin(L) or (member(L) and withinBounds(t))
@@ -327,11 +328,26 @@ exports.createEvent = function(lockId, username, action, time) {
    *      all of the other event information just to make sure that user 
    *      is even allowed to perform that action at that time
    */
-
-  if(isOwner(username, lockId) || isAdmin(username, lockId) 
-    || ((action == "lock" && canCreateLockEvent(username, lockId)) || action == "unlock" && canCreateUnlockEvent(username, lockId))) {
-    db.collection("events").insert({lockId: lockId, action: action, time: time});
-  }
+  getUser(username, function(user) {
+    if(isOwner(user, lockId) || isAdmin(user, lockId)) {
+      // Check to see if such an event already exists
+      db.collection("events").find({lockId: lockId, time: time}).toArray((err, result) => {
+        if(result.length != 0) {
+          callback({message:"An event already exists for this lock at this time!"});
+          return;
+        }
+        
+        let eventObject = {
+          username: username,
+          lockId: lockId,
+          action: action,
+          time: time
+        };
+        db.collection("events").insert(eventObject);
+        callback({message: "Event created successfully!"});
+      })
+    }
+  })
 }
 
 exports.getSettings = function(username, lockId, callback) {
@@ -388,7 +404,7 @@ exports.switchSettings = function(settingName, callback) {
  * @paramL action, username, lock, start, end, callback
  * @return: true if role was created else false
  */
-exports.createRole = function(action, username, lock, start, end, callback) {
+exports.createRole = function(username, action, userToChange, lock, start, end, callback) {
   /**
    * 
    * Given user M who called the request
@@ -405,6 +421,15 @@ exports.createRole = function(action, username, lock, start, end, callback) {
    *    - use the callback to return the success/failure
    * 
    */
+    getUser(username, function(user) {
+      getUser(userToChange, function(result) {
+        if((isOwner(user) || isAdmin(user)) && !(isOwner(result)) && !(isAdmin(result))) {
+
+        }
+      })
+    })
+
+
 
 }
 
