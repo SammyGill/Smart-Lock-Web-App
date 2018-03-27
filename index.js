@@ -518,7 +518,7 @@ exports.getLockHistory = function(lockId, callback) {
  * @param: username, lockId
  * @return: true if added sucessfully, else false
  */
-exports.addMember = function(username, userToAdd, lockId) {
+exports.addMember = function(username, userToAdd, lockId, callback) {
   /**
    *  1.) See if the user can add members
    *      - If not, return false
@@ -531,17 +531,21 @@ exports.addMember = function(username, userToAdd, lockId) {
       getUser(userToAdd, function(result) {
         if(result == undefined) {
           // User does not exist in the database, return error
-          return({error: "User does not exist!"});
+          callback({message: "User does not exist!"});
+          return;
         }
         else {
           lockContainsMember(userToAdd, lockId, function(alreadyContains) {
             if(alreadyContains) {
               // User already added to lock, return appropriate error
-              return({error: "User already added!"})
+              callback({message: "User already added!"});
+              return;
             }
             else {
               // Everything good, add user to lock
               addUserToLock(result, lockId);
+              callback({message: "User successfully added!"});
+              return;
             }
           })
         }
@@ -618,24 +622,6 @@ exports.addMember = function(username, userToAdd, lockId) {
   }
 })
   }
-
-//Not being used anymore?
-  exports.canAccess = function(username, lockId, callback) {
-    //db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-      //console.log("this is the result in index for locks "  + result[0].owner);
-      //var owner = (username = result[0].owner);
-      db.collection("roles").find({username: username, lockId: lockId}).toArray((err, result) => {
-            //console.log("this is the result in index"  + result);
-            callback(result[0]);
-            /*if(owner || result[0].canCreateRules) {
-                  res.send({access: true});
-            }
-            else {
-                  res.send({access:false});
-                }*/
-              })
-  //})
-}
 
 /**
  * Gets the status of the lock (whether it is locked or unlocked)
