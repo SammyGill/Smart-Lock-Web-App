@@ -151,9 +151,6 @@ function withinBounds(userObject, lockId, state) {
    * @param {int} lockId - ID of the lock in question
    */
 function canLock(user, lockId) {
-  console.log("isOwner " + isOwner(user, lockId));
-  console.log("isAdmin " + isAdmin(user, lockId));
-  console.log("withinBounds " + withinBounds(user, lockId));
   return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId, "lock"));
 }
 
@@ -174,11 +171,6 @@ function canUnlock(user, lockId) {
 
 function canAddMembers(user, lockId) {
   return (isOwner(user, lockId) || isAdmin(user, lockId));
-}
-
-var handleCallback = function(result) {
-
-  console.log("handle callback result is " + result);
 }
 
   /**
@@ -231,7 +223,6 @@ exports.getLockInfo = function(lockId, username, callback) {
 exports.getLockStatus = function(lockId, callback) {
   let lockName = undefined;
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    console.log(result[0].status);
     status = result[0].status;
     callback({status: status});
   })
@@ -297,7 +288,6 @@ var getTime = function() {
 
 exports.checkRestrictions = function(inputArray, dbArray) {
 
-  console.log(inputArray);
   let inputStart = inputArray[0];
   let inputEnd = inputArray[1];
 
@@ -482,7 +472,6 @@ exports.getLocks = function(username, callback) {
 exports.lock = function(username, lockId, callback) {
   getUser(username, function(user) {
     if(canLock(user, lockId)) {
-      console.log("user can lock!");
 
       db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, 
       (err, numberAffected, rawResponse) => {
@@ -540,7 +529,7 @@ exports.addMember = function(username, userToAdd, lockId) {
   getUser(username, function(user) {
     if(canAddMembers(user, lockId)) {
       getUser(userToAdd, function(result) {
-        if(!result) {
+        if(result == undefined) {
           // User does not exist in the database, return error
           return({error: "User does not exist!"});
         }
@@ -595,11 +584,9 @@ exports.addMember = function(username, userToAdd, lockId) {
     db.collection("users").find({"username": userName, "locks.lockId": lockId}).toArray((err, result) => {
       if(result.length > 0) {
       // There are people with this lock so it must have been registered
-      console.log("in register lock: " + result[0].name);
     }
     else {
       // First person to try to register this lock
-      console.log("could not find any locks");
       console.log(result);
     }
   })
