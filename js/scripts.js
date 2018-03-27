@@ -379,6 +379,11 @@ function getMembersDropDown() {
 function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+
+  /**
+   * This doesn't work anymore so we need to change what was going on here
+   * 
+
   $.get("/memberRoleInfo", {username: memberOption}, function(data) {
     if(!data.roles) {
       document.getElementById("can-manage-roles").checked = true;
@@ -391,6 +396,7 @@ function getMemberInfo() {
       document.getElementById("can-create-rules").checked = data.roles.canCreateRules;
     }
   })
+     */
 }
 
 function addTimeRestriction() {
@@ -450,19 +456,11 @@ function addTimeRestriction() {
 
 }
 
-function canAddMembers() {
-  $.get("/canAccess", function(data) {
-   if (data.roles.canAddMembers == false) {
-    console.log
-    console.log("I am in here");
-    event.preventDefault();
-    document.getElementById("add-member-form").style.display = "none";
-    document.getElementById("remove-member-form").style.display = "none";
-    document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
-   } 
-  })
-}
 
+/**
+ * I think we need to double check the following, need to change how
+ * we are checking roles?
+ 
 
 function canAddRules() {
   $.get("/canAccess", function(data) {
@@ -486,3 +484,4 @@ function canAddRoles() {
 })
 }
 
+*/

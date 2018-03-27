@@ -262,7 +262,10 @@ app.post("/addMember", (req, res) => {
   let userToAdd = req.body.username;
   let lockId = req.session.lock;
   //call the module
-  mod.addMember(username, userToAdd, lockId);
+  mod.addMember(username, userToAdd, lockId, function(result) {
+    console.log("RESULT IS " + result.message);
+    res.send(result);
+  });
 
 })
 
