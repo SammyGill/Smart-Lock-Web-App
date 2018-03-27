@@ -346,7 +346,7 @@ exports.getSettings = function(username, lockId, callback) {
         //If the user is admin
         if(role == 0) {
           settings.push("Add/Remove Users");
-          settings.push("Edit Admins");
+          settings.push("Edit Users");
           settings.push("Create Event");
         }
         else if(role == 1) {
@@ -371,7 +371,7 @@ exports.switchSettings = function(settingName, callback) {
   if(settingName == "Add/Remove Users") {
     callback("addMembers");
   }
-  else if(settingName == "Edit Admins") {
+  else if(settingName == "Edit Users") {
     callback("editAdmins");
   }
   else if(settingName == "Create Event") {
