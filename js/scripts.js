@@ -111,20 +111,6 @@ function getLockStatus() {
   })
 }
 
-function request() {
-  
-}
-
-
-function getTime() {
-  $.get("/timeStatus", function(data) {
-    $("#time").text(data);
-  })
-  setTimeout(function () {
-    getTime();
-  }, 1000);
-}
-
 function addMember() {
   $("#add-member-form").submit(function(event) {
     event.preventDefault();
@@ -132,94 +118,6 @@ function addMember() {
       document.getElementById("response-message").innerHTML = data.message;
     })
   })
-}
-
-function addTimer() {
-  var $select = $(".1-12");
-  for (i=1; i<=12; i++) {
-    $select.append($('<option></option>').val(i).html(i))
-  }
-  var $select = $(".0-60");
-  for (i=0; i<=60; i++) {
-    var j = i;
-    if (j < 10) {
-      j = "0" + j
-    }
-    $select.append($('<option></option>').val(j).html(j))
-  }
-}
-
-
-function getName() {
-  $.get("/getName", function(name) {
-    document.getElementById("lock-name").value = (name + "'s Lock");
-  })
-
-}
-function getLocks() {
-  $.get("/getLocks", function(data) {
-    var list = document.getElementById("locks-list");
-    for(var i = 0; i < data.locks.length; i++) {
-      var button = document.createElement("button");
-      button.appendChild(document.createTextNode(data.lockNames[i]));
-      button.setAttribute("class", "lock")
-      button.setAttribute("id", data.locks[i]);
-      var lockElement = document.createElement("li");
-      lockElement.appendChild(button);
-
-      list.appendChild(lockElement);
-    }
-  })
-}
-
-function selectDashboard() {
-  $(document).on("click", ".lock", function(element) {
-    $.get("/selectDashboard", {lockId: event.target.id}, function() {
-      window.location = "/dashboard";
-    })
-  })
-}
-
-
-
-function loadTimes() {
-  for(var i = 0; i < 60; i++) {
-    var select = document.getElementById("minute");
-    var time = document.createElement("option");
-    if(i < 10) {
-      time.text = "0"+i;
-    }
-    else {
-      time.text = i;
-    }
-    select.add(time);
-  }
-  for(var i = 1; i < 13; i++) {
-    var select = document.getElementById("hour");
-    var time = document.createElement("option");
-    time.text = i;
-    select.add(time);
-  }
-}
-
-function loadTimesTwo() {
-  for(var i = 0; i < 60; i++) {
-    var select = document.getElementById("minuteTwo");
-    var time = document.createElement("option");
-    if(i < 10) {
-      time.text = "0"+i;
-    }
-    else {
-      time.text = i;
-    }
-    select.add(time);
-  }
-  for(var i = 1; i < 13; i++) {
-    var select = document.getElementById("hourTwo");
-    var time = document.createElement("option");
-    time.text = i;
-    select.add(time);
-  }
 }
 
 function getMembers() {
@@ -242,21 +140,6 @@ function showHistory() {
       list.appendChild(mem);
     }
   })
-}
-
-
-function signOut() {
-  var auth2 = gapi.auth2.getAuthInstance();
-  auth2.signOut().then(function () {
-  });
-  // $.get("/signOut", function(data) {
-  // });
-}
-
-function onLoad() {
-  gapi.load('auth2', function() {
-    gapi.auth2.init();
-  });
 }
 
 function createRule() {
@@ -293,19 +176,6 @@ function createRule() {
    }
  })
 }
-
-// function registerLock() {
-//   $.post("/registerLock", {id: document.getElementById("id").value, 
-//     lockName: document.getElementById("lock-name").value, userName: document.getElementById("lock-name").value, 
-//   }, function(data) {
-//     if(data.redirect == "failure") {
-//       $(".lockTaken").text("Taken");
-//     }
-//     else {
-//       window.location = data.redirect;
-//     }
-//   })
-// }
 
 function getLockStatus() {
   $.get("/lockStatus", function(data) {
@@ -382,15 +252,11 @@ function addTimer() {
   }
 }
 
-
 function getName() {
   $.get("/getName", function(name) {
     document.getElementById("lock-name").value = (name + "'s Lock");
-    //document.getElementById("email").value = (name);
   })
-
 }
-
 
 function getLocks() {
   $.get("/getLocks", function(data) {
@@ -470,17 +336,6 @@ function onLoad() {
   });
 }
 
-/*function createRule() {
-  var hourSelect = document.getElementById("hour")
-  var hourOption = hourSelect.options[hourSelect.selectedIndex].text;
-  var minuteSelect = document.getElementById("minute")
-  var minuteOption = minuteSelect.options[minuteSelect.selectedIndex].text;
-  var periodSelect = document.getElementById("period")
-  var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
-  var time = hourOption + ":" + minuteOption + " " + periodOption;
-  $.post("/createRule", {action: action, time: time});
-}*/
-
 function updateRole() {
   var canAddMembers = document.getElementById("can-add-members").checked;
   var canCreateRules = document.getElementById("can-create-rules").checked;
@@ -502,14 +357,6 @@ function updateRole() {
   else {
     action = "lock";
   }
-  
-  /*
-    //var errName = $("#invalidTime"); //Element selector
-    //errName.html("Invalid Time"); // Put the message content inside div
-  } else {
-    $.post("/createRole", {timeOne: time, timeTwo: timeTwo});
-  } 
-  */
 }
 
 function getMembersDropDown() {
@@ -602,7 +449,6 @@ function addTimeRestriction() {
   })  
 
 }
-
 
 function canAddMembers() {
   $.get("/canAccess", function(data) {

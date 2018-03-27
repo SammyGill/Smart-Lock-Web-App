@@ -13,10 +13,10 @@ const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
 
-const Gpio = require("onoff").Gpio;
+/*const Gpio = require("onoff").Gpio;
 const greenLED = new Gpio(4, "out");
 const pushButton = new Gpio(17, "in", "both"); //may not need the button
-const redLED = new Gpio(27, "out");
+const redLED = new Gpio(27, "out");*/
 
 // Used to make the server look in our directory for
 // our javascript, css, and other files
@@ -42,7 +42,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
   })
 })
 
-var dashboard = socket.of("/dashboardConnection");
+/*var dashboard = socket.of("/dashboardConnection");
 dashboard.on("connection", function(socket) {
   console.log("connected to dashboard socket from server end");
   var lightvalue = 0; //static variable for current status
@@ -61,7 +61,7 @@ dashboard.on("connection", function(socket) {
   console.log("light valus is " + lightvalue);
   lightvalue = value;
   socket.emit('light', lightvalue); //send button status to client
-  });*/
+  });
 
  
   socket.on("request", function(data) { //get light switch status from clien    t
@@ -85,7 +85,7 @@ dashboard.on("connection", function(socket) {
     greenLED.unexport(); //Unexport greenLED GPIO to free resources
     pushButton.unexport(); // Unexport Button GPIO to free resources
     process.exit(); //exit completely
-  });
+  });*/
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
@@ -96,13 +96,13 @@ app.get("/addMembers", (req, res) => {
   res.sendFile(dir + "/views/addMembers.html");
 })
 
-app.get("/addRoles", (req, res) => {
+/*app.get("/addRoles", (req, res) => {
   res.sendFile(dir + "/views/addRoles.html");
 })
 
 app.get("/addRules", (req, res) => {
   res.sendFile(dir + "/views/addRules.html");
-})
+})*/
 
 app.get("/registerLock", (req, res) => {
   res.sendFile(dir + "/views/register.html");
@@ -129,23 +129,6 @@ app.get("/editAdmins", (req, res) => {
     res.send(locks);
   })
   })
-
-var dashboard = socket.of("/dashboardConnection");
-dashboard.on("connection", function(socket) {
-      console.log("Connected to dashboard socket from server end");
-      socket.on("request", function(data) {
-            console.log(data);
-            //check whether lock is locked/unlocked on server side
-            //var currLock = req.session.lock;
-            //var status = mod.getLockStatus(currLock, function(data) {});
-
-            //get status of lock from database/lights
-            //check if the current user has ability to lock/unlock or is a valid user
-            //if everything is okay then it will allow client to do action
-
-            socket.emit("response", "response string");
-      })
-})
 
 // Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
@@ -187,8 +170,6 @@ app.get("/dashboard", (req, res) => {
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
  
-
-
  app.get("/getName", (req, res) => {
   res.send(req.session.username);
 })
@@ -209,7 +190,6 @@ app.get("/lockStatus", (req, res) => {
     res.send(data);
   })
 })
-
 
 app.get("/selectLock", (req, res) => {
   res.sendFile(dir + "/views/locks.html");
@@ -248,15 +228,6 @@ app.get("/timeStatus", (req, res) => {
 })
 
 app.get("/canAccess", (req, res) => {
-  var username = req.session.username;
-  var lockId = req.session.lock;
-  mod.canAccess(username, lockId, function(roles) {
-    res.send({roles: roles});
-  });
-});
-
-
-app.get("/canAccess", (req, res) => {
   let username = req.session.username;
   let lockId = req.session.lock;
   mod.canAccess(username, lockId, function(roles) {
@@ -292,12 +263,13 @@ app.post("/addMember", (req, res) => {
   let lockId = req.session.lock;
   //call the module
   mod.addMember(username, userToAdd, lockId);
+
 })
+
 //remove member from lock 
 app.post("/removeMember", (req, res) => {
   
 })
-
 
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
