@@ -19,10 +19,11 @@
     <link href="../css/sb-admin.css" rel="stylesheet">
   </head>
 
-  <body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers(); loadLocks(); switchLock(); showHistory(); loadSettings(); swtichSettings()">
+
+  <body class="fixed-nav sticky-footer bg-dark" id="page-top"  onload="loadDashboard(); getLockStatus(); getTime(); getMembers(); loadLocks(); switchLock(); showHistory(); loadSettings(); switchSettings();">
     <!-- Navigation-->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-      <a class="navbar-brand" href="index.html">Smart Lock</a> 
+      <a class="navbar-brand" href="dashboard">Smart Lock</a> 
       <font color="white"><span id="time"></span></font>
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -31,133 +32,52 @@
         <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
 
           <!-- Register lock -->
-
           <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Register Lock">
-           <li class="nav-item" data-toggle="tooltip" data-placement="right"
-           title="Components">
-           <a class="nav-link" data-toggle="tooltip" href="registerLock">
-             <i class="fa fa-lock" aria-hidden="true"></i>
-             <span class="nav-link-text">Register Lock</span>
-           </a>
-         </li>
-       </li>
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+              <a class="nav-link" data-toggle="tooltip" href="registerLock">
+                <i class="fa fa-lock" aria-hidden="true"></i>
+                <span class="nav-link-text">Register Lock</span>
+              </a>
+            </li>
+          </li>
 
-       <!-- dashboard dropdown bottom -->
-       <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard"> 
-         <li class="nav-item" data-toggle="tooltip" data-placement="right"
-         title="Components">
-         <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse"
-         href="#dashboardComponents" data-parent="#exampleAccordian">
-         <i class = "fa fa-fw fa-dashboard"></i>
-         <span class="nav-link-text">Dashboard</span>
-       </a>
-       <ul class="sidenav-second-level collapse" id="dashboardComponents">
-       </ul>
-     </li>
+          <!-- dashboard dropdown bottom -->
+          <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Dashboard"> 
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+              <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#dashboardComponents" data-parent="#exampleAccordian">
+                <i class = "fa fa-fw fa-dashboard"></i>
+                <span class="nav-link-text">Dashboard</span>
+              </a>
+              <ul class="sidenav-second-level collapse" id="dashboardComponents">
+              </ul>
+            </li>
+          </li>
 
+          <!-- Settings dropdown bottom -->
+          <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Components">
+              <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#settingsComponents" data-parent="#exampleAccordion">
+                <i class="fa fa-fw fa-wrench"></i>
+                <span class="nav-link-text">Settings</span>
+              </a>
+              <ul class="sidenav-second-level collapse" id="settingsComponents">
+              </ul>
+            </li>
+          </li>
+        </ul>
 
-     <!-- Settings dropdown bottom -->
-     <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Settings">
-
-       <li class="nav-item" data-toggle="tooltip" data-placement="right"
-       title="Components">
-       <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse"
-       href="#settingsComponents" data-parent="#exampleAccordion">
-
-       <i class="fa fa-fw fa-wrench"></i>
-       <span class="nav-link-text">Settings</span>
-     </a>
-     <ul class="sidenav-second-level collapse" id="settingsComponents">
-<!--     <li>
-      <a href="addMembers">Add Users</a>
-    </li>
-    <li>
-      <a href="addEvents">Lock Rules</a>
-    </li>
-    <li>
-      <a href="addRoles"> User Roles </a>
-    </li>
-    <li>
-      <a href="editAdmins">Edit Admins</a>
-    </li> -->
-  </ul>
-</li>
-
-</ul>
-
-<!-- Sidebar toggler -->
-<ul class="navbar-nav sidenav-toggler">
-  <li class="nav-item">
-    <a class="nav-link text-right" id="sidenavToggler">
-      <i class="fa fa-fw fa-angle-left"></i>
-    </a>
-  </li>
-</ul>
-
-<!-- header -->
-<ul class="navbar-nav ml-auto">
-  <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle mr-lg-2" id="alertsDropdown" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-      <i class="fa fa-fw fa-bell"></i>
-      <span class="d-lg-none">Alerts
-        <span class="badge badge-pill badge-warning">6 New</span>
-      </span>
-      <span class="indicator text-warning d-none d-lg-block">
-        <i class="fa fa-fw fa-circle"></i>
-      </span>
-    </a>
-    <div class="dropdown-menu" aria-labelledby="alertsDropdown">
-      <h6 class="dropdown-header">New Alerts:</h6>
-      <div class="dropdown-divider"></div>
-      <a class="dropdown-item" href="#">
-        <span class="text-success">
-          <strong>
-            <i class="fa fa-long-arrow-up fa-fw"></i>Status Update</strong>
-          </span>
-          <span class="small float-right text-muted">11:21 AM</span>
-          <div class="dropdown-message small">This is an automated server response message. All systems are online.</div>
-        </a>
-        <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="#">
-          <span class="text-danger">
-            <strong>
-              <i class="fa fa-long-arrow-down fa-fw"></i>Status Update</strong>
-            </span>
-            <span class="small float-right text-muted">11:21 AM</span>
-            <div class="dropdown-message small">This is an automated server response message. All systems are online.</div>
-          </a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">
-            <span class="text-success">
-              <strong>
-                <i class="fa fa-long-arrow-up fa-fw"></i>Status Update</strong>
-              </span>
-              <span class="small float-right text-muted">11:21 AM</span>
-              <div class="dropdown-message small">This is an automated server response message. All systems are online.</div>
+        <!-- header -->
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="modal" data-target="#exampleModal">
+              <i class="fa fa-fw fa-sign-out"></i>Logout
             </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item small" href="#">View all alerts</a>
-          </div>
-        </li>
-        <li class="nav-item">
-          <form class="form-inline my-2 my-lg-0 mr-lg-2">
-            <div class="input-group">
-              <input class="form-control" type="text" placeholder="Search for...">
-              <span class="input-group-btn">
-                <button class="btn btn-primary" type="button">
-                  <i class="fa fa-search"></i>
-                </button>
-              </span>
-            </div>
-          </form>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-toggle="modal" data-target="#exampleModal">
-            <i class="fa fa-fw fa-sign-out"></i>Logout</a>
           </li>
         </ul>
       </div>
     </nav>
+
+    <!-- name of dashboard and lock name -->
     <div class="content-wrapper">
       <div class="container-fluid">
         <!-- Breadcrumbs-->
@@ -175,47 +95,43 @@
         <div class="row">
           <div class="col-12">
             <h1> <span class="header"> </span> </h1>
-            <p> Dashboard page creating from the blank page template.</p>
           </div>
         </div>
         <h1 class="error-message"></h1>
-      </nav>
-      <div class="row">
-        <div class="col-md-3">
-          <div class="card mb-3 lock-control" onclick="changeLock()" >
-            <div class="card-header">
-              <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="card mb-3 lock-control" onclick="changeLock()" >
+              <div class="card-header">
+                <i class="fa fa-lock"></i> Click to <span id="lock-action"></span>
+              </div>
+              <div class="card-body">
+                <img src="../imgs/lock.png" style="width:170px;height:170px;">
+              </div>
+              <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span>
+              </div>
             </div>
+          </div>
+          <div class="card">
+            <h5 class="card-header" style="text-align:center;">Members</h5>
             <div class="card-body">
-              <img src="../imgs/lock.png" style="width:170px;height:170px;">
-            </div>
-            <div class="card-footer small text-muted">Your lock is currently <span id="lock-status"></span>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <h5 class="card-header" style="text-align:center;">Members</h5>
-          <div class="card-body">
-            <div align="center">
-              <ul id="membersList">
-
-              </ul>
+              <div align="center">
+                <ul id="membersList">
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
         <div class="card">
           <h5 class="card-header" style="text-align:center;">Lock History</h5>
           <div class="card-body">
             <div align="center">
-              <ul id="historyList">
-                
+              <ul id="historyList"> 
               </ul>
             </div>
           </div>
         </div>
-
       </div>
     </div>
+    
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
     <footer class="sticky-footer">

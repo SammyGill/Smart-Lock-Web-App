@@ -69,7 +69,7 @@ function loadSettings() {
 }
 
 
-function swtichSettings() {
+function switchSettings() {
   $(document).on("click", ".settingsonSiderbar", function(element) {
     $.get("/switchSettings", {setting: event.target.id}, function(data) {
       // console.log("data in switchSettings is: " + data);
@@ -121,10 +121,12 @@ function addMember() {
 }
 
 function getMembers() {
+  console.log("hello");
   $.get("/getMembers", function(data) {
     var list = document.getElementById("membersList");
     for(var i = 0; i < data.members.length; i++) {
-      var member = document.createElement("li");
+      console.log(data.members[i]);
+      var member = document.createElement("option");
       member.appendChild(document.createTextNode(data.members[i] /*+ ": " + data.fullnames[i]*/));
       list.appendChild(member);
     }
@@ -158,10 +160,10 @@ function showHistory() {
   })
 }
 
-function createRule() {
+function createLockEvent() {
   $("#add-rules-form").submit(function(e) {
     e.preventDefault();
-  })
+  });
 
   var action = undefined;
   if(document.getElementById("unlock").checked) {
@@ -178,19 +180,9 @@ function createRule() {
   var periodOption = periodSelect.options[periodSelect.selectedIndex].text;
   var time = hourOption + ":" + minuteOption + " " + periodOption;
 
-
-  $.get("/canAccess", function(data) {
-   if (data.access == false) {
-     $.get("/createRule", function(data) {
-      console.log("Should be in here...");
-      event.preventDefault();
-      document.getElementById("response-message").innerHTML = data.message;
-    })
-   } else {
-     console.log("should create rule");
-     $.post("/createRule", {action: action, time: time});
-   }
- })
+  $.post("/createEvent", {action: action, time: time}, function(result) {
+    document.getElementById("response-message").innerHTML = result.message;
+  });
 }
 
 function getLockStatus() {
@@ -354,11 +346,11 @@ function onLoad() {
 
 function updateRole() {
   var canAddMembers = document.getElementById("can-add-members").checked;
-  var canCreateRules = document.getElementById("can-create-rules").checked;
+  var cancreateEvents = document.getElementById("can-create-rules").checked;
   var canManageRoles = document.getElementById("can-manage-roles").checked;
   var usernameSelect = document.getElementById("members");
   var username = usernameSelect.options[usernameSelect.selectedIndex].text;
-  $.post("/updateRole", {username: username, canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles});
+  $.post("/updateRole", {username: username, canAddMembers: canAddMembers, cancreateEvents: cancreateEvents, canManageRoles: canManageRoles});
   var action = undefined;
   if(document.getElementById("addMembers").checked) {
     canAddOthers = "yes";
@@ -409,7 +401,7 @@ function getMemberInfo() {
     else {
       document.getElementById("can-manage-roles").checked = data.roles.canManageRoles;
       document.getElementById("can-add-members").checked = data.roles.canAddMembers;
-      document.getElementById("can-create-rules").checked = data.roles.canCreateRules;
+      document.getElementById("can-create-rules").checked = data.roles.cancreateEvents;
     }
   })
      */
@@ -480,7 +472,7 @@ function addTimeRestriction() {
 
 function canAddRules() {
   $.get("/canAccess", function(data) {
-   if (data.roles.canCreateRules == false) {
+   if (data.roles.cancreateEvents == false) {
     event.preventDefault();
     document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";

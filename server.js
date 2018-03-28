@@ -12,6 +12,7 @@ let  d = new Date();
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
+ const assert = require("assert")
 
 /*const Gpio = require("onoff").Gpio;
 const greenLED = new Gpio(4, "out");
@@ -200,13 +201,6 @@ app.get("/selectDashboard", (req, res) => {
   res.send();
 })
 
-app.get("/settings", (req, res) => {
-  lockId = req.session.lock;
-
-  res.sendFile(dir + "/views/settings.html");
-})
-
-
 app.get("/switchLock", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   res.send();
@@ -221,19 +215,19 @@ app.get("/switchSettings", (req, res) => {
 })
 
 app.get("/timeStatus", (req, res) => {
-
   let time = mod.getTime();
-
   res.send(time);
 })
 
-app.get("/canAccess", (req, res) => {
+
+//there is no mod.canAccess function so this might be a problem. not sure where it's being used
+/*app.get("/canAccess", (req, res) => {
   let username = req.session.username;
   let lockId = req.session.lock;
   mod.canAccess(username, lockId, function(roles) {
     res.send({roles: roles});
   });
-});
+});*/
 
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
@@ -275,26 +269,25 @@ app.post("/removeMember", (req, res) => {
 
 //add time restrictions to when lock will be locked/unlocked
 app.post("/addTimeRestriction", (req, res) => {
-      //convert to military time
+  let start = mod.convertToMilitary(req.body.startTime);
+  let end = mod.convertToMilitary(req.body.endTime);
 
-
-      let start = mod.convertToMilitary(req.body.startTime);
-      let end = mod.convertToMilitary(req.body.endTime);
-
-
-      mod.createRole(req.body.action, req.body.username, req.session.lock, start, end, function(result) {
-        if(result) {
-          res.send();
-        }
-        else {
-          res.send({error: "error message"});
-        }
-      })
-    })
+  mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
+                 start, end, function(result) {
+    if(result) {
+      res.send();
+    }
+    else {
+      res.send({error: "error message"});
+    }
+  })
+})
 
 //rule for lock
-app.post("/createRule", (req, res) => {
-  mod.createRule(req.session.lock, req.session.username, req.body.action, req.body.time);
+app.post("/createEvent", (req, res) => {
+  mod.createEvent(req.session.lock, req.session.username, req.body.action, req.body.time, function(result) {
+    res.send(result);
+  });
 })
 
 //lock function
@@ -342,18 +335,6 @@ app.post("/unlock", (req, res) => {
   })
 })
 
-//update role in data base
-app.post("/updateRole", (req, res) => {
-  let username = req.body.username;
-  let lockId = req.session.lock;
-
-      //use boolean values to set roles 
-      let canAddMembers = (req.body.canAddMembers == "true");
-      let canCreateRules = (req.body.canCreateRules == "true");
-      let canManageRoles = (req.body.canManageRoles == "true");
-      //update 
-      db.collection("roles").update({username: username, lockId: lockId}, {$set: {canAddMembers: canAddMembers, canCreateRules: canCreateRules, canManageRoles: canManageRoles}})
-    });
 
 
 /* ---------------------- OTHER STUFF BELOW ---------------------- */
