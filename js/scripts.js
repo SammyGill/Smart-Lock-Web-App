@@ -78,14 +78,6 @@ function switchSettings() {
   })
 }
 
-// function selectDashboard() {
-//   $(document).on("click", ".lock", function(element) {
-//     $.get("/selectDashboard", {lockId: event.target.id}, function() {
-//       window.location = "/dashboard";
-//     })
-//   })
-// }
-
 function registerLock() {
   //console.log("user name in scripts.js is : " + email);
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
@@ -344,7 +336,7 @@ function onLoad() {
   });
 }
 
-function updateRole() {
+/*function updateRole() {
   var canAddMembers = document.getElementById("can-add-members").checked;
   var cancreateEvents = document.getElementById("can-create-rules").checked;
   var canManageRoles = document.getElementById("can-manage-roles").checked;
@@ -365,7 +357,7 @@ function updateRole() {
   else {
     action = "lock";
   }
-}
+}*/
 
 function getMembersDropDown() {
   $.get("/getMembers", function(data) {
