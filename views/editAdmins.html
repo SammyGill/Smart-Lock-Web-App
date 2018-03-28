@@ -19,7 +19,7 @@
 </head>
 
 <body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="getMembers();loadSettings(); switchSettings(); loadTimes();
-loadTimesTwo(); getMembersDropDown();">
+loadTimesTwo(); getMembersDropDown(); addAdmin();">
 <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="dashboard">Smart Lock</a>
@@ -138,7 +138,7 @@ loadTimesTwo(); getMembersDropDown();">
           <form id="edit-admin-form" align="center">
             <select class="custom-select" id="members" style="display:inline" onchange="getMemberInfo();">
             </select>
-            <button class="btn btn-primary">Make Admin</button>
+            <button onclick="addAdmin()" class="btn btn-primary">Make Admin</button>
             <br>
             <br>
           </form>

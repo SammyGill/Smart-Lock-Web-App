@@ -267,8 +267,17 @@ app.post("/removeMember", (req, res) => {
   
 })
 
+app.post("/addAdmin", (req, res) => {
+   let username = req.session.username;
+   let userToAdmin = req.body.username;
+   let lockId = req.session.lock;
+   mod.addAdmins(username, userToAdmin, lockId, function(result) {
+      res.send(result);
+   });
+})
+
 //add time restrictions to when lock will be locked/unlocked
-app.post("/addTimeRestriction", (req, res) => {
+app.post("/addTimeRestric,tion", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 

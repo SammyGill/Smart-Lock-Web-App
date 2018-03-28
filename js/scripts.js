@@ -112,6 +112,15 @@ function addMember() {
   })
 }
 
+function addAdmin() {
+   $("#edit-admin-form").submit(function(event) {
+      event.preventDefault();
+      //$.post("/addAdmin", {username: document.getElementById("username").value}, function(data) {
+        // document.getElementById("response-message").innerHTML= data.message;
+     // })
+   })
+}
+
 function getMembers() {
   console.log("hello");
   $.get("/getMembers", function(data) {
