@@ -25,7 +25,6 @@ function searchLocks(lockId, locks) {
       return locks[i].role;
     }
   }
-
 }
 
 function getUser(username, callback) {
@@ -215,21 +214,6 @@ exports.getLockInfo = function(lockId, username, callback) {
   })
 }
 
-
-/**
- * Given a lockId, returns the status - lock or unlocked
- * 
- * @param {int} lockId - ID of the lock we are checking
- * @param {function} callback - callback that takes the status of the lock
- */
-exports.getLockStatus = function(lockId, callback) {
-  let lockName = undefined;
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    status = result[0].status;
-    callback({status: status});
-  })
-}
-
 exports.connectServer = function() {
   mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
     if(err) {
@@ -399,6 +383,17 @@ exports.switchSettings = function(settingName, callback) {
   }
 }
 
+function getLockOfUser(username, lockId) {
+  db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
+    for(let i = 0;  i < result[0].locks.length; i++) {
+      if(result[0].locks[i].lockId == lockId) {
+        return result[0].locks[i];
+      }
+    }
+    return undefined;
+   })
+}
+
 /**
  * Creates role for user and adds associated restrictions
  * @paramL action, username, lock, start, end, callback
@@ -424,7 +419,21 @@ exports.createRole = function(username, action, userToChange, lock, start, end, 
     getUser(username, function(user) {
       getUser(userToChange, function(result) {
         if((isOwner(user) || isAdmin(user)) && !(isOwner(result)) && !(isAdmin(result))) {
-
+          let timeArray = [start, end];
+          //get lock of userToChange based on action(lock/unlock) array
+          let lockToChange = getLockOfUser(userToChange, lock);
+          //choose between lock and unlock array
+          let arrayToAddRestriction;
+          if (action == "locked") {
+            arrayToAddRestriction = lockToChange.lockRestrictions;
+          } else {
+            arrayToAddRestriction = lockToChange.unlockRestrictions;
+          }
+          //call check restrictions if the change can occur
+          if (checkRestrictions(timeArray, arrayToAddRestriction)) {
+            console.log("adding this time restriction" + timeArray[0] + " until " + timeArray[1] + " for user " + userToChange);
+            arrayToAddRestriction.push(timeArray);
+          }
         }
       })
     })
