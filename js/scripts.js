@@ -134,11 +134,27 @@ function getMembers() {
 function showHistory() {
   $.get("/showHistory", function(data) {
     var list = document.getElementById("historyList");
-    for(var i = data.members.length - 2; i > data.members.length - 7; i--) {
-      var mem = document.createElement("ul");
-      mem.appendChild(document.createTextNode("Last " + data.memActions[i] + "ed at " + data.members[i]));
-      list.appendChild(mem);
+    if (data.members.length > 5) {
+      for(var i = data.members.length - 2; i > data.members.length - 7; i--) {
+        var mem = document.createElement("ul");
+        mem.appendChild(document.createTextNode("Last " + data.memActions[i] + "ed at " + data.members[i]));
+        list.appendChild(mem);
+      } 
     }
+
+    if (data.members.length > 1 && data.members.length < 4) {
+      for(var i = 0; i < data.members.length-1; i++) {
+        var mem = document.createElement("ul");
+        mem.appendChild(document.createTextNode("Last " + data.memActions[i] + "ed at " + data.members[i]));
+        list.appendChild(mem);
+      }
+    }
+
+    // if (data.members.length < 2) {
+    //   var mem = document.createElement("ul");
+    //   mem.appendChild(document.createTextNode("Not yet locked or unlocked");
+    //   list.appendChild(mem);
+    // }
   })
 }
 
