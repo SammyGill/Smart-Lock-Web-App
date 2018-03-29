@@ -115,9 +115,9 @@ function addMember() {
 function addAdmin() {
    $("#edit-admin-form").submit(function(event) {
       event.preventDefault();
-      //$.post("/addAdmin", {username: document.getElementById("username").value}, function(data) {
-        // document.getElementById("response-message").innerHTML= data.message;
-     // })
+      $.post("/addAdmin", {username: document.getElementById("members").value}, function(data) {
+         document.getElementById("response-message").innerHTML= data.message;
+      })
    })
 }
 
@@ -368,6 +368,27 @@ function onLoad() {
   }
 }*/
 
+function getAdminDropDown() {
+   $.get("/getAdmins", function(data) {
+      let select = document.getElementById("members");
+      for(let i =0; i<data.members.length; i++){
+         let option = document.createElement("option");
+         option.text = data.members[i];
+            if(option.text != data.owner) {
+               select.add(option);
+            }
+      }
+      select.selectedIndex="0";
+      getAdminInfo();
+
+   })
+}
+
+function getAdminInfo() {
+   let memberSelect = document.getElementById('members');
+   let membberOption = memberSelect.options[memberSelect.selectedIndex].text;
+}
+
 function getMembersDropDown() {
   $.get("/getMembers", function(data) {
     var select = document.getElementById("members");
@@ -394,7 +415,7 @@ function getMemberInfo() {
    * 
 
   $.get("/memberRoleInfo", {username: memberOption}, function(data) {
-    if(!data.roles) {
+   if(!data.roles) {
       document.getElementById("can-manage-roles").checked = true;
       document.getElementById("can-add-members").checked = true;
       document.getElementById("can-create-rules").checked = true;

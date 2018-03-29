@@ -170,6 +170,12 @@ app.get("/dashboard", (req, res) => {
   let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
+
+ app.get("/getAdmins", (req, res) => {
+    let id = req.session.lock;
+    let username = req.body.members;
+    mod.getLockAdmins(id,username);
+ })
  
  app.get("/getName", (req, res) => {
   res.send(req.session.username);
@@ -269,8 +275,12 @@ app.post("/removeMember", (req, res) => {
 
 app.post("/addAdmin", (req, res) => {
    let username = req.session.username;
+   console.log("This is the username: " + username);
    let userToAdmin = req.body.username;
+   console.log("This is the userToAdmin: "+ userToAdmin);
    let lockId = req.session.lock;
+   console.log("This is the lockId: " + lockId); 
+
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
       res.send(result);
    });
