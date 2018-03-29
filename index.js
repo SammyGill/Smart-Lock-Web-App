@@ -27,6 +27,7 @@ function searchLocks(lockId, locks) {
   }
 }
 
+
 function getUser(username, callback) {
   db.collection("users").find({"username": username}).toArray((err, result) => {
     callback(result[0]);
@@ -99,6 +100,7 @@ function isAdmin(userObject, lockId) {
     }
     return (role == 1);
 }
+
 
 
 /**
@@ -457,6 +459,10 @@ exports.getLockMembers = function(lockId, callback) {
   })
 }
 
+exports.getLockAdmins = function(lockId, username, callback) {
+   
+}
+
 /**
  * Accesses the locks and gets the lockNames of a specified user
  * @param: username, callback
@@ -579,6 +585,33 @@ exports.addMember = function(username, userToAdd, lockId, callback) {
 
   }//end addMember 
 
+  exports.addAdmins = function(username,userToAdmin, lockId, callback){
+    /* //see if user can add admin
+     let role = 1;
+     if(isOwner(username,lockId) || isAdmin(username,lockId)){
+        console.log("passed the if statement");
+        db.collection("users").find({"username": userToAdmin}).toArray((err, result) => {
+           let usernameArray = result[0].locks;
+       
+              db.collection("users").find({"locks.lockId": lockId}).toArray((err,result) => {
+                 let locksIdArray = result[0].lockId;
+                 
+                    console.log("Right before update");
+              db.collection("users").update({username:userToAdd.username}, {$set:{"locks.role":role}});
+                 
+              })
+           }
+           })
+           callback({message: "User is now an Admin"});
+           return;
+
+       
+        else{
+           callback({message: "User cannot be added as Admin"});
+        }
+        */
+     }
+ 
 /**
  * Unlock the lock and record any changes in the history
  * @param: username, lockId, callback
