@@ -186,8 +186,8 @@ app.get("/dashboard", (req, res) => {
 //gets the lock admins 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
-    let username = req.body.members;
-    mod.getLockAdmins(id,username);
+    //let username = req.body.members;
+  mod.getLockAdmins(id, function(members) {res.send({members: members});});
  })
  
  //gets the users name from email username

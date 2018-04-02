@@ -457,7 +457,7 @@ function onLoad() {
 
 function getAdminDropDown() {
    $.get("/getAdmins", function(data) {
-      let select = document.getElementById("members");
+      let select = document.getElementById("admins");
       for(let i =0; i<data.members.length; i++){
          let option = document.createElement("option");
          option.text = data.members[i];
@@ -472,7 +472,7 @@ function getAdminDropDown() {
 }
 
 function getAdminInfo() {
-   let memberSelect = document.getElementById('members');
+   let memberSelect = document.getElementById('admins');
    let memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 }
 
