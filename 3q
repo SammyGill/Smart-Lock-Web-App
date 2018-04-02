@@ -595,11 +595,9 @@ exports.addMember = function(username, userToAdd, lockId, callback) {
       getUser(username, function(user) {
          //check if this user can add admins
          if(canAddMembers(user,lockId)){
-
             console.log("inside the if statement");
-            db.collection("users").find({"username":userToAdmin}).toArray((err, result) => {
+            db.collection("users").find({"username":userToAdmin, "locks.lockId": lockId}).toArray((err, result) => {
                console.log("THIS IS THE SIZE: " + result[0].locks.length);
-               if(!err){
                let locks = result[0].locks;
          
                //find lock 
@@ -607,28 +605,29 @@ exports.addMember = function(username, userToAdd, lockId, callback) {
                   console.log("IN THE FOR LOOP");
                   if(locks[i].lockId == lockId){
                     console.log("THIS IS THE MATCH: " + locks[i].lockId);
-                    console.log("This is the role :" + locks[i].role);
-                  
-                    db.collection("users").update({"username": username, "locks[i].lockId": lockId}, {$set: {"locks[i].role": 1}});
-                    callback({message:"User is now Admin"});
-                    return;
                   }
                }
-
-               }//end !err
-              
+                  console.log("past for loop");
+                    db.collection("users").update({"username":userToAdmin, "locks.lockId":lockId}, {$set: {"locks.role": 1}},(err, numberAffected,rawResponse)=> {
+                       if(!err){
+                          console.log("   PAST ERR");
+                       }
+                       callback({message:"User is now an admin"});
+                       return;
+                       //callback({message:"Failed to add user as admin"});
+                      // return;
+                    })
                 
              
 
             })
-
-      }
-      })
-  }
-        
-     
- 
-   
+         }
+         else{
+            callback({message:"User is not authorized to add admin"});
+            return;
+         }
+       })
+     }//end add admin
 
  
 /**
