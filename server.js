@@ -173,8 +173,8 @@ app.get("/dashboard", (req, res) => {
 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
-    let username = req.body.members;
-    mod.getLockAdmins(id,username);
+    //let username = req.body.members;
+  mod.getLockAdmins(id, function(members) {res.send({members: members});});
  })
  
  app.get("/getName", (req, res) => {
