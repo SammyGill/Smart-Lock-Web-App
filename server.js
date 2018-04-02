@@ -287,7 +287,7 @@ app.post("/addAdmin", (req, res) => {
 })
 
 //add time restrictions to when lock will be locked/unlocked
-app.post("/addTimeRestric,tion", (req, res) => {
+app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 

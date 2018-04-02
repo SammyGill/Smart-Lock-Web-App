@@ -386,7 +386,7 @@ function getAdminDropDown() {
 
 function getAdminInfo() {
    let memberSelect = document.getElementById('members');
-   let membberOption = memberSelect.options[memberSelect.selectedIndex].text;
+   let memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 }
 
 function getMembersDropDown() {
