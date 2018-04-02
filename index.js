@@ -7,6 +7,60 @@
 
  const async = require("async");
  const assert = require("assert")
+ const schedule = require('node-schedule');
+
+
+  /**
+   * Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
+   * that current time and performs the actions after checking if the user who submitted the 
+   * request is allowed to perform the action at that certain time.
+   */
+ const j = schedule.scheduleJob('*/1 * * * *', function(){
+  console.log('Cheese is great!');
+  let d = new Date();
+  //convert the time accordingly in order to look it up in the database
+  let timeInMilitary = "" + convertToMilitary(d.getHours() + ":" + d.getMinutes());
+  //look up all events at that specified time
+  db.collection("events").find({"time": timeInMilitary}).toArray((err, result) => {
+    //for each of those locks, perform the appropriate actions (either lock or unlock)
+    for (let i = 0; i < result.length; i++) {
+      //if the action was to lock
+      if (result[i].action == "lock") {
+        console.log("The lock was automatically locked!");
+        //get the user object based on the username
+        getUser(result[i].username, function(user) {
+          //check if the user has the permissions to lock
+          if(canLock(user, result[i].lockId)) {
+            //update the lock's status in the locks database
+            db.collection("locks").update({lockId: result[i].lockId}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+              if(!err) {
+                //add to history
+                addToHistory(result[i].username, result[i].lockId, "lock");
+              }
+            })
+          }
+        })
+      //if the action was to unlock
+      } else {
+        console.log("The lock was automatically unlocked!");
+        //get the user object based on the username
+        getUser(result[i].username, function(user) {
+          //checks if the user can actually unlock the lock
+          if(canUnlock(user, result[i].lockId)) {
+            //updates the lock's status to unlock in the lock database
+            db.collection("locks").update({lockId: result[i].lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
+              if(!err) {
+                //add to history
+                addToHistory(result[i].username, result[i].lockId, "unlock");
+              }
+            })
+          }
+        })
+      }
+    }
+  })
+
+});
 
 /**
  * Searches through an array of locks and determines whether a particular
@@ -296,10 +350,14 @@
   return date;
 };
 
+<<<<<<< HEAD
 /**
  * Convert the current time into military time
  */
  var convertToMilitary = function(time) {
+=======
+var convertToMilitary = function(time) {
+>>>>>>> ac34f5111c9cfc7515af14d8780ee6d48160ad38
   if(time.indexOf("PM") != -1) {
    time = time.replace("PM", "");
    time = time.replace(" ", "");
@@ -308,8 +366,8 @@
    if(timeArray[0] != 12) {
     timeArray[0] += 12;
   }
-
   let timeString = parseInt(timeArray[0].toString() + timeArray[1]);
+<<<<<<< HEAD
   return timeString;
 }
 time = time.replace("AM", "");
@@ -317,6 +375,21 @@ time = time.replace(" ", "");
 let timeArray = time.split(":");
 return (parseInt(timeArray[0] + timeArray[1]));
 }
+=======
+    return timeString;
+  }
+  time = time.replace("AM", "");
+  time = time.replace(" ", "");
+  let timeArray = time.split(":");
+  if (timeArray[1] < 10) {
+    timeArray[1] = "0" + timeArray[1];
+  }
+  if (timeArray[0] < 12) {
+    return ("0" + parseInt(timeArray[0] + timeArray[1]));
+  }
+  return (parseInt(timeArray[0] + timeArray[1]));
+};
+>>>>>>> ac34f5111c9cfc7515af14d8780ee6d48160ad38
 
 
 /**
@@ -381,12 +454,12 @@ return true;
      getUser(username, function(user) {
       if(isOwner(user, lockId) || isAdmin(user, lockId)) {
       // Check to see if such an event already exists
-      db.collection("events").find({lockId: lockId, time: time}).toArray((err, result) => {
+      time = "" + convertToMilitary(time);
+      db.collection("events").find({"lockId": lockId, "time": time}).toArray((err, result) => {
         if(result.length != 0) {
           callback({message:"An event already exists for this lock at this time!"});
           return;
         }
-        
         let eventObject = {
           username: username,
           lockId: lockId,
