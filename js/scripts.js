@@ -1,6 +1,11 @@
 "use strict";
 var email;
 var name;
+
+/*
+ * signs in user and authentictes them
+ * @param: googleUser - email
+ */
 function onSignIn(googleUser) {
   if(googleUser) {
     var profile = googleUser.getBasicProfile();
@@ -21,6 +26,10 @@ function onSignIn(googleUser) {
   }
 }
 
+/*
+ * Loads Dashoard info with name and lock name 
+ * @param: none
+ */
 function loadDashboard() {
   $.get("/dashboardInformation", function(data) {
     $(".username").text(name);
@@ -29,6 +38,10 @@ function loadDashboard() {
   })
 }
 
+/*
+ * Loads users locks
+ * @param: none
+ */
 function loadLocks(){
   $.get("/getLocks", function(data) {
     let list = document.getElementById("dashboardComponents");
@@ -44,6 +57,10 @@ function loadLocks(){
   })
 }
 
+/*
+ * Switches lock to another of the the locks user has access to
+ * @parmam: none
+ */
 function switchLock() {
   $(document).on("click", ".locksonSiderbar", function(element) {
     $.get("/switchLock", {lockId: event.target.id}, function() {
@@ -52,6 +69,10 @@ function switchLock() {
   })
 }
 
+/*
+ * Loads settings (add/Remove users, edit Users, create event) 
+ * @param:none
+ */
 function loadSettings() {
   $.get("/getSettings", function(data) {
     let list = document.getElementById("settingsComponents");
@@ -68,7 +89,10 @@ function loadSettings() {
 
 }
 
-
+/**
+ * Switch settings according to page selected 
+ * @param: none
+ */
 function switchSettings() {
   $(document).on("click", ".settingsonSiderbar", function(element) {
     $.get("/switchSettings", {setting: event.target.id}, function(data) {
@@ -78,6 +102,10 @@ function switchSettings() {
   })
 }
 
+/*
+ * Register lock with email and lock id 
+ * @param:none
+ */
 function registerLock() {
   //console.log("user name in scripts.js is : " + email);
   $.post("/registerLock", {id: document.getElementById("id").value, lockName: document.getElementById("lock-name").value}, function(data) {
@@ -90,6 +118,10 @@ function registerLock() {
   })
 }
 
+/**
+ * Gets the status of the specific lock, whether lock is locked/unlocked
+ * @param: none
+ */
 function getLockStatus() {
   $.get("/lockStatus", function(data) {
     if(data.status == "locked") {
@@ -103,6 +135,10 @@ function getLockStatus() {
   })
 }
 
+/**
+ * Adds member to lock by submitting form and displaying message once 
+ * they have been added 
+ */
 function addMember() {
   $("#add-member-form").submit(function(event) {
     event.preventDefault();
@@ -112,6 +148,10 @@ function addMember() {
   })
 }
 
+/**
+ * Add an administrator to specific lock by submitting form 
+ * @param: none
+ */
 function addAdmin() {
    $("#edit-admin-form").submit(function(event) {
       event.preventDefault();
@@ -121,6 +161,10 @@ function addAdmin() {
    })
 }
 
+/**
+ * Gets the members of a lock
+ * @param: none
+ */
 function getMembers() {
   console.log("hello");
   $.get("/getMembers", function(data) {
@@ -134,6 +178,10 @@ function getMembers() {
   })
 }
 
+/**
+ * Displays the history of the lock including action and member who executed it 
+ * @param:none
+ */
 function showHistory() {
   $.get("/showHistory", function(data) {
     var list = document.getElementById("historyList");
@@ -161,6 +209,10 @@ function showHistory() {
   })
 }
 
+/**
+ * Create lock event (time to unlock)
+ * @param:none
+ */
 function createLockEvent() {
   $("#add-rules-form").submit(function(e) {
     e.preventDefault();
@@ -186,6 +238,9 @@ function createLockEvent() {
   });
 }
 
+/*Get the ststis of the lock and light up led based on status
+ * @param:none
+ */
 function getLockStatus() {
   $.get("/lockStatus", function(data) {
     if(data.status == "locked") {
@@ -201,6 +256,10 @@ function getLockStatus() {
   })
 }
 
+/**
+ * Change the lock (unlock/lock) and change led accordingly
+ * @param:none
+ */
 function changeLock() {
  if (document.getElementById("lock-status").innerHTML == "locked") {
  // Send request to change lock...
@@ -236,7 +295,10 @@ function changeLock() {
   }
 }
 
-
+/**
+ * Get the time to display
+ * @param:none
+ */
 function getTime() {
   $.get("/timeStatus", function(data) {
     $("#time").text(data);
@@ -246,6 +308,10 @@ function getTime() {
   }, 1000);
 }
 
+/**
+ * Adds timer
+ * @param:none
+ */
 function addTimer() {
   var $select = $(".1-12");
   for (i=1; i<=12; i++) {
@@ -261,12 +327,20 @@ function addTimer() {
   }
 }
 
+/**
+ * Get the name of member of lock and display
+ * @param:none
+ */
 function getName() {
   $.get("/getName", function(name) {
     document.getElementById("lock-name").value = (name + "'s Lock");
   })
 }
 
+/**
+ * Get locks of user 
+ * @param:none
+ */
 function getLocks() {
   $.get("/getLocks", function(data) {
     var list = document.getElementById("locks-list");
@@ -284,7 +358,10 @@ function getLocks() {
   })
 }
 
-
+/**
+ * Select dashboard to display for user 
+ * @param:none
+ */
 function selectDashboard() {
   $(document).on("click", ".lock", function(element) {
     $.get("/selectDashboard", {lockId: event.target.id}, function() {
@@ -293,6 +370,10 @@ function selectDashboard() {
   })
 }
 
+/**
+ * Load Times on dashboard
+ * @param:none
+ */
 function loadTimes() {
   for(var i = 0; i < 60; i++) {
     var select = document.getElementById("minute");
@@ -312,6 +393,7 @@ function loadTimes() {
     select.add(time);
   }
 }
+
 
 function loadTimesTwo() {
   for(var i = 0; i < 60; i++) {
@@ -333,11 +415,16 @@ function loadTimesTwo() {
   }
 }
 
+/**
+ * Loads sign out function
+ * @param:none
+ */
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
   });
 }
+
 
 function onLoad() {
   gapi.load('auth2', function() {
