@@ -15,9 +15,9 @@
    * that current time and performs the actions after checking if the user who submitted the 
    * request is allowed to perform the action at that certain time.
    */
- const j = schedule.scheduleJob('*/1 * * * *', function(){
-  console.log('Cheese is great!');
-  let d = new Date();
+   const j = schedule.scheduleJob('*/1 * * * *', function(){
+    console.log('Cheese is great!');
+    let d = new Date();
   //convert the time accordingly in order to look it up in the database
   let timeInMilitary = "" + convertToMilitary(d.getHours() + ":" + d.getMinutes());
   //look up all events at that specified time
@@ -41,8 +41,8 @@
           }
         })
       //if the action was to unlock
-      } else {
-        console.log("The lock was automatically unlocked!");
+    } else {
+      console.log("The lock was automatically unlocked!");
         //get the user object based on the username
         getUser(result[i].username, function(user) {
           //checks if the user can actually unlock the lock
@@ -350,14 +350,10 @@
   return date;
 };
 
-<<<<<<< HEAD
 /**
  * Convert the current time into military time
  */
  var convertToMilitary = function(time) {
-=======
-var convertToMilitary = function(time) {
->>>>>>> ac34f5111c9cfc7515af14d8780ee6d48160ad38
   if(time.indexOf("PM") != -1) {
    time = time.replace("PM", "");
    time = time.replace(" ", "");
@@ -367,29 +363,20 @@ var convertToMilitary = function(time) {
     timeArray[0] += 12;
   }
   let timeString = parseInt(timeArray[0].toString() + timeArray[1]);
-<<<<<<< HEAD
+
   return timeString;
 }
 time = time.replace("AM", "");
 time = time.replace(" ", "");
 let timeArray = time.split(":");
-return (parseInt(timeArray[0] + timeArray[1]));
+if (timeArray[1] < 10) {
+  timeArray[1] = "0" + timeArray[1];
 }
-=======
-    return timeString;
-  }
-  time = time.replace("AM", "");
-  time = time.replace(" ", "");
-  let timeArray = time.split(":");
-  if (timeArray[1] < 10) {
-    timeArray[1] = "0" + timeArray[1];
-  }
-  if (timeArray[0] < 12) {
-    return ("0" + parseInt(timeArray[0] + timeArray[1]));
-  }
-  return (parseInt(timeArray[0] + timeArray[1]));
+if (timeArray[0] < 12) {
+  return ("0" + parseInt(timeArray[0] + timeArray[1]));
+}
+return (parseInt(timeArray[0] + timeArray[1]));
 };
->>>>>>> ac34f5111c9cfc7515af14d8780ee6d48160ad38
 
 
 /**
@@ -680,7 +667,11 @@ exports.getLockAdmins = function(lockId, username, callback) {
   })
 }
 
-function addToHistory(username, lockId, action) {
+/**
+ * Adds action to history
+ * @param: username, lockId, callback
+ */
+ function addToHistory(username, lockId, action) {
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     let time = getTime();
     let date = new Date();
@@ -698,7 +689,7 @@ function addToHistory(username, lockId, action) {
 }
 
 /**
- * Gets the history (past lock actions executed)
+ * Gets the history (past lock/unlock actions executed)
  * @param: lockId, callback
  * @return: history
  */
@@ -710,17 +701,18 @@ function addToHistory(username, lockId, action) {
 
 /**
  * Adds a member to lock by adding specified user to database
+ * 
+ * Given user M who called the request
+ * upon user M', lock L
+ *  
+ * M should be able to add M' as a member iff
+ *    - isOwner(M, L) or isAdmin (M, L) (checked by calling canAddMembers)
+ *    - M' is a user in the database
+ *
  * @param: username, lockId
  * @return: true if added sucessfully, else false
  */
  exports.addMember = function(username, userToAdd, lockId, callback) {
-  /**
-   *  1.) See if the user can add members
-   *      - If not, return false
-   *  2.) See if username is in database
-   *      - If not, return false
-   * 
-   */
    getUser(username, function(user) {
     if(canAddMembers(user, lockId)) {
       getUser(userToAdd, function(result) {
@@ -856,6 +848,7 @@ function addToHistory(username, lockId, action) {
   })
 }
 
+
 exports.authenticate = function(username, fullname,  callback) {
     /**
    * Determines whether or not the user has a lock associated through steps
@@ -923,15 +916,24 @@ exports.authenticate = function(username, fullname,  callback) {
  * @return none
  */
  exports.revokeAdmin = function(username, lockId, otherUser, callback) {
-  if (canRevokeAdmin(username, lockID, otherUser)) {
-    db.collection("users").find({"username": otherUser, "locks.lockId": lockId}).toArray((err, result) => {
-      let lock = searchLocks(lockId, result[0].locks);
-      // returns false here if person isn't in lock
-      if(lock) {
-       //change the role number to 2 for that user and push into array
-     }
-   })
-  }
+  // if (canRevokeAdmin(username, lockID, otherUser)) {
+  //   db.collection("users").find({"username": otherUser, "locks.lockId": lockId}).toArray((err, result) => {
+  //     // returns false here if person isn't in lock
+  //     if(result[0] == undefined) {
+  //       callbakc(false);
+  //     }
+
+  //     let role = searchLocks(lockId, result[0].locks);
+  //     if(role == 1) {
+  //       let newRole = 2;
+        
+  //       db.collection("users").update({"username": otherUser, "locks.lockId": lockId}, {$set:{locks.}})
+  //     }
+  //   })
+  // }
+  // else{
+  //   callbakc(false);
+  // }
 }
 
 module.exports.convertToMilitary = convertToMilitary;
