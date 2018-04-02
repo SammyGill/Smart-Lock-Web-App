@@ -613,12 +613,22 @@ return true;
   })
 }
 
-/*
-exports.getLockAdmins = function(lockId, username, callback) {
 
+exports.getLockAdmins = function(lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    let allMembers = result[0].members;
+    console.log(allMembers);
+    let adminArray = [];
+    for (let i = 0; i < allMembers.length; i++) {
+      getUser(allMembers[i], function(user) {
+        if (isAdmin(user, lockId)) {
+          adminArray.push(allMembers[i]);
+        }
+      })
+    }
+    callback(adminArray);
+  })
 }
-
-*/
 
 /**
  * Get the list of locks of the specific user
@@ -738,55 +748,57 @@ exports.getLockAdmins = function(lockId, username, callback) {
             }
           })
         }
-      })
-      
-
-      
+      })  
     }
   })
+}//end addMember 
 
-  }//end addMember 
-
-  exports.addAdmins = function(username, userToAdmin, lockId, callback) {
-      getUser(username, function(user) {
-         //check if this user can add admins
-         if(canAddMembers(user,lockId)){
-
-            console.log("inside the if statement");
-            db.collection("users").find({"username":userToAdmin}).toArray((err, result) => {
-               console.log("THIS IS THE SIZE: " + result[0].locks.length);
-               if(!err){
-               let locks = result[0].locks;
-         
-               //find lock 
-               for(let i = 0; i<locks.length; i++){
-                  console.log("IN THE FOR LOOP");
-                  if(locks[i].lockId == lockId){
-                    console.log("THIS IS THE MATCH: " + locks[i].lockId);
-                    console.log("This is the role :" + locks[i].role);
-                  
-                    db.collection("users").update({"username": username, "locks[i].lockId": lockId}, {$set: {"locks[i].role": 1}});
-                    callback({message:"User is now Admin"});
-                    return;
-                  }
-               }
-
-               }//end !err
-              
-                
-             
-
-            })
-
+/**
+ * Changes the status of a member to an admin
+ * 
+ * Given user M who called the request
+ * upon user M', lock L, if M is an admin and M' is a member
+ *  
+ * M should be able to add M' as a admin iff
+ *    - isOwner(M, L)
+ *    - M' is a member in the database
+ *
+ * @param: username, userToAdmin, lockId
+ * @return: message based on if it was successful
+ */
+exports.addAdmins = function(username, userToAdmin, lockId, callback) {
+  getUser(username, function(user) {
+    //check if this user can add admins
+    getUser(username, function(user) {
+      if(isOwner(user, lockId)) {
+        //finds the user that wants to be changed to admin
+        db.collection("users").find({"username": userToAdmin}).toArray((err, result) => {
+          //find correct lock inside the locks array
+          for(let i = 0; i < result[0].locks.length; i++){
+            //once the lock is found, perform actions on this lock
+            if(result[0].locks[i].lockId == lockId){
+              //creates new lock object that will replace the one of this current lock
+              let lockObject = {
+                "lockId": result[0].locks[i].lockId, 
+                "role": 1, 
+                "lockRestrictions": [-1, -1], 
+                "unlockRestrictions": [-1,-1]
+              };
+              //set the current index to the new lock object
+              result[0].locks[i] = lockObject;
+              //find the user again and update it, setting the new locks array to the result[0] which is now updated
+              db.collection("users").update({username: userToAdmin}, {$set: {locks: result[0]}}, (err, numberAffected, rawResponse) => {})
+              //callback message currently doesn't work
+              callback({message:"User is now Admin"});
+              return;
+            }
+          } 
+        })
       }
-      })
-  }
+    })
+  })
+}
         
-     
- 
-   
-
- 
 /**
  * Unlock the lock and record any changes in the history
  * @param: username, lockId, callback
