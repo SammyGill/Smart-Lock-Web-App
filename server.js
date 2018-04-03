@@ -43,7 +43,7 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
   })
 })
 
-/*var dashboard = socket.of("/dashboardConnection");
+var dashboard = socket.of("/dashboardConnection");
 dashboard.on("connection", function(socket) {
   console.log("connected to dashboard socket from server end");
   var lightvalue = 0; //static variable for current status
@@ -54,7 +54,7 @@ dashboard.on("connection", function(socket) {
     redLED.writeSync(1-lightvalue);
   });
 
-  /*pushButton.watch(function (err, value) { //Watch for hardware interrupts     on pushButton
+  pushButton.watch(function (err, value) { //Watch for hardware interrupts     on pushButton
   if (err) { //if an error
     console.error('There was an error', err); //output error message to     console
       return;
@@ -86,7 +86,7 @@ dashboard.on("connection", function(socket) {
     greenLED.unexport(); //Unexport greenLED GPIO to free resources
     pushButton.unexport(); // Unexport Button GPIO to free resources
     process.exit(); //exit completely
-  });*/
+  });
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
