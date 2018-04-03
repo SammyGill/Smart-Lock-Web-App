@@ -4,15 +4,15 @@ const mongoClient = require("mongodb").MongoClient;
 const app = express();
 let dir = __dirname;
 let bodyParser = require('body-parser');
-let  session = require("client-sessions");
+let session = require("client-sessions");
 const async = require("async");
-const schedule = require('node-schedule');
 let  d = new Date();
 
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const socket = require("socket.io")(server);
- const assert = require("assert")
+const assert = require("assert")
+
 
 /*const Gpio = require("onoff").Gpio;
 const greenLED = new Gpio(4, "out");
@@ -34,6 +34,10 @@ duration: 10 * 1000,
 
 app.use(bodyParser.json());
 
+/**
+ * Connects server to mongo database and allows us to view apllication in
+ * browser
+ */
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
 
   server.listen(3000, function() {
@@ -93,6 +97,7 @@ app.get("/", (req, res) => {
   res.sendFile(dir + "/views/login.html");
 })
 
+//route for addMembers page
 app.get("/addMembers", (req, res) => {
   res.sendFile(dir + "/views/addMembers.html");
 })
@@ -101,14 +106,18 @@ app.get("/addMembers", (req, res) => {
   res.sendFile(dir + "/views/addRoles.html");
 })
 */
+
+//route for addEvents page
 app.get("/addEvents", (req, res) => {
   res.sendFile(dir + "/views/addEvents.html");
 })
 
+//route for registerLock page
 app.get("/registerLock", (req, res) => {
   res.sendFile(dir + "/views/register.html");
 })
 
+//route for editAdmins page
 app.get("/editAdmins", (req, res) => {
  res.sendFile(dir+ "/views/editAdmins.html");
 })
@@ -116,6 +125,7 @@ app.get("/editAdmins", (req, res) => {
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 
+//Authenticates the user through email 
   app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
@@ -131,7 +141,7 @@ app.get("/editAdmins", (req, res) => {
   })
   })
 
-// Route that redirects users to their lock dashboard, sends the dashboard page back
+//Route that redirects users to their lock dashboard, sends the dashboard page back
 app.get("/dashboard", (req, res) => {
   if(!mod.isLoggedIn(req.session.username)) {
     res.redirect("/");
@@ -152,13 +162,14 @@ app.get("/dashboard", (req, res) => {
     res.send(data);
   })
 })
-
+//gets the locks using username 
  app.get("/getLocks", (req, res) => {
   mod.getLocks(req.session.username, function(data) {
     res.send(data);
   })
 })
 
+//get the settings for user with username and lock
  app.get("/getSettings", (req, res) => {
   mod.getSettings(req.session.username, req.session.lock, function(data) {
     console.log("getSettings in server.js: " + data);
@@ -166,17 +177,20 @@ app.get("/dashboard", (req, res) => {
   })
 })
 
+//gets the members of a lock using lock id 
  app.get("/getMembers", (req, res) => {
   let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
 
+//gets the lock admins 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
-    let username = req.body.members;
-    mod.getLockAdmins(id,username);
+    //let username = req.body.members;
+  mod.getLockAdmins(id, function(members) {res.send({members: members});});
  })
  
+ //gets the users name from email username
  app.get("/getName", (req, res) => {
   res.send(req.session.username);
 })
@@ -191,27 +205,31 @@ app.get("/register", (req, res) => {
   res.sendFile(dir + "/views/register.html");
 })
 
-
+//gets the status (locked/unlocked) of a specific lock
 app.get("/lockStatus", (req, res) => {
   mod.getLockStatus(req.session.lock, function(data) {
     res.send(data);
   })
 })
 
+//selet lock to view
 app.get("/selectLock", (req, res) => {
   res.sendFile(dir + "/views/locks.html");
 })
 
+//slect dashoard to be displayed 
 app.get("/selectDashboard", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   res.send();
 })
 
+//switch lock using lock id of lock to switch to 
 app.get("/switchLock", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   res.send();
 })
 
+//switch settings 
 app.get("/switchSettings", (req, res) => {
   console.log("the botton clicked is: " + req.query.setting);
   mod.switchSettings(req.query.setting, function(data) {
@@ -220,6 +238,7 @@ app.get("/switchSettings", (req, res) => {
   })
 })
 
+//gets the time status 
 app.get("/timeStatus", (req, res) => {
   let time = mod.getTime();
   res.send(time);
@@ -235,6 +254,7 @@ app.get("/timeStatus", (req, res) => {
   });
 });*/
 
+//gets the history of specific lock 
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
   mod.getLockHistory(id, function(history) {
@@ -248,6 +268,7 @@ app.get("/showHistory", (req, res) => {
   })
 })
 
+//signs out of session
 app.get("/signOut", (req, res) => {
  req.session.reset();
  res.send();
@@ -273,13 +294,11 @@ app.post("/removeMember", (req, res) => {
   
 })
 
+//add admin (changes role of user from 2 to 1)
 app.post("/addAdmin", (req, res) => {
    let username = req.session.username;
-   console.log("This is the username: " + username);
    let userToAdmin = req.body.username;
-   console.log("This is the userToAdmin: "+ userToAdmin);
    let lockId = req.session.lock;
-   console.log("This is the lockId: " + lockId); 
 
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
       res.send(result);
@@ -287,7 +306,7 @@ app.post("/addAdmin", (req, res) => {
 })
 
 //add time restrictions to when lock will be locked/unlocked
-app.post("/addTimeRestric,tion", (req, res) => {
+app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 
