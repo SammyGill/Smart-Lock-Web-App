@@ -394,7 +394,9 @@ function loadTimes() {
   }
 }
 
-
+/**
+ * Loads time 
+ */
 function loadTimesTwo() {
   for(var i = 0; i < 60; i++) {
     var select = document.getElementById("minuteTwo");
@@ -425,7 +427,9 @@ function signOut() {
   });
 }
 
-
+/**
+ * load authentication
+ */
 function onLoad() {
   gapi.load('auth2', function() {
     gapi.auth2.init();
@@ -455,6 +459,9 @@ function onLoad() {
   }
 }*/
 
+/**
+ * Sets up drop down for admins of a lock
+ */
 function getAdminDropDown() {
    $.get("/getAdmins", function(data) {
       let select = document.getElementById("admins");
@@ -471,11 +478,17 @@ function getAdminDropDown() {
    })
 }
 
+/**
+ * Get admin information from drop down
+ */
 function getAdminInfo() {
    let memberSelect = document.getElementById('admins');
    let memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 }
 
+/**
+ * sets up a drop down of members of a lock
+ */
 function getMembersDropDown() {
   $.get("/getMembers", function(data) {
     var select = document.getElementById("members");
@@ -493,6 +506,9 @@ function getMembersDropDown() {
 
 }
 
+/**
+ * Gets members of a lock 
+ */
 function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
@@ -516,6 +532,10 @@ function getMemberInfo() {
      */
 }
 
+/**
+ * Makes time restriction for user on specific lock
+ * @param:none
+ */ 
 function addTimeRestriction() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
