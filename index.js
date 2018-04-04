@@ -600,7 +600,7 @@ return true;
 
 /**
  * Gets the members of a specific lock
- * @param lockId - the lock Id of the lock that we are looking at
+ * @param lockId - the lock Id of the lock that we want to get members of 
  * @return array of members or message saying there are no members
  */
  exports.getLockMembers = function(lockId, callback) {
@@ -613,7 +613,11 @@ return true;
   })
 }
 
-
+/**
+ * Gets the admins of a specific lock
+ * @param: lockId - the lock id of lock whose admins we want 
+ * @return: array of admins
+ */
 exports.getLockAdmins = function(lockId, callback) {
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     let allMembers = result[0].members;
