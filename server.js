@@ -286,12 +286,18 @@ app.post("/addMember", (req, res) => {
   mod.addMember(username, userToAdd, lockId, function(result) {
     res.send(result);
   });
-
 })
 
 //remove member from lock 
 app.post("/removeMember", (req, res) => {
-  
+  let username = req.session.username;
+  let userToRemove = req.body.username;
+  let lockId = req.session.lock;
+  //call the module
+  console.log("The user to remove is " + userToRemove)
+  mod.removeMember(username, lockId, userToRemove, function(result) {
+    res.send(result);
+  });
 })
 
 //add admin (changes role of user from 2 to 1)
