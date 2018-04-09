@@ -787,12 +787,8 @@ return true;
  * @param: username, userToAdmin, lockId
  * @return: message based on if it was successful
  */
-<<<<<<< HEAD
- exports.addAdmins = function(username, userToAdmin, lockId, callback) {
-=======
 exports.addAdmins = function(username, userToAdmin, lockId, callback) {
   //check if this user can add admins
->>>>>>> cedb47c6d1603bbc0f3f4690d517811269874061
   getUser(username, function(user) {
     getUser(userToAdmin, function(user2) {
       if(isOwner(user, lockId) && !isOwner(user2, lockId)) {
