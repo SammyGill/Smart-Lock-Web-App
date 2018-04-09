@@ -8,6 +8,11 @@ socket.on('connect', function (data) {
     socket.emit("identification", 1);
 });
 
-// What we need to work on
-// What happens when the lock powers up?
-// What happens when the lock disconnects?
+socket.on("lock", function(data) {
+	console.log("got a lock request");
+})
+
+socket.on("welcome", function(id) {
+	console.log("welcome lock " + id);
+})
+
