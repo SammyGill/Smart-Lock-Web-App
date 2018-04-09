@@ -584,11 +584,9 @@ return true;
                     if(result[0].locks[i].lockId == lockId){
                        //create a new lock oject that will replace the one of
                        //this current lock
-                       let roleUp = getRole(userToChange,lockId);
-                       console.log(roleUp);
                        let lockObject = {
                           "lockId": result[0].locks[i].lockId,
-                          "role":roleUp,
+                          "role": getRole(userToChange,lockId),
                           "lockRestrictions": lockRestrictions,
                           "unlockRestrictions": [-1,-1]
                        };
@@ -653,14 +651,12 @@ return true;
      //get the user 
      getUser(user, function(result) {
         //check if is owner 
-        if(isOwner(result, lockId)){
+        if(isOwner(user, lockId){
            return 0;
         }
-        else if(isAdmin(result,lockId)){
+        else if(isAdmin(user,lockId)){
            return 1; 
         }
-       
-           return 2;
 
 
      })
