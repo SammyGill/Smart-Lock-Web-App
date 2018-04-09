@@ -149,6 +149,19 @@ function addMember() {
 }
 
 /**
+ * Remove member to lock by submitting form and displaying message once 
+ * they have been removed
+ */
+function removeMember() {
+  $("#remove-member-form").submit(function(event) {
+    event.preventDefault();
+    $.post("/removeMember", {username: document.getElementById("members").value}, function(data) {
+      document.getElementById("response-message").innerHTML = data.message;
+    })
+  })
+}
+
+/**
  * Add an administrator to specific lock by submitting form 
  * @param: none
  */
@@ -157,6 +170,20 @@ function addAdmin() {
       event.preventDefault();
       $.post("/addAdmin", {username: document.getElementById("members").value}, function(data) {
          document.getElementById("response-message").innerHTML= data.message;
+      })
+   })
+}
+
+/**
+ * Add an administrator to specific lock by submitting form 
+ * @param: none
+ */
+function removeAdmin() {
+   $("#remove-admin-form").submit(function(event) {
+      event.preventDefault();
+      console.log("in scripts.js: " + document.getElementById("admins").value);
+      $.post("/revokeAdmin", {username: document.getElementById("admins").value}, function(data) {
+         document.getElementById("response-message-removeAdmin").innerHTML= data.message;
       })
    })
 }
@@ -394,7 +421,9 @@ function loadTimes() {
   }
 }
 
-
+/**
+ * Loads time 
+ */
 function loadTimesTwo() {
   for(var i = 0; i < 60; i++) {
     var select = document.getElementById("minuteTwo");
@@ -425,7 +454,9 @@ function signOut() {
   });
 }
 
-
+/**
+ * load authentication
+ */
 function onLoad() {
   gapi.load('auth2', function() {
     gapi.auth2.init();
@@ -455,10 +486,14 @@ function onLoad() {
   }
 }*/
 
+/**
+ * Sets up drop down for admins of a lock
+ */
 function getAdminDropDown() {
    $.get("/getAdmins", function(data) {
+    console.log("in scirpts.js: data.member is: " + data.members);
       let select = document.getElementById("admins");
-      for(let i =0; i<data.members.length; i++){
+      for(let i =0; i < data.members.length; i++){
          let option = document.createElement("option");
          option.text = data.members[i];
             if(option.text != data.owner) {
@@ -471,14 +506,20 @@ function getAdminDropDown() {
    })
 }
 
+/**
+ * Get admin information from drop down
+ */
 function getAdminInfo() {
    let memberSelect = document.getElementById('admins');
    let memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 }
 
+/**
+ * sets up a drop down of members of a lock
+ */
 function getMembersDropDown() {
   $.get("/getMembers", function(data) {
-    var select = document.getElementById("members");
+    let select = document.getElementById("members");
     for(var i = 0; i < data.members.length; i++) {
       var option = document.createElement("option");
       option.text = data.members[i];
@@ -493,6 +534,28 @@ function getMembersDropDown() {
 
 }
 
+/**
+ * sets up a drop down of admins of a lock
+ */
+function getAdminssDropDown() {
+  $.get("/getAdmins", function(data) {
+    let select = document.getElementById("admins");
+    for(var i = 0; i < data.admins.length; i++) {
+      var option = document.createElement("option");
+      option.text = data.admins[i];
+      if (option.text != data.owner) {
+        select.add(option);
+      }
+    }
+    select.selectedIndex = "0";  
+    getAdminInfo();
+  })
+
+}
+
+/**
+ * Gets members of a lock 
+ */
 function getMemberInfo() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
@@ -516,6 +579,18 @@ function getMemberInfo() {
      */
 }
 
+/**
+ * Gets members of a lock 
+ */
+function getAdminInfo() {
+  var adminSelect = document.getElementById('admins');
+  var adminOption = adminSelect.options[adminSelect.selectedIndex].text;
+}
+
+/**
+ * Makes time restriction for user on specific lock
+ * @param:none
+ */ 
 function addTimeRestriction() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
