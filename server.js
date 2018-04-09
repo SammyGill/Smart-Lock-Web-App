@@ -186,8 +186,11 @@ app.get("/dashboard", (req, res) => {
 //gets the lock admins 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
+    console.log("went through getAdmins in server.js");
     //let username = req.body.members;
-  mod.getLockAdmins(id, function(members) {res.send({members: members});});
+  mod.getLockAdmins(id, function(members) {
+    console.log("members in server.js: " + members);
+    res.send({members: members});});
  })
  
  //gets the users name from email username
@@ -208,6 +211,7 @@ app.get("/register", (req, res) => {
 //gets the status (locked/unlocked) of a specific lock
 app.get("/lockStatus", (req, res) => {
   mod.getLockStatus(req.session.lock, function(data) {
+    console.log("in server.js, the getLocksStatus: " + data[0]);
     res.send(data);
   })
 })
@@ -303,6 +307,17 @@ app.post("/addAdmin", (req, res) => {
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
       res.send(result);
    });
+})
+
+app.post("/revokeAdmin", (req,res) => {
+  let username = req.session.username;
+  let otherUser = req.body.username;
+  let lockId = req.session.lock;
+  console.log("in server.js, the otherUser is: " + otherUser);
+
+  mod.revokeAdmin(username, lockId, otherUser, function(result) {
+    res.send(result);
+  });
 })
 
 //add time restrictions to when lock will be locked/unlocked

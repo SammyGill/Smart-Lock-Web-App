@@ -162,6 +162,20 @@ function addAdmin() {
 }
 
 /**
+ * Add an administrator to specific lock by submitting form 
+ * @param: none
+ */
+function removeAdmin() {
+   $("#remove-admin-form").submit(function(event) {
+      event.preventDefault();
+      console.log("in scripts.js: " + document.getElementById("admins").value);
+      $.post("/revokeAdmin", {username: document.getElementById("admins").value}, function(data) {
+         document.getElementById("response-message-removeAdmin").innerHTML= data.message;
+      })
+   })
+}
+
+/**
  * Gets the members of a lock
  * @param: none
  */
@@ -464,8 +478,9 @@ function onLoad() {
  */
 function getAdminDropDown() {
    $.get("/getAdmins", function(data) {
+    console.log("in scirpts.js: data.member is: " + data.members);
       let select = document.getElementById("admins");
-      for(let i =0; i<data.members.length; i++){
+      for(let i =0; i < data.members.length; i++){
          let option = document.createElement("option");
          option.text = data.members[i];
             if(option.text != data.owner) {
@@ -491,7 +506,7 @@ function getAdminInfo() {
  */
 function getMembersDropDown() {
   $.get("/getMembers", function(data) {
-    var select = document.getElementById("members");
+    let select = document.getElementById("members");
     for(var i = 0; i < data.members.length; i++) {
       var option = document.createElement("option");
       option.text = data.members[i];
@@ -502,6 +517,25 @@ function getMembersDropDown() {
     select.selectedIndex = "0";  
     getMemberInfo();
 
+  })
+
+}
+
+/**
+ * sets up a drop down of admins of a lock
+ */
+function getAdminssDropDown() {
+  $.get("/getAdmins", function(data) {
+    let select = document.getElementById("admins");
+    for(var i = 0; i < data.admins.length; i++) {
+      var option = document.createElement("option");
+      option.text = data.admins[i];
+      if (option.text != data.owner) {
+        select.add(option);
+      }
+    }
+    select.selectedIndex = "0";  
+    getAdminInfo();
   })
 
 }
@@ -530,6 +564,14 @@ function getMemberInfo() {
     }
   })
      */
+}
+
+/**
+ * Gets members of a lock 
+ */
+function getAdminInfo() {
+  var adminSelect = document.getElementById('admins');
+  var adminOption = adminSelect.options[adminSelect.selectedIndex].text;
 }
 
 /**
