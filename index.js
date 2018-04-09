@@ -972,5 +972,19 @@ function canAddAdmin(username,lockId){
   // }
 }
 
+exports.insertActiveLock = function(activeLock) {
+  console.log("inside active lock");
+  db.collection("active-locks").insert(activeLock);
+}
+
+exports.deleteActiveLock = function(socketId) {
+  console.log("inside delete active lock");
+  db.collection("active-locks").deleteOne(socketId);
+}
+
+exports.test = function() {
+  console.log("test");
+}
+
 module.exports.convertToMilitary = convertToMilitary;
 module.exports.getTime = getTime;
