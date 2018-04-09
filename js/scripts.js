@@ -149,6 +149,19 @@ function addMember() {
 }
 
 /**
+ * Remove member to lock by submitting form and displaying message once 
+ * they have been removed
+ */
+function removeMember() {
+  $("#remove-member-form").submit(function(event) {
+    event.preventDefault();
+    $.post("/removeMember", {username: document.getElementById("members").value}, function(data) {
+      document.getElementById("response-message").innerHTML = data.message;
+    })
+  })
+}
+
+/**
  * Add an administrator to specific lock by submitting form 
  * @param: none
  */
