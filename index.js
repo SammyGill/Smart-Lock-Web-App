@@ -151,8 +151,8 @@
       return false;
     }
     return (role == 0);
- 
-}
+
+  }
 
 
 /**
@@ -166,13 +166,14 @@
  */
  function isAdmin(userObject, lockId) {
   let role = searchLocks(lockId, userObject.locks);
+  //console.log("in isAdmin: " + userObject.username + role);
     // returns false here if person isn't in lock
     if(role == undefined) {
       return false;
     }
     return (role == 1);
-  
-}
+
+  }
 
 
 
@@ -471,8 +472,8 @@ return true;
    * @param username - the username of the user that we are looking
    */
    exports.getSettings = function(username, lockId, callback) {
-      //Get the user's document who has this lock
-      db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
+    //Get the user's document who has this lock
+    db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
     //Loop through the locks array to find the information foe this lock
     let locksArray = result[0].locks;
     let settings = [];
@@ -721,19 +722,35 @@ return true;
  * @param: lockId - the lock id of lock whose admins we want 
  * @return: array of admins
  */
-exports.getLockAdmins = function(lockId, callback) {
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+ exports.getLockAdmins = function(lockId, callback) {
+
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {  
     let allMembers = result[0].members;
-    console.log(allMembers);
     let adminArray = [];
-    for (let i = 0; i < allMembers.length; i++) {
-      getUser(allMembers[i], function(user) {
-        if (isAdmin(user, lockId)) {
-          adminArray.push(allMembers[i]);
+
+    async.each(allMembers, function(member, callback) {
+      db.collection("users").find({"username": member}).toArray((err, result) => {
+        for(let i = 0;  i < result[0].locks.length; i++) {
+          if(result[0].locks[i].lockId == lockId && result[0].locks[i].role == 1 ) {
+            adminArray.push(member);
+            console.log("inside if: " + adminArray);
+          }
         }
+        callback();
       })
+    }, function(err) {
+    // if any of the file processing produced an error, err would equal that error
+    if( err ) {
+      console.log("There is some error!");
+    } else {
+      if(adminArray.length == 0){
+        adminArray.push("There are no members currently associated with this lock");
+      }
+      console.log("adminArray in index.js finally is: " + adminArray);
+      callback(adminArray);
     }
-    callback(adminArray);
+  });
+
   })
 }
 
@@ -874,12 +891,15 @@ exports.getLockAdmins = function(lockId, callback) {
  * @return: message based on if it was successful
  */
 exports.addAdmins = function(username, userToAdmin, lockId, callback) {
+  //check if this user can add admins
   getUser(username, function(user) {
-    //check if this user can add admins
-    getUser(username, function(user) {
-      if(isOwner(user, lockId)) {
+    getUser(userToAdmin, function(user2) {
+      if(isOwner(user, lockId) && !isOwner(user2, lockId)) {
         //finds the user that wants to be changed to admin
         db.collection("users").find({"username": userToAdmin}).toArray((err, result) => {
+          if(result[0] == undefined){
+            return;
+          }
           //find correct lock inside the locks array
           for(let i = 0; i < result[0].locks.length; i++){
             //once the lock is found, perform actions on this lock
@@ -888,13 +908,13 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
               let lockObject = {
                 "lockId": result[0].locks[i].lockId, 
                 "role": 1, 
-                "lockRestrictions": [-1, -1], 
-                "unlockRestrictions": [-1,-1]
+                "lockRestrictions": [[-1, -1]], 
+                "unlockRestrictions": [[-1,-1]]
               };
               //set the current index to the new lock object
               result[0].locks[i] = lockObject;
               //find the user again and update it, setting the new locks array to the result[0] which is now updated
-              db.collection("users").update({username: userToAdmin}, {$set: {locks: result[0]}}, (err, numberAffected, rawResponse) => {})
+              db.collection("users").update({username: userToAdmin}, {$set: {locks: result[0].locks}}, (err, numberAffected, rawResponse) => {})
               //callback message currently doesn't work
               callback({message:"User is now Admin"});
               return;
@@ -905,7 +925,7 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
     })
   })
 }
-        
+
 /**
  * Unlock the lock and record any changes in the history
  * @param: username, lockId, callback
@@ -1040,7 +1060,7 @@ exports.authenticate = function(username, fullname,  callback) {
  * retunr: true if can remove, else false
  */
  function canRemoveMem(username, lockId, otherUser) {
-   return(isOwner(username, lockId) && isAdmin(otherUser, lockId) && isAdmin(user, lockId));
+   return(isOwner(username, lockId));
  }
 
 /**
@@ -1048,8 +1068,9 @@ exports.authenticate = function(username, fullname,  callback) {
  * @param: username, lockId
  * @return: true if can add, else false
  */
+
 function canAddAdmin(username,lockId){
-   return(isOwner(username, lockId) || isAdmin(username, lockId));
+   return(isOwner(username, lockId));
 }
 
 /**
@@ -1059,24 +1080,83 @@ function canAddAdmin(username,lockId){
  * @return none
  */
  exports.revokeAdmin = function(username, lockId, otherUser, callback) {
-  // if (canRevokeAdmin(username, lockID, otherUser)) {
-  //   db.collection("users").find({"username": otherUser, "locks.lockId": lockId}).toArray((err, result) => {
-  //     // returns false here if person isn't in lock
-  //     if(result[0] == undefined) {
-  //       callbakc(false);
-  //     }
+  getUser(username, function(user1) {
+    //check if this user can add admins
+    //getUser(otherUser, function(user2) {
+      if(isOwner(user1, lockId)) {
+    //find the user of whom we are going to change the role
+    db.collection("users").find({username: otherUser}).toArray((err, result) => {
+      if(result[0] == undefined){
+        return;
+      }
+      //loop through the lock to find the specific lock Id
+      for(let i = 0; i < result[0].locks.length; i++) {
+        //Once the lock Id is found, create a new lock object
+        if(result[0].locks[i].lockId == lockId) {
+          let lockObject = {
+            "lockId": lockId,
+            "role": 2, 
+            "lockRestrictions": [[-1, -1]], 
+            "unlockRestrictions": [[-1, -1]]
+          };
+        //set the current index to the new lock object
+        result[0].locks[i] = lockObject;
+        //update the database
+        db.collection("users").update({username: otherUser}, {$set:{locks: result[0].locks}}, (err, numberAffected, rawResponse) =>{})
+        //callback message currently doesn't work
+        callback({message: "User is now a member!!!!"});
+        return;
+      }
+    }
+  })
+  }
+})
+}
 
-  //     let role = searchLocks(lockId, result[0].locks);
-  //     if(role == 1) {
-  //       let newRole = 2;
-        
-  //       db.collection("users").update({"username": otherUser, "locks.lockId": lockId}, {$set:{locks.}})
-  //     }
-  //   })
-  // }
-  // else{
-  //   callbakc(false);
-  // }
+exports.removeMember = function(username, lockId, otherUser, callback) {
+  getUser(username, function(user) {
+    if (isOwner(user, lockId)) {
+      //updates the members array in the locks collection for that lockId
+      db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
+        //
+        for (let i = 0; i < result[0].members.length; i++) {
+          if (result[0].members[i] == otherUser) {
+            result[0].members[i] = "NULL";
+          }
+        }
+        let newArray = [];
+        //if is was not the the user we deleted, then add into the new array
+        for (let i = 0; i < result[0].members.length; i++) {
+          if (result[0].members[i] != "NULL") {
+            newArray.push(result[0].members[i]);
+          }
+        }
+        //update the members array for this lock to the new array
+        db.collection("locks").update({lockId: lockId}, {$set: {members: newArray}}, (err, numberAffected, rawResponse) => {})
+
+        //updates and deleted the lock from the users collection for that user
+        db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
+          //go through the locks array and change the lock to delete to NULL
+          //console.log("Result is " + result2[0].locks);
+          for (let i = 0; i < result2[0].locks.length; i++) {
+            if (result2[0].locks[i].lockId == lockId) {
+              result2[0].locks[i] = "NULL";
+            }
+          }
+          let newLocksArray = [];
+          //if is was not the the lock we deleted, then we add it into new array
+          for (let i = 0; i < result2[0].locks.length; i++) {
+           if (result2[0].locks[i] != "NULL") {
+              newLocksArray.push(result2[0].locks[i]);
+            }
+          }
+          //update the locks array for the user that we wanted to delete from that lock
+          db.collection("users").update({username: otherUser}, {$set: {locks: newLocksArray}}, (err, numberAffected, rawResponse) => {})
+        })
+      })
+    }
+  })
+  callback({message: "User Successfully Deleted!"});
 }
 
 module.exports.convertToMilitary = convertToMilitary;
