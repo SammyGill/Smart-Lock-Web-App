@@ -169,7 +169,7 @@ function addAdmin() {
    $("#edit-admin-form").submit(function(event) {
       event.preventDefault();
       $.post("/addAdmin", {username: document.getElementById("members").value}, function(data) {
-         document.getElementById("response-message").innerHTML= data.message;
+         document.getElementById("response-message-addAdmin").innerHTML= data.message;
       })
    })
 }
@@ -597,10 +597,14 @@ function addTimeRestriction() {
 
   var action = undefined;
   if(document.getElementById("unlock").checked) {
+    console.log("unlock!");
     action = "unlock";
+    document.getElementById("unlock").checked = false;
   }
-  else {
+  if(document.getElementById("lock").checked){
+    console.log("lock!");
     action = "lock";
+    document.getElementById("lock").checked = false;
   }
 
   var roleLabel = document.getElementById("roleName")
@@ -636,13 +640,9 @@ function addTimeRestriction() {
     //})
   }
   event.preventDefault();
+  console.log("time inscript.js: " + time + "  " + timeTwo);
   $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
-    if(data.error) {
-      $(".error-message").text(data.error);
-    }
-    else {
-      $(".error-message").text("");
-    }
+      document.getElementById("response-message-addTimeRestriction").innerHTML= data.message;
 
   })  
 
