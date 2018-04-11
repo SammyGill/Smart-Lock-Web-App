@@ -183,7 +183,7 @@
  * @return: true or false
  */
  function isMember(username, lockId) {
-   db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
+   db.collection("users").find({"username": username}).toArray((err,result) => {
     let lock= searchLocks(lockId, result[0].locks);
       //return false here if person isn't in lock
       if(!lock){
@@ -364,6 +364,7 @@
    if(timeArray[0] != 12) {
     timeArray[0] += 12;
   }
+
   let timeString = parseInt(timeArray[0].toString() + timeArray[1]);
 
   return timeString;
@@ -371,14 +372,16 @@
 time = time.replace("AM", "");
 time = time.replace(" ", "");
 let timeArray = time.split(":");
-if (timeArray[1] < 10) {
-  timeArray[1] = "0" + timeArray[1];
-}
-if (timeArray[0] < 12) {
+console.log("hereee: " + timeArray);
+// if (timeArray[0] < 10) {
+//   timeArray[0] = "0" + timeArray[0];
+// }
+if (timeArray[0] < 10) {
   return ("0" + parseInt(timeArray[0] + timeArray[1]));
 }
-return (parseInt(timeArray[0] + timeArray[1]));
-};
+//console.log("timeArray:" + parseInt(timeArray[0].toString() + timeArray[1]));
+return (parseInt(timeArray[0].toString() + timeArray[1]));
+}
 
 
 /**
@@ -497,7 +500,7 @@ return true;
       }
     }
   })
-    }
+  }
 
 /**
    * Switch between setting tabs
@@ -566,33 +569,47 @@ return true;
   *    - use the callback to return the success/failure
   */
   exports.createRole = function(username, action, userToChange, lockId, start, end, callback) {
+    console.log("The action in index.js is: " + action);
+    if(action != "lock" && action != "unlock"){
+      callback({message: "Please select lock or unlock"});
+      return;
+    }
+    if(start >= end){
+      callback({message: "Invalid time range!"});
+      return;
+    }
      //check if start and end is in military time
      //convertToMilitary(start);
     // convertToMilitary(end);
-     
      //get the user requesting to make a change to the role of another user
      getUser(username, function(user) {
+      getUser(username, function(user2){
         //check if user requesting is allowed to make this request
-        if(isOwner(user, lockId) || isAdmin(user, lockId)){
+        if((isOwner(user, lockId) || isAdmin(user, lockId)) && (!isOwner(user2, lockId) || !isAdmin(user2, lockId)) ){
            //check the action to perform
            if(action == "lock"){
-              let lockRestrictions = [start, end];
+            let lockRes = [start, end];
               //find the user in the database
               db.collection("users").find({"username": userToChange}).toArray((err, result) => {
+                if(result[0] == undefined) {
+                  return;
+                }
                  //find the correct lock inside the locks array
                  for(let i=0; i< result[0].locks.length; i++){
                     //look for specific lock
                     if(result[0].locks[i].lockId == lockId){
                        //create a new lock oject that will replace the one of
                        //this current lock
-                       let roleUp = getRole(userToChange,lockId);
-                       console.log(roleUp);
+                       let lockResArray = result[0].locks[i].lockRestrictions;
+                       let unlockResArray = result[0].locks[i].unlockRestrictions;
+                       lockResArray.push(lockRes);
+                       let roleUp = result[0].locks[i].role;
                        let lockObject = {
-                          "lockId": result[0].locks[i].lockId,
-                          "role":roleUp,
-                          "lockRestrictions": lockRestrictions,
-                          "unlockRestrictions": [-1,-1]
-                       };
+                        "lockId": result[0].locks[i].lockId,
+                        "role":roleUp,
+                        "lockRestrictions": lockResArray,
+                        "unlockRestrictions": unlockResArray
+                      };
                        //set current index to the new lock object 
                        result[0].locks[i] = lockObject;
                        //find user again to update it setting the newlocks array
@@ -602,72 +619,53 @@ return true;
                        callback({message:"Added user lock restriction"});
                        return;
                      }
-                    }
+                   }
                  });
 
               }//end if
               else if(action == "unlock"){
-                 let unlockRestrictions = [start,end];
+               let unlockRestrictions = [start, end];
                  //find user in database
                  db.collection("users").find({"username": userToChange}).toArray((err, result) => {
+                  if(result[0] == undefined) {
+                    return;
+                  }
                     //find correct lock inside locks array 
                     for(let i=0; i<result[0].locks.length; i++){
                        //look for lock inside locks array of user
                        if(result[0].locks[i].lockId == lockId){
+                        let unlockResArray = result[0].locks[i].unlockRestrictions;
+                        let lockResArray = result[0].locks[i].lockRestrictions
+                        unlockResArray.push(unlockRestrictions);
+                        let roleUp = result[0].locks[i].role;
                           //create a new lock objectg to replac old one
                           let lockObject = {
-                             "lockId" : result[0].locks[i].lockId,
-                             "role": 1,
-                             "lockRestrictions": [-1,-1],
-                             "unlockRestrictions": unlockRestrictions
+                           "lockId" : result[0].locks[i].lockId,
+                           "role": roleUp,
+                           "lockRestrictions": lockResArray,
+                           "unlockRestrictions": unlockResArray
+                         };
 
-                             };
-
-                             //set current index to the new lock oject
-                             result[0].locks[i] = lockObject;
-                             //find user again and update
-                             db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numerAffected, rawResponse) => {});
-                             //callback message 
-                             callback({message: "Added user unlock restriction"});
-                             return;
-
-
+                        //set current index to the new lock oject
+                         result[0].locks[i] = lockObject;
+                         //find user again and update
+                         db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numerAffected, rawResponse) => {});
+                         //callback message 
+                         callback({message: "Added user unlock restriction"});
+                         return;
                        }//end if statement
-
                     }//end for loop
-               
-                        });
+                  });
               }//end else if 
-
-
-
-           }   
+            }   
         //if requester does not have access return callback message
         else{
-           callback({message:"User must be an Owner or an Admin to create restrictions"});
-           return;
-        }
-  })
-  }
-
-  function getRole(user, lockId){
-     //get the user 
-     getUser(user, function(result) {
-        //check if is owner 
-        if(isOwner(result, lockId)){
-           return 0;
-        }
-        else if(isAdmin(result,lockId)){
-           return 1; 
-        }
-       
-           return 2;
-
-
+         callback({message:"User must be an Owner or an Admin to create restrictions"});
+         return;
+       }
      })
-  }
-
-
+})
+}
      /*
     getUser(username, function(user) {
       getUser(userToChange, function(result) {
@@ -700,7 +698,7 @@ return true;
       })
     })
     */
-  
+
 
 /**
  * Gets the members of a specific lock
@@ -890,16 +888,23 @@ return true;
  * @param: username, userToAdmin, lockId
  * @return: message based on if it was successful
  */
-exports.addAdmins = function(username, userToAdmin, lockId, callback) {
+ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
+  console.log("in add admin: " + username + "   " +  userToAdmin);
   //check if this user can add admins
   getUser(username, function(user) {
     getUser(userToAdmin, function(user2) {
+      if(user == undefined || userToAdmin == undefined) {
+        callback({message: "error!"});
+        return;
+      }
       if(isOwner(user, lockId) && !isOwner(user2, lockId)) {
+        if(isAdmin(user2, lockId)){
+          callback({message: "User is already an admin"});
+          return;
+        }
+        else{
         //finds the user that wants to be changed to admin
         db.collection("users").find({"username": userToAdmin}).toArray((err, result) => {
-          if(result[0] == undefined){
-            return;
-          }
           //find correct lock inside the locks array
           for(let i = 0; i < result[0].locks.length; i++){
             //once the lock is found, perform actions on this lock
@@ -908,21 +913,22 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
               let lockObject = {
                 "lockId": result[0].locks[i].lockId, 
                 "role": 1, 
-                "lockRestrictions": [[-1, -1]], 
-                "unlockRestrictions": [[-1,-1]]
+                "lockRestrictions": [["-1", "-1"]], 
+                "unlockRestrictions": [["-1", "-1"]]
               };
               //set the current index to the new lock object
               result[0].locks[i] = lockObject;
               //find the user again and update it, setting the new locks array to the result[0] which is now updated
               db.collection("users").update({username: userToAdmin}, {$set: {locks: result[0].locks}}, (err, numberAffected, rawResponse) => {})
               //callback message currently doesn't work
-              callback({message:"User is now Admin"});
+              callback({message: "User is now Admin"});
               return;
             }
           } 
         })
       }
-    })
+    }
+  })
   })
 }
 
@@ -973,8 +979,8 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
         var lockObject = {
           "lockId": lockId, 
           "role": 0, 
-          "lockRestrictions": [[-1, -1]], 
-          "unlockRestrictions": [[-1, -1]]
+          "lockRestrictions": [["-1", "-1"]], 
+          "unlockRestrictions": [["-1", "-1"]]
         };
         locksArray.push(lockObject);
 
@@ -1069,9 +1075,9 @@ exports.authenticate = function(username, fullname,  callback) {
  * @return: true if can add, else false
  */
 
-function canAddAdmin(username,lockId){
+ function canAddAdmin(username,lockId){
    return(isOwner(username, lockId));
-}
+ }
 
 /**
  * Checks if person can remove an admin, if they can then remove admin by
@@ -1096,8 +1102,8 @@ function canAddAdmin(username,lockId){
           let lockObject = {
             "lockId": lockId,
             "role": 2, 
-            "lockRestrictions": [[-1, -1]], 
-            "unlockRestrictions": [[-1, -1]]
+            "lockRestrictions": [], 
+            "unlockRestrictions": []
           };
         //set the current index to the new lock object
         result[0].locks[i] = lockObject;
@@ -1147,9 +1153,9 @@ exports.removeMember = function(username, lockId, otherUser, callback) {
           //if is was not the the lock we deleted, then we add it into new array
           for (let i = 0; i < result2[0].locks.length; i++) {
            if (result2[0].locks[i] != "NULL") {
-              newLocksArray.push(result2[0].locks[i]);
-            }
+            newLocksArray.push(result2[0].locks[i]);
           }
+        }
           //update the locks array for the user that we wanted to delete from that lock
           db.collection("users").update({username: otherUser}, {$set: {locks: newLocksArray}}, (err, numberAffected, rawResponse) => {})
         })
