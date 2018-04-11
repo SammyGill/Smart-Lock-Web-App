@@ -500,20 +500,9 @@ function getAdminDropDown() {
                select.add(option);
             }
       }
-      select.selectedIndex="0";
-      getAdminInfo();
 
    })
 }
-
-/**
- * Get admin information from drop down
- */
-function getAdminInfo() {
-   let memberSelect = document.getElementById('admins');
-   let memberOption = memberSelect.options[memberSelect.selectedIndex].text;
-}
-
 /**
  * sets up a drop down of members of a lock
  */
@@ -527,28 +516,9 @@ function getMembersDropDown() {
         select.add(option);
       }
     }
-    select.selectedIndex = "0";  
-    getMemberInfo();
+    //select.selectedIndex = "0";  
+    //getMemberInfo();
 
-  })
-
-}
-
-/**
- * sets up a drop down of admins of a lock
- */
-function getAdminssDropDown() {
-  $.get("/getAdmins", function(data) {
-    let select = document.getElementById("admins");
-    for(var i = 0; i < data.admins.length; i++) {
-      var option = document.createElement("option");
-      option.text = data.admins[i];
-      if (option.text != data.owner) {
-        select.add(option);
-      }
-    }
-    select.selectedIndex = "0";  
-    getAdminInfo();
   })
 
 }
@@ -577,6 +547,26 @@ function getMemberInfo() {
     }
   })
      */
+}
+
+
+/**
+ * sets up a drop down of admins of a lock
+ */
+function getAdminssDropDown() {
+  $.get("/getAdmins", function(data) {
+    let select = document.getElementById("admins");
+    for(var i = 0; i < data.admins.length; i++) {
+      var option = document.createElement("option");
+      option.text = data.admins[i];
+      if (option.text != data.owner) {
+        select.add(option);
+      }
+    }
+    select.selectedIndex = "0";  
+    getAdminInfo();
+  })
+
 }
 
 /**
