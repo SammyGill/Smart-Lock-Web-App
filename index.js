@@ -372,7 +372,6 @@
 time = time.replace("AM", "");
 time = time.replace(" ", "");
 let timeArray = time.split(":");
-console.log("hereee: " + timeArray);
 // if (timeArray[0] < 10) {
 //   timeArray[0] = "0" + timeArray[0];
 // }
