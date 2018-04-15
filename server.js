@@ -10,8 +10,9 @@ let  d = new Date();
 
 const mod = require("../Module/index.js");
 const server = require("http").Server(app);
-const socket = require("socket.io")(server);
-const assert = require("assert")
+const io = require("socket.io")(server);
+const assert = require("assert");
+
 
 
 /*const Gpio = require("onoff").Gpio;
@@ -46,54 +47,32 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
     mod.connectServer();
   })
 })
+io.on('connection', function (socket){
+  mod.getDefaultState(parseInt(socket.handshake.query.lockId), function(state) {
+    socket.emit("defaultState", state);
+  })
+  socket.on("disconnect", function(data) {
+    mod.deleteActiveLock({socketId: socket.id});
+  })
 
-/*var dashboard = socket.of("/dashboardConnection");
-dashboard.on("connection", function(socket) {
-  console.log("connected to dashboard socket from server end");
-  var lightvalue = 0; //static variable for current status
-  socket.on("initial", function(data) {
-    console.log("intiial light");
-    lightvalue = data;
-    greenLED.writeSync(lightvalue);
-    redLED.writeSync(1-lightvalue);
-  });
-
-  /*pushButton.watch(function (err, value) { //Watch for hardware interrupts     on pushButton
-  if (err) { //if an error
-    console.error('There was an error', err); //output error message to     console
-      return;
-  }
-  console.log("light valus is " + lightvalue);
-  lightvalue = value;
-  socket.emit('light', lightvalue); //send button status to client
-  });
-
- 
-  socket.on("request", function(data) { //get light switch status from clien    t
-   console.log("light status: " + data);
-    lightvalue = data;
-    
-    if (lightvalue != greenLED.readSync()) { //only change LED if status has changed
-      greenLED.writeSync(lightvalue); //turn redLED on or off
-      redLED.writeSync(1-lightvalue); //turn greenLED opposite of redLED
-      socket.emit("response", "change was successful");
-    }
-    socket.emit("response", "you can't change the lock!");
-  });
 });
 
-//for turning the lights off when we press ctrl+c
-  process.on('SIGINT', function () { //on ctrl+c
-    redLED.writeSync(0); // Turn redLED off
-    greenLED.writeSync(0); //Turn greenLED off
-    redLED.unexport(); // Unexport LED redGPIO to free resources
-    greenLED.unexport(); //Unexport greenLED GPIO to free resources
-    pushButton.unexport(); // Unexport Button GPIO to free resources
-    process.exit(); //exit completely
-  });*/
+io.use(function(socket, next) {
+  let data = socket.request;
+  // Need to change below. Should be checking if it is a valid lock ID rather than
+    // whether a lock ID was provided 
+  if(!data._query.lockId) {
+    io.sockets.connected[socket.id].disconnect();
+  }
+  else {
+    mod.insertActiveLock({lockId: parseInt(data._query.lockId), socketId: socket.id});
+    next();
+  }
+})
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
+
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -172,7 +151,6 @@ app.get("/dashboard", (req, res) => {
 //get the settings for user with username and lock
  app.get("/getSettings", (req, res) => {
   mod.getSettings(req.session.username, req.session.lock, function(data) {
-    console.log("getSettings in server.js: " + data);
     res.send(data);
   })
 })
@@ -186,10 +164,8 @@ app.get("/dashboard", (req, res) => {
 //gets the lock admins 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
-    console.log("went through getAdmins in server.js");
     //let username = req.body.members;
   mod.getLockAdmins(id, function(members) {
-    console.log("members in server.js: " + members);
     res.send({members: members});});
  })
  
@@ -211,7 +187,6 @@ app.get("/register", (req, res) => {
 //gets the status (locked/unlocked) of a specific lock
 app.get("/lockStatus", (req, res) => {
   mod.getLockStatus(req.session.lock, function(data) {
-    console.log("in server.js, the getLocksStatus: " + data[0]);
     res.send(data);
   })
 })
@@ -224,7 +199,14 @@ app.get("/selectLock", (req, res) => {
 //slect dashoard to be displayed 
 app.get("/selectDashboard", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
-  res.send();
+  mod.getSocketId(parseInt(req.session.lock), function(socketId) {
+    if(!socketId) {
+      // send them to the lock not active page
+    }
+    else {
+      res.send();
+    }
+  })
 })
 
 //switch lock using lock id of lock to switch to 
@@ -235,9 +217,7 @@ app.get("/switchLock", (req, res) => {
 
 //switch settings 
 app.get("/switchSettings", (req, res) => {
-  console.log("the botton clicked is: " + req.query.setting);
   mod.switchSettings(req.query.setting, function(data) {
-    console.log("the data sent in server.js is: " + data);
     res.send(data);
   })
 })
@@ -298,7 +278,6 @@ app.post("/removeMember", (req, res) => {
   let userToRemove = req.body.username;
   let lockId = req.session.lock;
   //call the module
-  console.log("The user to remove is " + userToRemove)
   mod.removeMember(username, lockId, userToRemove, function(result) {
     res.send(result);
   });
@@ -311,7 +290,6 @@ app.post("/addAdmin", (req, res) => {
    let lockId = req.session.lock;
 
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
-    console.log("in server.js: " + result.message);
       res.send(result);
    });
 })
@@ -320,7 +298,6 @@ app.post("/revokeAdmin", (req,res) => {
   let username = req.session.username;
   let otherUser = req.body.username;
   let lockId = req.session.lock;
-  console.log("in server.js, the otherUser is: " + otherUser);
 
   mod.revokeAdmin(username, lockId, otherUser, function(result) {
     res.send(result);
@@ -332,7 +309,6 @@ app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 
-  console.log("time in server.js: " + start + "  " + end);
     mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
                  start, end, function(result) {res.send(result);})
 })
@@ -348,7 +324,10 @@ app.post("/createEvent", (req, res) => {
 app.post("/lock", (req, res) => {
   mod.lock(req.session.username, req.session.lock, function(result){
     if(result){
-      res.send();
+      mod.getSocketId(req.session.lock, function(socketId) {
+        io.to(socketId).emit("lock", "lock message");
+        res.send();       
+      })
     }
     else{
       res.send({error: "You do not have permission to lock!"});
@@ -362,8 +341,6 @@ app.post("/registerLock", (req, res) => {
   let id = parseInt(req.body.id);
   let username = req.session.username;
   
-  //console.log("user Name in server.js: " + req.session.username);
-  //console.log("lock Name in server.js: " + req.body.lockName);
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
   // let username = req.body.username;
   // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
@@ -381,7 +358,10 @@ app.post("/registerLock", (req, res) => {
 app.post("/unlock", (req, res) => {
   mod.unlock(req.session.username, req.session.lock, function(result) {
     if(result) {
-      res.send();
+      mod.getSocketId(req.session.lock, function(socketId) {
+        io.to(socketId).emit("unlock", "message for unlock");
+        res.send();
+      })
     }
     else {
       res.send({error:"You do not have permission to do this!"});
