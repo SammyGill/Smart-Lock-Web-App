@@ -553,7 +553,7 @@ function getMemberInfo() {
 /**
  * sets up a drop down of admins of a lock
  */
-function getAdminssDropDown() {
+/*function getAdminDropDown() {
   $.get("/getAdmins", function(data) {
     let select = document.getElementById("admins");
     for(var i = 0; i < data.admins.length; i++) {
@@ -567,7 +567,7 @@ function getAdminssDropDown() {
     getAdminInfo();
   })
 
-}
+}*/
 
 /**
  * Gets members of a lock 
