@@ -66,7 +66,6 @@ io.use(function(socket, next) {
   }
   else {
     mod.insertActiveLock({lockId: parseInt(data._query.lockId), socketId: socket.id});
-    console.log(socket.id);
     next();
   }
 })
@@ -152,7 +151,6 @@ app.get("/dashboard", (req, res) => {
 //get the settings for user with username and lock
  app.get("/getSettings", (req, res) => {
   mod.getSettings(req.session.username, req.session.lock, function(data) {
-    console.log("getSettings in server.js: " + data);
     res.send(data);
   })
 })
@@ -166,10 +164,8 @@ app.get("/dashboard", (req, res) => {
 //gets the lock admins 
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
-    console.log("went through getAdmins in server.js");
     //let username = req.body.members;
   mod.getLockAdmins(id, function(members) {
-    console.log("members in server.js: " + members);
     res.send({members: members});});
  })
  
@@ -191,7 +187,6 @@ app.get("/register", (req, res) => {
 //gets the status (locked/unlocked) of a specific lock
 app.get("/lockStatus", (req, res) => {
   mod.getLockStatus(req.session.lock, function(data) {
-    console.log("in server.js, the getLocksStatus: " + data[0]);
     res.send(data);
   })
 })
@@ -204,13 +199,11 @@ app.get("/selectLock", (req, res) => {
 //slect dashoard to be displayed 
 app.get("/selectDashboard", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
-  console.log("req.session.lock " + req.session.lock);
   mod.getSocketId(parseInt(req.session.lock), function(socketId) {
     if(!socketId) {
       // send them to the lock not active page
     }
     else {
-      console.log("res.send()")
       res.send();
     }
   })
@@ -224,9 +217,7 @@ app.get("/switchLock", (req, res) => {
 
 //switch settings 
 app.get("/switchSettings", (req, res) => {
-  console.log("the botton clicked is: " + req.query.setting);
   mod.switchSettings(req.query.setting, function(data) {
-    console.log("the data sent in server.js is: " + data);
     res.send(data);
   })
 })
@@ -287,7 +278,6 @@ app.post("/removeMember", (req, res) => {
   let userToRemove = req.body.username;
   let lockId = req.session.lock;
   //call the module
-  console.log("The user to remove is " + userToRemove)
   mod.removeMember(username, lockId, userToRemove, function(result) {
     res.send(result);
   });
@@ -300,7 +290,6 @@ app.post("/addAdmin", (req, res) => {
    let lockId = req.session.lock;
 
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
-    console.log("in server.js: " + result.message);
       res.send(result);
    });
 })
@@ -309,7 +298,6 @@ app.post("/revokeAdmin", (req,res) => {
   let username = req.session.username;
   let otherUser = req.body.username;
   let lockId = req.session.lock;
-  console.log("in server.js, the otherUser is: " + otherUser);
 
   mod.revokeAdmin(username, lockId, otherUser, function(result) {
     res.send(result);
@@ -321,7 +309,6 @@ app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 
-  console.log("time in server.js: " + start + "  " + end);
     mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
                  start, end, function(result) {res.send(result);})
 })
@@ -337,7 +324,6 @@ app.post("/createEvent", (req, res) => {
 app.post("/lock", (req, res) => {
   mod.lock(req.session.username, req.session.lock, function(result){
     if(result){
-      console.log("lock request");
       mod.getSocketId(req.session.lock, function(socketId) {
         io.to(socketId).emit("lock", "lock message");
         res.send();       
@@ -355,8 +341,6 @@ app.post("/registerLock", (req, res) => {
   let id = parseInt(req.body.id);
   let username = req.session.username;
   
-  //console.log("user Name in server.js: " + req.session.username);
-  //console.log("lock Name in server.js: " + req.body.lockName);
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
   // let username = req.body.username;
   // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
