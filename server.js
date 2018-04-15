@@ -57,7 +57,7 @@ io.on('connection', function (socket){
 
 });
 
-io.use(function(socket, next) {
+/*io.use(function(socket, next) {
   let data = socket.request;
   // Need to change below. Should be checking if it is a valid lock ID rather than
     // whether a lock ID was provided 
@@ -68,7 +68,7 @@ io.use(function(socket, next) {
     mod.insertActiveLock({lockId: parseInt(data._query.lockId), socketId: socket.id});
     next();
   }
-})
+})*/
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
