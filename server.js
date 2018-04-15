@@ -300,6 +300,7 @@ app.post("/addAdmin", (req, res) => {
    let lockId = req.session.lock;
 
    mod.addAdmins(username, userToAdmin, lockId, function(result) {
+    console.log("in server.js: " + result.message);
       res.send(result);
    });
 })
@@ -320,15 +321,9 @@ app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 
-  mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
-                 start, end, function(result) {
-    if(result) {
-      res.send();
-    }
-    else {
-      res.send({error: "error message"});
-    }
-  })
+  console.log("time in server.js: " + start + "  " + end);
+    mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
+                 start, end, function(result) {res.send(result);})
 })
 
 //rule for lock

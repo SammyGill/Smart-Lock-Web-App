@@ -73,11 +73,12 @@ loadTimesTwo(); getMembersDropDown(); addAdmin(); getAdminDropDown(); removeAdmi
     </ol>
     <div class="card">
         <div id="form" align="center">
+
         <h5 class="card-header" style="text-align:center;">Add a time restriction</h5>
         <div class="form-group col-md-4">
         
         </div>
-        <h2 class="error-message"></h2>
+        <h2 id='response-message-addTimeRestriction'></h2>
         <div class="btn-group" data-toggle="buttons">
           <select class="custom-select" id="membersList" style="display:inline" >
           </select>    
@@ -89,7 +90,7 @@ loadTimesTwo(); getMembersDropDown(); addAdmin(); getAdminDropDown(); removeAdmi
           <input type="radio" autocomplete="off" id="lock"> Lock
           </label>
           <label class="btn btn-primary">
-            <input type="radio" autocomplete="off" id="unlock"> Unlock
+          <input type="radio" autocomplete="off" id="unlock"> Unlock
           </label>
         </div>
         
@@ -136,8 +137,8 @@ loadTimesTwo(); getMembersDropDown(); addAdmin(); getAdminDropDown(); removeAdmi
              <p id="invalidAccess"></p>
           </form>
           <form id="edit-admin-form" align="center">
-            <select class="custom-select" id="members" style="display:inline"
-            onchange="getMembersDropDown();">
+            <h3 id='response-message-addAdmin'></h3>
+            <select class="custom-select" id="members" style="display:inline">
             </select>
             <button onclick="addAdmin();" class="btn btn-primary">Make Admin</button>
             <br>
@@ -157,8 +158,7 @@ loadTimesTwo(); getMembersDropDown(); addAdmin(); getAdminDropDown(); removeAdmi
         
         <form id="remove-admin-form" align="center">
           <h3 id='response-message-removeAdmin'></h3>
-          <select class="custom-select" id="admins" style="display:inline"
-          onchange="getAdminDropDown();">
+          <select class="custom-select" id="admins" style="display:inline">
           </select>
           <button onclick="removeAdmin();" class="btn btn-primary">Remove Admin</button>
           <br>
