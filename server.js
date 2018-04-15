@@ -47,27 +47,33 @@ mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", 
     mod.connectServer();
   })
 })
-
 io.on('connection', function (socket){
-  console.log('connection');
-  socket.on("identification", function(lockId) {
-    console.log("lockId is " + lockId);
-    console.log("socket id is " + this.id);
-    mod.insertActiveLock({lockId: lockId, socketId: this.id});
-    io.to(this.id).emit("welcome", lockId);
-  });
+  mod.getDefaultState(parseInt(socket.handshake.query.lockId), function(state) {
+    socket.emit("defaultState", state);
+  })
   socket.on("disconnect", function(data) {
-    console.log("disconnect")
-    mod.deleteActiveLock({socketId: this.id});
+    mod.deleteActiveLock({socketId: socket.id});
   })
 
-  app.get("/lock", (req, res) => {
-    console.log("sending lock request...");
-  })
 });
+
+io.use(function(socket, next) {
+  let data = socket.request;
+  // Need to change below. Should be checking if it is a valid lock ID rather than
+    // whether a lock ID was provided 
+  if(!data._query.lockId) {
+    io.sockets.connected[socket.id].disconnect();
+  }
+  else {
+    mod.insertActiveLock({lockId: parseInt(data._query.lockId), socketId: socket.id});
+    console.log(socket.id);
+    next();
+  }
+})
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
+
   res.sendFile(dir + "/views/login.html");
 })
 
@@ -198,7 +204,16 @@ app.get("/selectLock", (req, res) => {
 //slect dashoard to be displayed 
 app.get("/selectDashboard", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
-  res.send();
+  console.log("req.session.lock " + req.session.lock);
+  mod.getSocketId(parseInt(req.session.lock), function(socketId) {
+    if(!socketId) {
+      // send them to the lock not active page
+    }
+    else {
+      console.log("res.send()")
+      res.send();
+    }
+  })
 })
 
 //switch lock using lock id of lock to switch to 
@@ -327,7 +342,11 @@ app.post("/createEvent", (req, res) => {
 app.post("/lock", (req, res) => {
   mod.lock(req.session.username, req.session.lock, function(result){
     if(result){
-      res.send();
+      console.log("lock request");
+      mod.getSocketId(req.session.lock, function(socketId) {
+        io.to(socketId).emit("lock", "lock message");
+        res.send();       
+      })
     }
     else{
       res.send({error: "You do not have permission to lock!"});
@@ -360,7 +379,10 @@ app.post("/registerLock", (req, res) => {
 app.post("/unlock", (req, res) => {
   mod.unlock(req.session.username, req.session.lock, function(result) {
     if(result) {
-      res.send();
+      mod.getSocketId(req.session.lock, function(socketId) {
+        io.to(socketId).emit("unlock", "message for unlock");
+        res.send();
+      })
     }
     else {
       res.send({error:"You do not have permission to do this!"});

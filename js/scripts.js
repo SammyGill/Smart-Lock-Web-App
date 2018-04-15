@@ -288,16 +288,6 @@ function getLockStatus() {
  * @param:none
  */
 function changeLock() {
- if (document.getElementById("lock-status").innerHTML == "locked") {
- // Send request to change lock...
-  socket.emit("request", 1);
-  } else {
-  socket.emit("request", 0);
-  }
-  // Response when the lock has been changed
-  socket.on("response", function(data) {
-    console.log(data);
-  }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {
       if(data.error) {
