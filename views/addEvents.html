@@ -60,13 +60,15 @@
         </li>
         <li class="breadcrumb-item active">Add Members</li>
       </ol>
-      <h2 style="text-align:center" id="response-message"> </h2>
       <div class="card">
+        <!-- <h2  id="response-message"> </h2> -->
         <h5 class="card-header" style="text-align:center;">Create a new rule for your lock</h5>
         <div class="card-body">
           <div id="form" align="center">
             <form id="add-rules-form">
+              <h3 style="text-align:center" id='response-message-addEvent'></h3>
               <div class="btn-group" data-toggle="buttons">
+
                 <label class="btn btn-primary" style="background-color:grey;">
                   <input type="radio" autocomplete="off" disabled > I want to...
                 </label>
@@ -80,7 +82,7 @@
               <div class="form-group col-md-4">
                 <label for="roleSelect">every day at...</label>
                 <br>
-                <select class="form-control col-md-3" id="hour" style="display:inline"> 
+                <select class="form-control col-md-3" id="hour" style="display:inline">
                 </select>
                 <select class="form-control col-md-3" id="minute" style="display:inline">
                 </select>
@@ -95,7 +97,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- /.container-fluid-->
     <!-- /.content-wrapper-->
     <footer class="sticky-footer">

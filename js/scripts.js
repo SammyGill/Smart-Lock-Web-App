@@ -27,7 +27,7 @@ function onSignIn(googleUser) {
 }
 
 /*
- * Loads Dashoard info with name and lock name 
+ * Loads Dashoard info with name and lock name
  * @param: none
  */
 function loadDashboard() {
@@ -70,7 +70,7 @@ function switchLock() {
 }
 
 /*
- * Loads settings (add/Remove users, edit Users, create event) 
+ * Loads settings (add/Remove users, edit Users, create event)
  * @param:none
  */
 function loadSettings() {
@@ -90,7 +90,7 @@ function loadSettings() {
 }
 
 /**
- * Switch settings according to page selected 
+ * Switch settings according to page selected
  * @param: none
  */
 function switchSettings() {
@@ -103,7 +103,7 @@ function switchSettings() {
 }
 
 /*
- * Register lock with email and lock id 
+ * Register lock with email and lock id
  * @param:none
  */
 function registerLock() {
@@ -136,8 +136,8 @@ function getLockStatus() {
 }
 
 /**
- * Adds member to lock by submitting form and displaying message once 
- * they have been added 
+ * Adds member to lock by submitting form and displaying message once
+ * they have been added
  */
 function addMember() {
   $("#add-member-form").submit(function(event) {
@@ -149,7 +149,7 @@ function addMember() {
 }
 
 /**
- * Remove member to lock by submitting form and displaying message once 
+ * Remove member to lock by submitting form and displaying message once
  * they have been removed
  */
 function removeMember() {
@@ -162,7 +162,7 @@ function removeMember() {
 }
 
 /**
- * Add an administrator to specific lock by submitting form 
+ * Add an administrator to specific lock by submitting form
  * @param: none
  */
 function addAdmin() {
@@ -175,7 +175,7 @@ function addAdmin() {
 }
 
 /**
- * Add an administrator to specific lock by submitting form 
+ * Add an administrator to specific lock by submitting form
  * @param: none
  */
 function removeAdmin() {
@@ -206,7 +206,7 @@ function getMembers() {
 }
 
 /**
- * Displays the history of the lock including action and member who executed it 
+ * Displays the history of the lock including action and member who executed it
  * @param:none
  */
 function showHistory() {
@@ -217,7 +217,7 @@ function showHistory() {
         var mem = document.createElement("ul");
         mem.appendChild(document.createTextNode("Last " + data.memActions[i] + "ed at " + data.members[i]));
         list.appendChild(mem);
-      } 
+      }
     }
 
     if (data.members.length > 1 && data.members.length < 4) {
@@ -261,7 +261,8 @@ function createLockEvent() {
   var time = hourOption + ":" + minuteOption + " " + periodOption;
 
   $.post("/createEvent", {action: action, time: time}, function(result) {
-    document.getElementById("response-message").innerHTML = result.message;
+    console.log(result.message);
+    document.getElementById("response-message-addEvent").innerHTML = result.message;
   });
 }
 
@@ -355,7 +356,7 @@ function getName() {
 }
 
 /**
- * Get locks of user 
+ * Get locks of user
  * @param:none
  */
 function getLocks() {
@@ -376,7 +377,7 @@ function getLocks() {
 }
 
 /**
- * Select dashboard to display for user 
+ * Select dashboard to display for user
  * @param:none
  */
 function selectDashboard() {
@@ -412,7 +413,7 @@ function loadTimes() {
 }
 
 /**
- * Loads time 
+ * Loads time
  */
 function loadTimesTwo() {
   for(var i = 0; i < 60; i++) {
@@ -506,7 +507,7 @@ function getMembersDropDown() {
         select.add(option);
       }
     }
-    //select.selectedIndex = "0";  
+    //select.selectedIndex = "0";
     //getMemberInfo();
 
   })
@@ -514,7 +515,7 @@ function getMembersDropDown() {
 }
 
 /**
- * Gets members of a lock 
+ * Gets members of a lock
  */
 function getMemberInfo() {
   var memberSelect = document.getElementById('members');
@@ -522,7 +523,7 @@ function getMemberInfo() {
 
   /**
    * This doesn't work anymore so we need to change what was going on here
-   * 
+   *
 
   $.get("/memberRoleInfo", {username: memberOption}, function(data) {
    if(!data.roles) {
@@ -553,14 +554,14 @@ function getMemberInfo() {
         select.add(option);
       }
     }
-    select.selectedIndex = "0";  
+    select.selectedIndex = "0";
     getAdminInfo();
   })
 
 }*/
 
 /**
- * Gets members of a lock 
+ * Gets members of a lock
  */
 function getAdminInfo() {
   var adminSelect = document.getElementById('admins');
@@ -570,7 +571,7 @@ function getAdminInfo() {
 /**
  * Makes time restriction for user on specific lock
  * @param:none
- */ 
+ */
 function addTimeRestriction() {
   var memberSelect = document.getElementById('members');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
@@ -609,7 +610,7 @@ function addTimeRestriction() {
   minuteTwoOption = parseInt(minuteTwoOption);
   if (periodOption == "PM") {
     hourOption = hourOption + 12;
-  } 
+  }
   if (periodTwoOption == "PM") {
     hourTwoOption = hourTwoOption + 12;
   }
@@ -624,7 +625,7 @@ function addTimeRestriction() {
   $.post("/addTimeRestriction", {username: memberOption, action: action, startTime: time, endTime: timeTwo}, function(data) {
       document.getElementById("response-message-addTimeRestriction").innerHTML= data.message;
 
-  })  
+  })
 
 }
 
@@ -632,7 +633,7 @@ function addTimeRestriction() {
 /**
  * I think we need to double check the following, need to change how
  * we are checking roles?
- 
+
 
 function canAddRules() {
   $.get("/canAccess", function(data) {
@@ -641,7 +642,7 @@ function canAddRules() {
     document.getElementById("add-rules-form").style.display = "none";
     document.getElementById("invalidAccess").innerHTML="You don't have access to this page!";
   }
-  })   
+  })
 }
 
 
