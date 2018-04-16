@@ -10,16 +10,6 @@ const assert = require("assert")
 const schedule = require('node-schedule');
 
 
-<<<<<<< HEAD
-/**
-* Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
-* that current time and performs the actions after checking if the user who submitted the
-* request is allowed to perform the action at that certain time.
-*/
-const j = schedule.scheduleJob('*/1 * * * *', function(){
-  console.log('Cheese is great!');
-  let d = new Date();
-=======
   /**
    * Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
    * that current time and performs the actions after checking if the user who submitted the
@@ -27,7 +17,6 @@ const j = schedule.scheduleJob('*/1 * * * *', function(){
    */
    const j = schedule.scheduleJob('*/1 * * * *', function(){
     let d = new Date();
->>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
   //convert the time accordingly in order to look it up in the database
   let timeInMilitary = "" + convertToMilitary(d.getHours() + ":" + d.getMinutes());
   //look up all events at that specified time
@@ -49,14 +38,8 @@ const j = schedule.scheduleJob('*/1 * * * *', function(){
             })
           }
         })
-<<<<<<< HEAD
-        //if the action was to unlock
-      } else {
-        console.log("The lock was automatically unlocked!");
-=======
       //if the action was to unlock
     } else {
->>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
         //get the user object based on the username
         getUser(result[i].username, function(user) {
           //checks if the user can actually unlock the lock
@@ -180,19 +163,10 @@ function isOwner(userObject, lockId) {
 */
 function isAdmin(userObject, lockId) {
   let role = searchLocks(lockId, userObject.locks);
-<<<<<<< HEAD
   //console.log("in isAdmin: " + userObject.username + role);
   // returns false here if person isn't in lock
   if(role == undefined) {
     return false;
-=======
-    // returns false here if person isn't in lock
-    if(role == undefined) {
-      return false;
-    }
-    return (role == 1);
-
->>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
   }
   return (role == 1);
 
@@ -216,34 +190,40 @@ function isMember(userObject, lockId) {
 }
 
 /**
-* check if a member is able to make certain action according to the restriction
-* @param userObject - the document of that user from the database
-* @param {int} lockId - the lockId of the lock to be locked/unlocked
-* @param {string} action - lock or unlock
-* @return: true if the user is allowed to make this action
-* false if the user is not allowed to make this action
-*/
+ * check if a member is able to make certain action according to the restriction
+ * @param userObject - the document of that user from the database
+ * @param {int} lockId - the lockId of the lock to be locked/unlocked
+ * @param {string} action - lock or unlock
+ * @return: true if the user is allowed to make this action
+ * false if the user is not allowed to make this action
+ */
 function withinBounds(userObject, lockId, action) {
-  let lock = searchLocks(lockId, userObject);
-  // returns false here if person isn't in lock
+  let lock = undefined;
+  for(let i = 0;  i < userObject.locks.length; i++) {
+    if(userObject.locks[i].lockId == lockId) {
+      lock = userObject.locks[i];
+    }
+  }
+    // returns false here if person isn't in lock
   if(!lock) {
-    return false; }
-    let currentTime = convertToMilitary(getTime());
-    if (action == "lock") {
-      for(let i = 0; i < lock.lockRestrictions.length; i++) {
-        if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
-          return false;
-        }
-      }
-    } else {
-      for(let i = 0; i < lock.unlockRestrictions.length; i++) {
-        if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
-          return false;
-        }
+    return false;
+  }
+  let currentTime = convertToMilitary(getTime());
+  if (action == "lock") {
+    for(let i = 0; i < lock.lockRestrictions.length; i++) {
+      if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
+        return true;
       }
     }
-    return true;
+  } else {
+    for(let i = 0; i < lock.unlockRestrictions.length; i++) {
+      if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
+        return true;
+      }
+    }
   }
+  return false;
+}
 
   /**
   * Determines where a user can perform the lock action at the particular time.
@@ -542,23 +522,6 @@ function withinBounds(userObject, lockId, action) {
     else{
       callback("error");
     }
-  }
-
-  /**
-  * Function to get the specific lock of the specific user
-  *
-  * @param lockId - the lockId of the lock that we are looking for
-  * @param username - the username of the user we are looking for the lock
-  */
-  function getLockOfUser(username, lockId) {
-    db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
-      for(let i = 0;  i < result[0].locks.length; i++) {
-        if(result[0].locks[i].lockId == lockId) {
-          return result[0].locks[i];
-        }
-      }
-      return undefined;
-    })
   }
 
   /**
@@ -965,7 +928,7 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
 */
 exports.unlock = function(username, lockId, callback) {
   getUser(username, function(user) {
-    console.log("canUnLock(" + user + " " + lockId + ") = " +  canLock(user, lockId))
+    console.log("canUnLock(" + user + " " + lockId + ") = " +  canUnlock(user, lockId))
     if(canUnlock(user, lockId)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
         if(!err) {
@@ -1145,7 +1108,6 @@ exports.authenticate = function(username, fullname,  callback) {
     })
   }
 
-<<<<<<< HEAD
   exports.removeMember = function(username, lockId, otherUser, callback) {
     getUser(username, function(user) {
       if (isOwner(user, lockId)) {
@@ -1155,35 +1117,6 @@ exports.authenticate = function(username, fullname,  callback) {
           for (let i = 0; i < result[0].members.length; i++) {
             if (result[0].members[i] == otherUser) {
               result[0].members[i] = "NULL";
-=======
-exports.removeMember = function(username, lockId, otherUser, callback) {
-  getUser(username, function(user) {
-    if (isOwner(user, lockId)) {
-      //updates the members array in the locks collection for that lockId
-      db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
-        //
-        for (let i = 0; i < result[0].members.length; i++) {
-          if (result[0].members[i] == otherUser) {
-            result[0].members[i] = "NULL";
-          }
-        }
-        let newArray = [];
-        //if is was not the the user we deleted, then add into the new array
-        for (let i = 0; i < result[0].members.length; i++) {
-          if (result[0].members[i] != "NULL") {
-            newArray.push(result[0].members[i]);
-          }
-        }
-        //update the members array for this lock to the new array
-        db.collection("locks").update({lockId: lockId}, {$set: {members: newArray}}, (err, numberAffected, rawResponse) => {})
-
-        //updates and deleted the lock from the users collection for that user
-        db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
-          //go through the locks array and change the lock to delete to NULL
-          for (let i = 0; i < result2[0].locks.length; i++) {
-            if (result2[0].locks[i].lockId == lockId) {
-              result2[0].locks[i] = "NULL";
->>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
             }
           }
           let newArray = [];
@@ -1221,10 +1154,6 @@ exports.removeMember = function(username, lockId, otherUser, callback) {
     callback({message: "User Successfully Deleted!"});
   }
 
-<<<<<<< HEAD
-  module.exports.convertToMilitary = convertToMilitary;
-  module.exports.getTime = getTime;
-=======
 exports.insertActiveLock = function(activeLock) {
   db.collection("active-locks").insert(activeLock);
 }
@@ -1252,4 +1181,3 @@ exports.getDefaultState = function(lockId, callback) {
 
 module.exports.convertToMilitary = convertToMilitary;
 module.exports.getTime = getTime;
->>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
