@@ -509,17 +509,15 @@ function getMembersDropDown() {
     }
     //select.selectedIndex = "0";
     //getMemberInfo();
-
   })
-
 }
 
 /**
  * Gets members of a lock
  */
-function getMemberInfo() {
-  var memberSelect = document.getElementById('members');
-  var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
+// function getMemberInfo() {
+//   var memberSelect = document.getElementById('members');
+//   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 
   /**
    * This doesn't work anymore so we need to change what was going on here
@@ -538,7 +536,7 @@ function getMemberInfo() {
     }
   })
      */
-}
+//}
 
 
 /**
@@ -573,17 +571,17 @@ function getAdminInfo() {
  * @param:none
  */
 function addTimeRestriction() {
-  var memberSelect = document.getElementById('members');
+  var memberSelect = document.getElementById('membersList');
   var memberOption = memberSelect.options[memberSelect.selectedIndex].text;
 
   var action = undefined;
   if(document.getElementById("unlock").checked) {
-    console.log("unlock!");
+    //console.log("unlock!");
     action = "unlock";
     document.getElementById("unlock").checked = false;
   }
   if(document.getElementById("lock").checked){
-    console.log("lock!");
+    //console.log("lock!");
     action = "lock";
     document.getElementById("lock").checked = false;
   }
