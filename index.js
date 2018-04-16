@@ -463,6 +463,10 @@ function withinBounds(userObject, lockId, action) {
           callback({message: "Event created successfully!"});
         })
       }
+      else{
+        callback({message: "You don't have the permission to add events!"});
+        return;
+      }
     })
   }
 
