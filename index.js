@@ -197,27 +197,33 @@
  * @return: true if the user is allowed to make this action
  * false if the user is not allowed to make this action
  */
- function withinBounds(userObject, lockId, action) {
-  let lock = searchLocks(lockId, userObject);
-    // returns false here if person isn't in lock
-    if(!lock) {
-      return false; }
-      let currentTime = convertToMilitary(getTime());
-      if (action == "lock") {
-        for(let i = 0; i < lock.lockRestrictions.length; i++) {
-          if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
-            return false;
-          }
-        }
-      } else {
-        for(let i = 0; i < lock.unlockRestrictions.length; i++) {
-          if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
-            return false;
-          }
-        }
-      }
-      return true;
+function withinBounds(userObject, lockId, action) {
+  let lock = undefined;
+  for(let i = 0;  i < userObject.locks.length; i++) {
+    if(userObject.locks[i].lockId == lockId) {
+      lock = userObject.locks[i];
     }
+  }
+    // returns false here if person isn't in lock
+  if(!lock) {
+    return false; 
+  }
+  let currentTime = convertToMilitary(getTime());
+  if (action == "lock") {
+    for(let i = 0; i < lock.lockRestrictions.length; i++) {
+      if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
+        return true;
+      }
+    }
+  } else {
+    for(let i = 0; i < lock.unlockRestrictions.length; i++) {
+      if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 
   /**
    * Determines where a user can perform the lock action at the particular time.
@@ -516,23 +522,6 @@ return true;
     else{
       callback("error");
     }
-  }
-
-  /**
-   * Function to get the specific lock of the specific user
-   *
-   * @param lockId - the lockId of the lock that we are looking for 
-   * @param username - the username of the user we are looking for the lock
-   */
-   function getLockOfUser(username, lockId) {
-    db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err,result) => {
-      for(let i = 0;  i < result[0].locks.length; i++) {
-        if(result[0].locks[i].lockId == lockId) {
-          return result[0].locks[i];
-        }
-      }
-      return undefined;
-    })
   }
 
   /**
@@ -933,7 +922,7 @@ return true;
  exports.unlock = function(username, lockId, callback) {
 
   getUser(username, function(user) {
-    console.log("canUnLock(" + user + " " + lockId + ") = " +  canLock(user, lockId))
+    console.log("canUnLock(" + user + " " + lockId + ") = " +  canUnlock(user, lockId))
     if(canUnlock(user, lockId)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
         if(!err) {
