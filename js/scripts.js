@@ -288,16 +288,6 @@ function getLockStatus() {
  * @param:none
  */
 function changeLock() {
- if (document.getElementById("lock-status").innerHTML == "locked") {
- // Send request to change lock...
-  socket.emit("request", 1);
-  } else {
-  socket.emit("request", 0);
-  }
-  // Response when the lock has been changed
-  socket.on("response", function(data) {
-    console.log(data);
-  }) 
   if (document.getElementById("lock-status").innerHTML == "locked") {
     $.post("/unlock", function(data) {
       if(data.error) {
@@ -553,7 +543,7 @@ function getMemberInfo() {
 /**
  * sets up a drop down of admins of a lock
  */
-function getAdminssDropDown() {
+/*function getAdminDropDown() {
   $.get("/getAdmins", function(data) {
     let select = document.getElementById("admins");
     for(var i = 0; i < data.admins.length; i++) {
@@ -567,7 +557,7 @@ function getAdminssDropDown() {
     getAdminInfo();
   })
 
-}
+}*/
 
 /**
  * Gets members of a lock 
