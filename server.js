@@ -57,7 +57,7 @@ io.on('connection', function (socket){
 
 });
 
-/*io.use(function(socket, next) {
+io.use(function(socket, next) {
   let data = socket.request;
   // Need to change below. Should be checking if it is a valid lock ID rather than
     // whether a lock ID was provided 
@@ -68,7 +68,7 @@ io.on('connection', function (socket){
     mod.insertActiveLock({lockId: parseInt(data._query.lockId), socketId: socket.id});
     next();
   }
-})*/
+})
 
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
@@ -202,6 +202,7 @@ app.get("/selectDashboard", (req, res) => {
   mod.getSocketId(parseInt(req.session.lock), function(socketId) {
     if(!socketId) {
       // send them to the lock not active page
+      res.send();
     }
     else {
       res.send();
