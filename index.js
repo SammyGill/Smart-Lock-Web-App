@@ -10,6 +10,7 @@ const assert = require("assert")
 const schedule = require('node-schedule');
 
 
+<<<<<<< HEAD
 /**
 * Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
 * that current time and performs the actions after checking if the user who submitted the
@@ -18,6 +19,15 @@ const schedule = require('node-schedule');
 const j = schedule.scheduleJob('*/1 * * * *', function(){
   console.log('Cheese is great!');
   let d = new Date();
+=======
+  /**
+   * Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
+   * that current time and performs the actions after checking if the user who submitted the
+   * request is allowed to perform the action at that certain time.
+   */
+   const j = schedule.scheduleJob('*/1 * * * *', function(){
+    let d = new Date();
+>>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
   //convert the time accordingly in order to look it up in the database
   let timeInMilitary = "" + convertToMilitary(d.getHours() + ":" + d.getMinutes());
   //look up all events at that specified time
@@ -26,7 +36,6 @@ const j = schedule.scheduleJob('*/1 * * * *', function(){
     for (let i = 0; i < result.length; i++) {
       //if the action was to lock
       if (result[i].action == "lock") {
-        console.log("The lock was automatically locked!");
         //get the user object based on the username
         getUser(result[i].username, function(user) {
           //check if the user has the permissions to lock
@@ -40,9 +49,14 @@ const j = schedule.scheduleJob('*/1 * * * *', function(){
             })
           }
         })
+<<<<<<< HEAD
         //if the action was to unlock
       } else {
         console.log("The lock was automatically unlocked!");
+=======
+      //if the action was to unlock
+    } else {
+>>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
         //get the user object based on the username
         getUser(result[i].username, function(user) {
           //checks if the user can actually unlock the lock
@@ -166,10 +180,19 @@ function isOwner(userObject, lockId) {
 */
 function isAdmin(userObject, lockId) {
   let role = searchLocks(lockId, userObject.locks);
+<<<<<<< HEAD
   //console.log("in isAdmin: " + userObject.username + role);
   // returns false here if person isn't in lock
   if(role == undefined) {
     return false;
+=======
+    // returns false here if person isn't in lock
+    if(role == undefined) {
+      return false;
+    }
+    return (role == 1);
+
+>>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
   }
   return (role == 1);
 
@@ -517,7 +540,6 @@ function withinBounds(userObject, lockId, action) {
       callback("addEvents");
     }
     else{
-      console.log("Error in switcSettings!");
       callback("error");
     }
   }
@@ -735,7 +757,6 @@ exports.getLockAdmins = function(lockId, callback) {
         for(let i = 0;  i < result[0].locks.length; i++) {
           if(result[0].locks[i].lockId == lockId && result[0].locks[i].role == 1 ) {
             adminArray.push(member);
-            console.log("inside if: " + adminArray);
           }
         }
         callback();
@@ -791,6 +812,7 @@ exports.getLocks = function(username, callback) {
 */
 exports.lock = function(username, lockId, callback) {
   getUser(username, function(user) {
+    console.log("canLock(" + user + " " + lockId + ") = " +  canLock(user, lockId))
     if(canLock(user, lockId)) {
 
       db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}},
@@ -943,6 +965,7 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
 */
 exports.unlock = function(username, lockId, callback) {
   getUser(username, function(user) {
+    console.log("canUnLock(" + user + " " + lockId + ") = " +  canLock(user, lockId))
     if(canUnlock(user, lockId)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
         if(!err) {
@@ -969,7 +992,6 @@ exports.registerLock = function(lockId, lockName, userName, callback) {
     }
     else {
       // First person to try to register this lock
-      console.log(result);
     }
   })
 
@@ -1123,6 +1145,7 @@ exports.authenticate = function(username, fullname,  callback) {
     })
   }
 
+<<<<<<< HEAD
   exports.removeMember = function(username, lockId, otherUser, callback) {
     getUser(username, function(user) {
       if (isOwner(user, lockId)) {
@@ -1132,6 +1155,35 @@ exports.authenticate = function(username, fullname,  callback) {
           for (let i = 0; i < result[0].members.length; i++) {
             if (result[0].members[i] == otherUser) {
               result[0].members[i] = "NULL";
+=======
+exports.removeMember = function(username, lockId, otherUser, callback) {
+  getUser(username, function(user) {
+    if (isOwner(user, lockId)) {
+      //updates the members array in the locks collection for that lockId
+      db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
+        //
+        for (let i = 0; i < result[0].members.length; i++) {
+          if (result[0].members[i] == otherUser) {
+            result[0].members[i] = "NULL";
+          }
+        }
+        let newArray = [];
+        //if is was not the the user we deleted, then add into the new array
+        for (let i = 0; i < result[0].members.length; i++) {
+          if (result[0].members[i] != "NULL") {
+            newArray.push(result[0].members[i]);
+          }
+        }
+        //update the members array for this lock to the new array
+        db.collection("locks").update({lockId: lockId}, {$set: {members: newArray}}, (err, numberAffected, rawResponse) => {})
+
+        //updates and deleted the lock from the users collection for that user
+        db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
+          //go through the locks array and change the lock to delete to NULL
+          for (let i = 0; i < result2[0].locks.length; i++) {
+            if (result2[0].locks[i].lockId == lockId) {
+              result2[0].locks[i] = "NULL";
+>>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
             }
           }
           let newArray = [];
@@ -1169,5 +1221,35 @@ exports.authenticate = function(username, fullname,  callback) {
     callback({message: "User Successfully Deleted!"});
   }
 
+<<<<<<< HEAD
   module.exports.convertToMilitary = convertToMilitary;
   module.exports.getTime = getTime;
+=======
+exports.insertActiveLock = function(activeLock) {
+  db.collection("active-locks").insert(activeLock);
+}
+
+exports.deleteActiveLock = function(socketId) {
+  db.collection("active-locks").deleteOne(socketId);
+}
+
+exports.getSocketId = function(lockId, callback) {
+  db.collection("active-locks").find({lockId: lockId}).toArray((err, result) => {
+    if(result.length) {
+      callback(result[0].socketId);
+    }
+    else {
+      callback(false);
+    }
+  })
+}
+
+exports.getDefaultState = function(lockId, callback) {
+  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
+    callback(result[0].status);
+  })
+}
+
+module.exports.convertToMilitary = convertToMilitary;
+module.exports.getTime = getTime;
+>>>>>>> 13ca8a4e2d985bf3753f2a96e1d8eac4b5aa2208
