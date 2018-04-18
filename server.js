@@ -60,7 +60,7 @@ io.on('connection', function (socket){
 io.use(function(socket, next) {
   let data = socket.request;
   // Need to change below. Should be checking if it is a valid lock ID rather than
-    // whether a lock ID was provided 
+    // whether a lock ID was provided
   if(!data._query.lockId) {
     io.sockets.connected[socket.id].disconnect();
   }
@@ -104,7 +104,7 @@ app.get("/editAdmins", (req, res) => {
 // Route for authenticating users after they log in via Google
   // Determines whether or not the user has a lock associated with them
 
-//Authenticates the user through email 
+//Authenticates the user through email
   app.get("/authenticate", (req, res) => {
   // User email is obtained from the Javascript function after user has logged
     // in viga Google
@@ -141,7 +141,7 @@ app.get("/dashboard", (req, res) => {
     res.send(data);
   })
 })
-//gets the locks using username 
+//gets the locks using username
  app.get("/getLocks", (req, res) => {
   mod.getLocks(req.session.username, function(data) {
     res.send(data);
@@ -155,20 +155,20 @@ app.get("/dashboard", (req, res) => {
   })
 })
 
-//gets the members of a lock using lock id 
+//gets the members of a lock using lock id
  app.get("/getMembers", (req, res) => {
   let id = req.session.lock;
   mod.getLockMembers(id, function(members) {res.send({members: members});});
 })
 
-//gets the lock admins 
+//gets the lock admins
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
     //let username = req.body.members;
   mod.getLockAdmins(id, function(members) {
     res.send({members: members});});
  })
- 
+
  //gets the users name from email username
  app.get("/getName", (req, res) => {
   res.send(req.session.username);
@@ -196,7 +196,7 @@ app.get("/selectLock", (req, res) => {
   res.sendFile(dir + "/views/locks.html");
 })
 
-//slect dashoard to be displayed 
+//slect dashoard to be displayed
 app.get("/selectDashboard", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   mod.getSocketId(parseInt(req.session.lock), function(socketId) {
@@ -210,20 +210,20 @@ app.get("/selectDashboard", (req, res) => {
   })
 })
 
-//switch lock using lock id of lock to switch to 
+//switch lock using lock id of lock to switch to
 app.get("/switchLock", (req, res) => {
   req.session.lock = parseInt(req.query.lockId);
   res.send();
 })
 
-//switch settings 
+//switch settings
 app.get("/switchSettings", (req, res) => {
   mod.switchSettings(req.query.setting, function(data) {
     res.send(data);
   })
 })
 
-//gets the time status 
+//gets the time status
 app.get("/timeStatus", (req, res) => {
   let time = mod.getTime();
   res.send(time);
@@ -239,7 +239,7 @@ app.get("/timeStatus", (req, res) => {
   });
 });*/
 
-//gets the history of specific lock 
+//gets the history of specific lock
 app.get("/showHistory", (req, res) => {
   let id = req.session.lock;
   mod.getLockHistory(id, function(history) {
@@ -273,7 +273,7 @@ app.post("/addMember", (req, res) => {
   });
 })
 
-//remove member from lock 
+//remove member from lock
 app.post("/removeMember", (req, res) => {
   let username = req.session.username;
   let userToRemove = req.body.username;
@@ -310,7 +310,7 @@ app.post("/addTimeRestriction", (req, res) => {
   let start = mod.convertToMilitary(req.body.startTime);
   let end = mod.convertToMilitary(req.body.endTime);
 
-    mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock, 
+    mod.createRole(req.session.username, req.body.action, req.body.username, req.session.lock,
                  start, end, function(result) {res.send(result);})
 })
 
@@ -327,7 +327,7 @@ app.post("/lock", (req, res) => {
     if(result){
       mod.getSocketId(req.session.lock, function(socketId) {
         io.to(socketId).emit("lock", "lock message");
-        res.send();       
+        res.send();
       })
     }
     else{
@@ -341,7 +341,7 @@ app.post("/lock", (req, res) => {
 app.post("/registerLock", (req, res) => {
   let id = parseInt(req.body.id);
   let username = req.session.username;
-  
+
   mod.registerLock(id, req.body.lockName, req.session.username, function(result) {
   // let username = req.body.username;
   // mod.registerLock(id, req.body.lockName, req.body.userName, function(result) {
