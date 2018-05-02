@@ -41,9 +41,9 @@ app.use(bodyParser.json());
  */
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
 
-  server.listen(3000, function() {
+  server.listen(80, function() {
 
-    console.log("listening on 3000");
+    console.log("listening on 80");
     mod.connectServer();
   })
 })
