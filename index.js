@@ -1117,16 +1117,10 @@ exports.authenticate = function(username, fullname,  callback) {
       if (isOwner(user, lockId)) {
         //updates the members array in the locks collection for that lockId
         db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
-          //
-          for (let i = 0; i < result[0].members.length; i++) {
-            if (result[0].members[i] == otherUser) {
-              result[0].members[i] = "NULL";
-            }
-          }
           let newArray = [];
           //if is was not the the user we deleted, then add into the new array
           for (let i = 0; i < result[0].members.length; i++) {
-            if (result[0].members[i] != "NULL") {
+            if (result[0].members[i] != otherUser) {
               newArray.push(result[0].members[i]);
             }
           }
@@ -1137,15 +1131,10 @@ exports.authenticate = function(username, fullname,  callback) {
           db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
             //go through the locks array and change the lock to delete to NULL
             //console.log("Result is " + result2[0].locks);
-            for (let i = 0; i < result2[0].locks.length; i++) {
-              if (result2[0].locks[i].lockId == lockId) {
-                result2[0].locks[i] = "NULL";
-              }
-            }
             let newLocksArray = [];
             //if is was not the the lock we deleted, then we add it into new array
             for (let i = 0; i < result2[0].locks.length; i++) {
-              if (result2[0].locks[i] != "NULL") {
+              if (result2[0].locks[i] != lockId) {
                 newLocksArray.push(result2[0].locks[i]);
               }
             }
