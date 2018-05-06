@@ -198,11 +198,20 @@ app.get("/selectLock", (req, res) => {
 
 //slect dashoard to be displayed
 app.get("/selectDashboard", (req, res) => {
+
+  /**
+   * TO DO:
+   *  WE ARE NOT CHECKING WHO IS REQUESTING ACCESS
+   *  TO THE LOCK DASHBOARD, WE SHOULD BE DOING THIS
+   *  OTHERWISE ANYONE CAN GET TO A LOCK BY JUST 
+   *  SENDING A ID
+   */
+
   req.session.lock = parseInt(req.query.lockId);
   mod.getSocketId(parseInt(req.session.lock), function(socketId) {
     if(!socketId) {
       // send them to the lock not active page
-      res.send();
+      //res.send();
     }
     else {
       res.send();
