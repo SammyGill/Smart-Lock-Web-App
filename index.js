@@ -1071,37 +1071,56 @@ exports.authenticate = function(username, fullname,  callback) {
   }
 
   exports.removeMember = function(username, lockId, otherUser, callback) {
+    let message = "what";
+    console.log("user to remove is " + otherUser);
     getUser(username, function(user) {
       if (isOwner(user, lockId)) {
-        //updates the members array in the locks collection for that lockId
-        db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
-          let newArray = [];
-          //if is was not the the user we deleted, then add into the new array
-          for (let i = 0; i < result[0].members.length; i++) {
-            if (result[0].members[i] != otherUser) {
-              newArray.push(result[0].members[i]);
+
+        //updates and deleted the lock from the users collection for that user
+        db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
+          if(result2.length == 0) {
+            console.log("USER DOES NOT EXIST");
+            callback({message: "ERROR"});
+            return;
+            console.log("after return");
+          }
+          //go through the locks array and change the lock to delete to NULL
+          let newLocksArray = [];
+          //if is was not the the lock we deleted, then we add it into new array
+          for (let i = 0; i < result2[0].locks.length; i++) {
+            if (result2[0].locks[i] != lockId) {
+              newLocksArray.push(result2[0].locks[i]);
             }
           }
-          //update the members array for this lock to the new array
-          db.collection("locks").update({lockId: lockId}, {$set: {members: newArray}}, (err, numberAffected, rawResponse) => {})
+          //update the locks array for the user that we wanted to delete from that lock
+          db.collection("users").update({username: otherUser}, {$set: {locks: newLocksArray}}, (err, numberAffected, rawResponse) => {})
 
-          //updates and deleted the lock from the users collection for that user
-          db.collection("users").find({"username": otherUser}).toArray((err, result2) => {
-            //go through the locks array and change the lock to delete to NULL
-            let newLocksArray = [];
-            //if is was not the the lock we deleted, then we add it into new array
-            for (let i = 0; i < result2[0].locks.length; i++) {
-              if (result2[0].locks[i] != lockId) {
-                newLocksArray.push(result2[0].locks[i]);
+          //updates the members array in the locks collection for that lockId
+          db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
+            if(result.length == 0) {
+              console.log("LOCK DOES NOT EXIST");
+              callback({message: "ERROR"});
+              return;
+            }  
+            let newArray = [];
+            //if is was not the the user we deleted, then add into the new array
+            for (let i = 0; i < result[0].members.length; i++) {
+              if (result[0].members[i] != otherUser) {
+                newArray.push(result[0].members[i]);
               }
             }
-            //update the locks array for the user that we wanted to delete from that lock
-            db.collection("users").update({username: otherUser}, {$set: {locks: newLocksArray}}, (err, numberAffected, rawResponse) => {})
+            //update the members array for this lock to the new array
+            db.collection("locks").update({lockId: lockId}, {$set: {members: newArray}}, (err, numberAffected, rawResponse) => {})
+            callback({message: "User Successfully Deleted"});
           })
+
         })
+
+      }
+      else {
+        console.log("NOT OWNER");
       }
     })
-    callback({message: "User Successfully Deleted!"});
   }
 
 exports.insertActiveLock = function(activeLock) {
