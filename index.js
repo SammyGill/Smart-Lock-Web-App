@@ -1131,10 +1131,16 @@ exports.deleteActiveLock = function(socketId) {
   db.collection("active-locks").deleteOne(socketId);
 }
 
-exports.getSocketId = function(lockId, callback) {
+exports.getSocketId = function(username, lockId, callback) {
+
   db.collection("active-locks").find({lockId: lockId}).toArray((err, result) => {
+    getUser(username, function(user) {
+      if(user == undefined) {
+        callback({Error: "User does not exist!"});
+      }
+    })
     if(result.length) {
-      callback(result[0].socketId);
+      callback({socketId: result[0].socketId});
     }
     else {
       callback(false);
