@@ -208,10 +208,15 @@ app.get("/selectDashboard", (req, res) => {
    */
 
   req.session.lock = parseInt(req.query.lockId);
-  mod.getSocketId(parseInt(req.session.lock), function(socketId) {
-    if(!socketId) {
+  mod.getSocketId(req.session.username, parseInt(req.session.lock), function(result) {
+    if(result.Error) {
+      // username that was sent was not valid
+      console.log("NOT A VALID USER");
+      res.end();
+    }
+    if(!result.socketId) {
       // send them to the lock not active page
-      //res.send();
+      res.send();
     }
     else {
       res.send();
