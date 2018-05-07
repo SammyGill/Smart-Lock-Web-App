@@ -845,7 +845,7 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
   //check if this user can add admins
   getUser(username, function(user) {
     getUser(userToAdmin, function(user2) {
-      if(user == undefined || userToAdmin == undefined) {
+      if(user == undefined || user2 == undefined) {
         callback({message: "error!"});
         return;
       }
@@ -1037,36 +1037,40 @@ exports.authenticate = function(username, fullname,  callback) {
   * @return none
   */
   exports.revokeAdmin = function(username, lockId, otherUser, callback) {
-    getUser(username, function(user1) {
-      //check if this user can add admins
-      //getUser(otherUser, function(user2) {
-      if(isOwner(user1, lockId)) {
-        //find the user of whom we are going to change the role
-        db.collection("users").find({username: otherUser}).toArray((err, result) => {
-          if(result[0] == undefined){
-            return;
-          }
-          //loop through the lock to find the specific lock Id
-          for(let i = 0; i < result[0].locks.length; i++) {
-            //Once the lock Id is found, create a new lock object
-            if(result[0].locks[i].lockId == lockId) {
-              let lockObject = {
-                "lockId": lockId,
-                "role": 2,
-                "lockRestrictions": [],
-                "unlockRestrictions": []
-              };
-              //set the current index to the new lock object
-              result[0].locks[i] = lockObject;
-              //update the database
-              db.collection("users").update({username: otherUser}, {$set:{locks: result[0].locks}}, (err, numberAffected, rawResponse) =>{})
-              //callback message currently doesn't work
-              callback({message: "User is now a member!!!!"});
+    getUser(username, function(userOne) {
+      getUser(otherUser, function(userTwo) {
+        if(userOne == undefined || userTwo == undefined) {
+          callback({message: "ERROR"});
+          return;
+        }
+        if(isOwner(userOne, lockId)) {
+          db.collection("users").find({username: otherUser}).toArray((err, result) => {
+            if(result[0] == undefined) {
+              callback({message: "ERROR"});
               return;
             }
-          }
-        })
-      }
+            //loop through the lock to find the specific lock Id
+            for(let i = 0; i < result[0].locks.length; i++) {
+              //Once the lock Id is found, create a new lock object
+              if(result[0].locks[i].lockId == lockId) {
+                let lockObject = {
+                  "lockId": lockId,
+                  "role": 2,
+                  "lockRestrictions": [],
+                  "unlockRestrictions": []
+                };
+                //set the current index to the new lock object
+                result[0].locks[i] = lockObject;
+                //update the database
+                db.collection("users").update({username: otherUser}, {$set:{locks: result[0].locks}}, (err, numberAffected, rawResponse) =>{})
+                //callback message currently doesn't work
+                callback({message: "User is now a member!!!!"});
+                return;
+              }
+            }            
+          })
+        }
+      })
     })
   }
 
