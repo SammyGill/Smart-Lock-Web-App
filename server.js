@@ -339,8 +339,8 @@ app.post("/createEvent", (req, res) => {
 app.post("/lock", (req, res) => {
   mod.lock(req.session.username, req.session.lock, function(result){
     if(result){
-      mod.getSocketId(req.session.lock, function(socketId) {
-        io.to(socketId).emit("lock", "lock message");
+      mod.getSocketId(req.session.username, req.session.lock, function(socketId) {
+        io.to(socketId.socketId).emit("lock", "lock message");
         res.send();
       })
     }
@@ -373,8 +373,9 @@ app.post("/registerLock", (req, res) => {
 app.post("/unlock", (req, res) => {
   mod.unlock(req.session.username, req.session.lock, function(result) {
     if(result) {
-      mod.getSocketId(req.session.lock, function(socketId) {
-        io.to(socketId).emit("unlock", "message for unlock");
+      mod.getSocketId(req.session.username, req.session.lock, function(socketId) {
+        console.log("sending unlock");
+        io.to(socketId.socketId).emit("unlock", "message for unlock");
         res.send();
       })
     }
