@@ -477,6 +477,9 @@ function withinBounds(userObject, lockId, action) {
   * @param username - the username of the user that we are looking
   */
   exports.getSettings = function(username, lockId, callback) {
+    // validate user in case the user does not exist
+
+
     //Get the user's document who has this lock
     db.collection("users").find({"username": username, "locks.lockId": lockId}).toArray((err, result) => {
       //Loop through the locks array to find the information foe this lock
@@ -553,6 +556,11 @@ function withinBounds(userObject, lockId, action) {
   *    - use the callback to return the success/failure
   */
   exports.createRole = function(username, action, userToChange, lockId, start, end, callback) {
+    /**
+     * THIS IS WAAAAAAY TOO LONG
+     */
+
+
     if(action != "lock" && action != "unlock"){
       callback({message: "Please select lock or unlock"});
       return;
@@ -676,6 +684,7 @@ exports.getLockMembers = function(lockId, callback) {
 * @return: array of admins
 */
 exports.getLockAdmins = function(lockId, callback) {
+  // Validate lock id in case it doesn't exist
 
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     let allMembers = result[0].members;
@@ -711,6 +720,8 @@ exports.getLockAdmins = function(lockId, callback) {
 * @return: locknames
 */
 exports.getLocks = function(username, callback) {
+  // validate user in case it doesn't exist
+
   db.collection("users").find({username: username}).toArray((err, result) => {
 
     var locks = result[0].locks;
@@ -739,6 +750,8 @@ exports.getLocks = function(username, callback) {
 * @return:true if locked, else false
 */
 exports.lock = function(username, lockId, callback) {
+
+  // validate user in case it doesn't exist
   getUser(username, function(user) {
     if(canLock(user, lockId)) {
 
@@ -759,6 +772,8 @@ exports.lock = function(username, lockId, callback) {
 * @param: username, lockId, callback
 */
 function addToHistory(username, lockId, action) {
+
+  // validate user in case it doesn't exist 
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     let time = getTime();
     let date = new Date();
@@ -781,6 +796,9 @@ function addToHistory(username, lockId, action) {
 * @return: history
 */
 exports.getLockHistory = function(lockId, callback) {
+
+  // validate lockId in case it doesn't exist
+
   db.collection("history").find({lockId: lockId}).toArray((err, result) => {
     callback(result[0]);
   })
@@ -890,6 +908,8 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
 * @return: false if not unlocked
 */
 exports.unlock = function(username, lockId, callback) {
+
+  // validate user in case it doesn't exist 
   getUser(username, function(user) {
     if(canUnlock(user, lockId)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
@@ -914,11 +934,11 @@ exports.registerLock = function(lockId, lockName, userName, callback) {
   db.collection("users").find({"username": userName, "locks.lockId": lockId}).toArray((err, result) => {
     if(result.length > 0) {
       // There are people with this lock so it must have been registered
-    }
-    else {
-      // First person to try to register this lock
+      return;
     }
   })
+
+  // careful at async issues here, might want to take a closer look
 
 
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
@@ -954,6 +974,8 @@ exports.registerLock = function(lockId, lockName, userName, callback) {
 * @return: string either "locked" or "unlocked"
 */
 exports.getLockStatus = function(lockId, callback) {
+
+  // what if lock doesn't exist?
   db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
     callback({status: result[0].status});
   })
@@ -1127,6 +1149,7 @@ exports.authenticate = function(username, fullname,  callback) {
     })
   }
 
+// try to move active locks away from DB and into a global variable
 exports.insertActiveLock = function(activeLock) {
   db.collection("active-locks").insert(activeLock);
 }
