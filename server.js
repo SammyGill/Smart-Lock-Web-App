@@ -289,6 +289,12 @@ app.post("/addMember", (req, res) => {
 
 //remove member from lock
 app.post("/removeMember", (req, res) => {
+
+  /**
+   * Rework this function in the module so that
+   * it uses getUser instead
+   */
+
   let username = req.session.username;
   let userToRemove = req.body.username;
   let lockId = req.session.lock;
