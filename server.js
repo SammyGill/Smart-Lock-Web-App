@@ -36,19 +36,27 @@ socket.on("lock", function(data) {
 	console.log(motor.getPwmFrequency());
 	let beforeVal;
 	let afterVal;
+	//read current status of the metal touch sensor
 	GPIO.read(11, function(err, value) {
 		if (err) throw err;
 		beforeVal = value;
 	});
+	//if sensor is low (unlocked)
 	if (beforeVal == false) {
+		//turn lock
 		motor.servoWrite(1800);
+		//wait 3 seconds
 		setTimeout(
+			//check status of metal sensor again
 			GPIO.read(11, function(err, value2) {
 				if (err) throw err;
 				afterVal = value2;
 			});
+			//if still unlocked, then send error message and undo action
 			if (afterVal == false) {
 				//turn motor back
+				motor.servoWrite(1000);
+				//indicate error message
 				console.log("ERROR");
 			}
 		, 3000);
@@ -58,10 +66,33 @@ socket.on("lock", function(data) {
 socket.on("unlock", function(data) {
 	console.log("got an unlock request");
 	console.log(motor.getPwmFrequency());
-	motor.servoWrite(1000);
-	//wait 3 seconds
-	//check metal touch sensor
-	//if touch sensor returns true then, turn serve back and send error message
+	let beforeVal;
+	let afterVal;
+	//read current status of the metal touch sensor	
+	GPIO.read(11, function(err, value) {
+		if (err) throw err;
+		beforeVal = value;
+	});
+	//if sensor is high (locked)
+	if (beforeVal == true) {
+		//turn to unlock
+		motor.servoWrite(1000);
+		//wait 3 seconds
+		setTimeout(
+			//check status of the metal sensor again
+			GPIO.read(11, function(err, value2) {
+				if (err) throw err;
+				afterVal = value2;
+			});
+			//if still locks, then send an error message and undo action
+			if (afterVal == true) {
+				//turn motor back
+				motor.servoWrite(1800);
+				//indicate error message
+				console.log("ERROR");
+			}
+		, 3000);
+	}
 })
 
 process.on("exit", function() {
