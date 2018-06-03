@@ -12,9 +12,16 @@ function readInput(err) {
     //if (value == true) {
       //return;
     //}
-    readInput(); 
+    //readInput(); 
   });
-
+  GPIO.read(11, function(err, value) {
+    if (err) throw err;
+    console.log("the value is " + value);
+    //if (value == true) {
+      //return;
+    //}
+    //readInput(); 
+  });
 }
 
 function write(err) {
