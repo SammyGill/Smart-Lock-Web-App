@@ -579,7 +579,7 @@ function withinBounds(userObject, lockId, action) {
         if(isOwner(user, lockId) || isAdmin(user, lockId)) {
           let result = isMember(user2, lockId);
           if(!isMember(user2, lockId)) {
-            callback({message: "The user whose restrictions to be added should be a memeber"});
+            callback({message: "The user should be a memeber"});
             return;
           }
             //check the action to perform
@@ -612,7 +612,7 @@ function withinBounds(userObject, lockId, action) {
                     //to the result[0] which is now updated
                     db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numberAffected,rawResponse) => {});
                     //callback message to state that action is completed
-                    callback({message:"Added user lock restriction"});
+                    callback({message:"Added user lock access"});
                     return;
                   }
                 }
@@ -647,7 +647,7 @@ function withinBounds(userObject, lockId, action) {
                     //find user again and update
                     db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numerAffected, rawResponse) => {});
                     //callback message
-                    callback({message: "Added user unlock restriction"});
+                    callback({message: "Added user unlock access"});
                     return;
                   }//end if statement
                 }//end for loop
@@ -656,7 +656,7 @@ function withinBounds(userObject, lockId, action) {
           }
         //if requester does not have access return callback message
         else{
-          callback({message:"User must be an Owner or an Admin to create restrictions"});
+          callback({message:"User must be an Owner or an Admin to give access"});
           return;
         }
       })
