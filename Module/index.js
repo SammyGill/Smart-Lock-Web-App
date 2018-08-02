@@ -389,48 +389,6 @@ function withinBounds(userObject, lockId, action) {
 
 
   /**
-  * When a user is adding a new time restriction, we use this function to check
-  * if the restriction is a valid one
-  *
-  * @param {array} inputArray - the time restrictions that the user enter
-  * @param {array} bdArray - the time restrictions that the lock originally have
-  */
-  exports.checkRestrictions = function(inputArray, dbArray) {
-
-    let inputStart = inputArray[0];
-    let inputEnd = inputArray[1];
-
-    for(var i = 0; i < dbArray.length; dbArray++) {
-      if(inputStart < dbArray[i][1] && inputStart > dbArray[i][0]) {
-
-        return false;
-      }
-      if(inputEnd < dbArray[i][1] && inputEnd > dbArray[i][0]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // *
-  //  * When a user is adding a new time restriction, we use this function to check
-  //  * if the restriction is a valid one
-  //  *
-  //  * @param {array} inputArray - the time restrictions that the user enter
-  //  * @param {array} bdArray - the time restrictions that the lock originally have
-
-  // exports.checkActionPermission = function(timesArray, currentTime) {
-  //   for(let i = 0; i < timesArray.length; i++) {
-  //     if(currentTime > timesArray[i][0] && currentTime < timesArray[i][1]) {
-  //       return false;
-  //     }
-  //   }
-
-  //   return true;
-  // }
-
-
-  /**
   * User A can create event E for lock L for time T
   *    - if owner(L) or admin(L) or (member(L) and withinBounds(t))
   *
@@ -559,16 +517,11 @@ function withinBounds(userObject, lockId, action) {
   *    - we'll need to check if it is an unlock or lock restriction
   *    - use the callback to return the success/failure
   */
-  exports.createRole = function(username, action, userToChange, lockId, start, end, callback) {
+  exports.createRole = function(username, userToChange, lockId, start, end, callback) {
     /**
      * THIS IS WAAAAAAY TOO LONG
      */
 
-
-    if(action != "lock" && action != "unlock"){
-      callback({message: "Please select lock or unlock"});
-      return;
-    }
     if(start >= end){
       callback({message: "Invalid time range!"});
       return;
@@ -620,40 +573,6 @@ function withinBounds(userObject, lockId, action) {
               });
 
             }//end if
-            else if(action == "unlock"){
-              let unlockRestrictions = [start, end];
-              //find user in database
-              db.collection("users").find({"username": userToChange}).toArray((err, result) => {
-                if(result[0] == undefined) {
-                  return;
-                }
-                //find correct lock inside locks array
-                for(let i=0; i<result[0].locks.length; i++){
-                  //look for lock inside locks array of user
-                  if(result[0].locks[i].lockId == lockId){
-                    let unlockResArray = result[0].locks[i].unlockRestrictions;
-                    let lockResArray = result[0].locks[i].lockRestrictions
-                    unlockResArray.push(unlockRestrictions);
-                    let roleUp = result[0].locks[i].role;
-                    //create a new lock objectg to replac old one
-                    let lockObject = {
-                      "lockId" : result[0].locks[i].lockId,
-                      "role": roleUp,
-                      "lockRestrictions": lockResArray,
-                      "unlockRestrictions": unlockResArray
-                    };
-
-                    //set current index to the new lock oject
-                    result[0].locks[i] = lockObject;
-                    //find user again and update
-                    db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numerAffected, rawResponse) => {});
-                    //callback message
-                    callback({message: "Added user unlock access"});
-                    return;
-                  }//end if statement
-                }//end for loop
-              });
-            }//end else if
           }
         //if requester does not have access return callback message
         else{
