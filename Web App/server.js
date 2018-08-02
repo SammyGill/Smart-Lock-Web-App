@@ -12,6 +12,7 @@ const mod = require("../Module/index.js");
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const assert = require("assert");
+const port = 3000;
 
 
 
@@ -41,9 +42,9 @@ app.use(bodyParser.json());
  */
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
 
-  server.listen(3000, function() {
+  server.listen(port, function() {
 
-    console.log("listening on 80");
+    console.log("listening on " + port);
     mod.connectServer();
   })
 })
@@ -106,28 +107,26 @@ app.get("/editAdmins", (req, res) => {
 
 //Authenticates the user through email
   app.get("/authenticate", (req, res) => {
-  // User email is obtained from the Javascript function after user has logged
+    // User email is obtained from the Javascript function after user has logged
     // in viga Google
-  var email = req.query.email;
-  var fullname = req.query.fullname;
-  req.session.fullname = fullname;
-  req.session.username = email;
-  mod.authenticate(email, fullname, function(locks, lockId) {
-    if(lockId) {
-      req.session.lock = lockId;
-    }
-    res.send(locks);
-  })
+    req.session.fullname = req.query.fullname;
+    req.session.username = req.query.email;
+    mod.authenticate(req.session.username, req.session.fullname, function(locks, lockId) {
+      if(lockId) {
+        req.session.lock = lockId;
+      }
+      res.send(locks);
+    })
   })
 
-//Route that redirects users to their lock dashboard, sends the dashboard page back
-app.get("/dashboard", (req, res) => {
-  if(!mod.isLoggedIn(req.session.username)) {
-    res.redirect("/");
-    return;
-  }
-  res.sendFile(dir + "/views/dashboard.html");
-})
+  //Route that redirects users to their lock dashboard, sends the dashboard page back
+  app.get("/dashboard", (req, res) => {
+    if(!mod.isLoggedIn(req.session.username)) {
+      res.redirect("/");
+      return;
+    }
+    res.sendFile(dir + "/views/dashboard.html");
+  })
 
 /**
  * This route is only used to send back the personal data of the user
