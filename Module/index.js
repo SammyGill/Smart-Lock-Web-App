@@ -35,8 +35,7 @@ const MEMBER = 1;
             //update the lock's status in the locks database
             db.collection("locks").update({lockId: result[i].lockId}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
               if(!err) {
-                //add to history
-                addToHistory(result[i].username, result[i].lockId, "lock");
+                // removed history instance here
               }
             })
           }
@@ -49,10 +48,7 @@ const MEMBER = 1;
           if(canUnlock(user, result[i].lockId)) {
             //updates the lock's status to unlock in the lock database
             db.collection("locks").update({lockId: result[i].lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
-              if(!err) {
-                //add to history
-                addToHistory(result[i].username, result[i].lockId, "unlock");
-              }
+              // REMOVED HISTORY INSTANCE HERE, NEED TO RECHECK ALL OF THIS CODE
             })
           }
         })
@@ -646,8 +642,7 @@ exports.getLocks = function(username, callback) {
 }
 
 /**
-* Locks the lock, checks lock restrictions, adds action to
-* history
+* Locks the lock, checks lock restrictions
 * @param: username, lockId, callback
 * @return:true if locked, else false
 */
@@ -660,7 +655,7 @@ exports.lock = function(username, lockId, callback) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}},
       (err, numberAffected, rawResponse) => {
         if(!err) {
-          addToHistory(username, lockId, "lock");
+          // removed history instance here
         }
         callback(true);
         return;

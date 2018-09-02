@@ -252,19 +252,6 @@ app.get("/timeStatus", (req, res) => {
   });
 });*/
 
-//gets the history of specific lock
-app.get("/showHistory", (req, res) => {
-  let id = req.session.lock;
-  mod.getLockHistory(id, function(history) {
-
-    var id = req.session.lock;
-    mod.getLockHistory(id, function(history) {
-      history.times.push(history.owner);
-      history.actions.push(history.owner);
-      res.send({members: history.times, memActions: history.actions});
-    });
-  })
-})
 
 //signs out of session
 app.get("/signOut", (req, res) => {
