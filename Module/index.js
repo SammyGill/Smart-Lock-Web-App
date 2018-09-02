@@ -9,9 +9,9 @@ const async = require("async");
 const assert = require("assert")
 const schedule = require('node-schedule');
 
-const OWNER = 1;
+const OWNER = 3;
 const ADMIN = 2;
-const MEMBER = 3;
+const MEMBER = 1;
 
   /**
    * Scheduled check that will occur every minute. Checks the events database and gets all locks with an action at
@@ -69,9 +69,9 @@ const MEMBER = 3;
 * @param {int} lockId - id of the lock we are looking for
 * @param {array of locks} locks - lock ints that belong to the user
 */
-function searchUserLocks(lockId, locksArray) {
+function isUserAssignedToLock(lockId, locksArray) {
   for(let i = 0; i < locksArray.length; i++) {
-    if(locks[i].lockId == lockId) {
+    if(locks[i] == lockId) {
       return true;
     }
   }
@@ -84,9 +84,55 @@ function searchUserLocks(lockId, locksArray) {
 * @param {string} username - username of the user we are looking for
 * @param callback - the call back function
 */
-function getUserObjectObject(username, callback) {
+function getUserObject(username, callback) {
   db.collection("users").find({"username": username}).toArray((err, result) => {
     callback(result[0]);
+  })
+}
+
+function getLockObject(lockId, callback) {
+  db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
+    if(!result.length) {
+      callback(new Error("Lock does not exist"))
+    }
+    else if(result.length > 1) {
+      callback(new Error("There are " + result.length + " instances of this lock"))
+    }
+    else if(err) {
+      callback(err)
+    }
+    else callback(null, result[0]);
+  })
+}
+
+function getMember(username, lock) {
+  for(let i = 0; i < lock.members; i++) {
+    if(username == lock.members[i].username) {
+      return lock.members[i];
+    }
+  }
+}
+
+function getUsersRole(username, lockId, callback) {
+  getLockObject(lockId, (err, lock) => {
+    if(err) {
+      callback(err)
+    }
+    else {
+      let member = getMember(username, lock);
+      callback(null, member.role);
+    }
+  })
+}
+
+function checkEventExists(lockId, username, time, callback) {
+  db.collection("events").find({lockId: lockId, time: time}).toArray((err, result) => {
+    if(err) {
+      callback(err)
+    }
+    else {
+      callback(null, result.length == 1);
+    }
   })
 }
 
@@ -106,17 +152,16 @@ function addUserToLock(username, lockId) {
     "lockAccess": []
   };
   db.collection("locks").find({lockId: lockId}).toArray((err, lock) => {
-    let currentMembers = lock[0].members;
-    currentMembers.push(newMember);
-    db.collection("locks").update({lockId: lockId}, {$set: {members: currentMembers}});
+    let lockMembers = lock[0].members;
+    lockMembers.push(newMember);
+    db.collection("locks").update({lockId: lockId}, {$set: {members: lockMembers}});
   })
 }
 
 function assignLockToUser(username, lockId) {
-  db.collection("users").find({username: username}).toArray((err, user) => {
-    let currentLocks = user[0].locks;
-    currentLocks.push(lockId);
-    db.collection("users").update({username: username}, {$set: {locks: currentLocks}});
+  getUserObject(username, (user) => {
+    user.locks.push(lockId);
+    db.collection("users").update({username: username}, {$set: {locks: user.locks}});
   })
 }
 
@@ -127,16 +172,13 @@ function assignLockToUser(username, lockId) {
 * @param {int} lockId - the id of the lock whose member we are searching through
 */
 function lockContainsMember(username, lockId, callback) {
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    let membersArray = result[0].members;
-    for(let i = 0; i < membersArray.length; i++) {
-      if(username == membersArray[i].username) {
+  getLockObject(lockId, (lock) => {
+    for(let i = 0; i < lock.members.length; i++) {
+      if(username == lock.members[i]) {
         callback(true);
-        return;
       }
     }
     callback(false);
-    return;
   })
 }
 
@@ -154,8 +196,7 @@ function isOwner(userObject, lockId) {
   if(role == undefined) {
     return false;
   }
-  return (role ==OWNER);
-
+  return (role == OWNER);
 }
 
 
@@ -186,6 +227,7 @@ function isAdmin(userObject, lockId) {
 * @return: true or false
 */
 function isMember(userObject, lockId) {
+    getUsersRole()
     let role = searchLocks(lockId, userObject.locks);
     //return false here if person isn't in lock
     if(role == undefined){
@@ -404,29 +446,30 @@ function withinBounds(userObject, lockId, action) {
   *      all of the other event information just to make sure that user
   *      is even allowed to perform that action at that time
   */
-  exports.createEvent = function(lockId, username, action, time, callback) {
-    getUserObject(username, function(user) {
-      if(isOwner(user, lockId) || isAdmin(user, lockId)) {
-        // Check to see if such an event already exists
-        time = "" + convertToMilitary(time);
-        db.collection("events").find({"lockId": lockId, "time": time}).toArray((err, result) => {
-          if(result.length != 0) {
-            callback({message:"An event already exists for this lock at this time!"});
-            return;
+  exports.createEvent = function(lockId, username, time, callback) {
+    checkEventExists(lockId, username, time, (eventExists) =>{
+      if(eventExists) {
+        callback(new Error("Event already exists"));
+      } 
+      else {
+        getUsersRole(username, lockId, (err, role) => {
+          if(err) {
+            callback(err)
           }
-          let eventObject = {
-            username: username,
-            lockId: lockId,
-            action: action,
-            time: time
-          };
-          db.collection("events").insert(eventObject);
-          callback({message: "Event created successfully!"});
+          else if(role > MEMBER) {
+            db.collection("events").insert({lockId: lockId, username: username, time: time}, (err, result) => {
+              if(err) {
+                callback(err)
+              }
+              else {
+                callback(null, "Event created successfully");
+              }
+            })
+          }
+          else {
+            callback(new Error("You must be an admin or owner in order to create events"));
+          }
         })
-      }
-      else{
-        callback({message: "You don't have the permission to add events!"});
-        return;
       }
     })
   }
@@ -522,65 +565,6 @@ function withinBounds(userObject, lockId, action) {
      * THIS IS WAAAAAAY TOO LONG
      */
 
-    if(start >= end){
-      callback({message: "Invalid time range!"});
-      return;
-    }
-    //get the user requesting to make a change to the role of another user
-    getUserObject(username, function(user) {
-      getUserObject(userToChange, function(user2){
-        //check if user requesting is allowed to make this request
-        if(isOwner(user, lockId) || isAdmin(user, lockId)) {
-          let result = isMember(user2, lockId);
-          if(!isMember(user2, lockId)) {
-            callback({message: "The user should be a memeber"});
-            return;
-          }
-            //check the action to perform
-            if(action == "lock"){
-              let lockRes = [start, end];
-              //find the user in the database
-              db.collection("users").find({"username": userToChange}).toArray((err, result) => {
-                if(result[0] == undefined) {
-                  return;
-                }
-                //find the correct lock inside the locks array
-                for(let i=0; i< result[0].locks.length; i++){
-                  //look for specific lock
-                  if(result[0].locks[i].lockId == lockId){
-                    //create a new lock oject that will replace the one of
-                    //this current lock
-                    let lockResArray = result[0].locks[i].lockRestrictions;
-                    let unlockResArray = result[0].locks[i].unlockRestrictions;
-                    lockResArray.push(lockRes);
-                    let roleUp = result[0].locks[i].role;
-                    let lockObject = {
-                      "lockId": result[0].locks[i].lockId,
-                      "role":roleUp,
-                      "lockRestrictions": lockResArray,
-                      "unlockRestrictions": unlockResArray
-                    };
-                    //set current index to the new lock object
-                    result[0].locks[i] = lockObject;
-                    //find user again to update it setting the newlocks array
-                    //to the result[0] which is now updated
-                    db.collection("users").update({username: userToChange}, {$set: {locks: result[0].locks}}, (err, numberAffected,rawResponse) => {});
-                    //callback message to state that action is completed
-                    callback({message:"Added user lock access"});
-                    return;
-                  }
-                }
-              });
-
-            }//end if
-          }
-        //if requester does not have access return callback message
-        else{
-          callback({message:"User must be an Owner or an Admin to give access"});
-          return;
-        }
-      })
-    })
   }
 
 /**
@@ -685,42 +669,6 @@ exports.lock = function(username, lockId, callback) {
   })
 }
 
-/**
-* Adds action to history
-* @param: username, lockId, callback
-*/
-function addToHistory(username, lockId, action) {
-
-  // validate user in case it doesn't exist 
-  db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-    let time = getTime();
-    let date = new Date();
-    date = date.toDateString();
-    let dateTime = (date + " at " + time);
-
-    let names = result[0].usernames;
-    let actions = result[0].actions;
-    let times = result[0].times;
-    names.push(username);
-    actions.push(action);
-    times.push(dateTime);
-    db.collection("history").update({lockId: lockId}, {$set: {usernames: names, actions: actions, times:times}});
-  })
-}
-
-/**
-* Gets the history (past lock/unlock actions executed)
-* @param: lockId, callback
-* @return: history
-*/
-exports.getLockHistory = function(lockId, callback) {
-
-  // validate lockId in case it doesn't exist
-
-  db.collection("history").find({lockId: lockId}).toArray((err, result) => {
-    callback(result[0]);
-  })
-}
 
 /**
 * Adds a member to lock by adding specified user to database
@@ -825,7 +773,7 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
 }
 
 /**
-* Unlock the lock and record any changes in the history
+* Unlock the lock
 * @param: username, lockId, callback
 * @return: false if not unlocked
 */
@@ -836,14 +784,12 @@ exports.unlock = function(username, lockId, callback) {
     if(canUnlock(user, lockId)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
         if(!err) {
-          addToHistory(username, lockId, "unlock");
+          callback(null, true);
         }
-        callback(true);
-        return;
+
       })
     }
   })
-  return;
 }
 
 /**
