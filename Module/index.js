@@ -107,6 +107,7 @@ function getMember(username, lock) {
       return lock.members[i];
     }
   }
+  throw new Error(username + " is not a member of the lock")
 }
 
 function getUsersRole(username, lockId, callback) {
@@ -130,6 +131,21 @@ function checkEventExists(lockId, username, time, callback) {
       callback(null, result.length == 1);
     }
   })
+}
+
+function validateLockAccessInput(memberObject, start, end) {
+  if(start > end) {
+    throw new Error("Start time must be before end time")
+  }
+  else {
+    for(let i = 0; i < memberObject.lockAccess.length; i++) {
+      if(start > memberObject[i][0] && start < memberObject[i][1] 
+         && end > memberObject[i][0] && end < memberObject[i][1]) {
+           throw new Error(memberObject.username + " already has access at this time");
+         }
+    }
+  }
+  return (true);
 }
 
 /**
@@ -186,13 +202,9 @@ function lockContainsMember(username, lockId, callback) {
 * @param {string} username - username for a particular user we are querying for
 * @param {int} lockId - ID of the lock we are looking for
 */
-function isOwner(userObject, lockId) {
-  let role = searchLocks(lockId, userObject.locks);
-  // returns false here if person isn't in lock
-  if(role == undefined) {
-    return false;
-  }
-  return (role == OWNER);
+function isOwner(username, lockObject) {
+  let member = getMember(username, lockObject);
+  return (member.role == OWNER);
 }
 
 
@@ -205,13 +217,9 @@ function isOwner(userObject, lockId) {
 * @param {int} lockId - ID of the lock we are looking at
 * @return true or false
 */
-function isAdmin(userObject, lockId) {
-  let role = searchLocks(lockId, userObject.locks);
-  // returns false here if person isn't in lock
-  if(role == undefined) {
-    return false;
-  }
-  return (role == ADMIN);
+function isAdmin(username, lockObject) {
+  let member = getMember(username, lockObject);
+  return (member.role == ADMIN);
 
 }
 
@@ -222,14 +230,9 @@ function isAdmin(userObject, lockId) {
 * @param: username, lockId
 * @return: true or false
 */
-function isMember(userObject, lockId) {
-    getUsersRole()
-    let role = searchLocks(lockId, userObject.locks);
-    //return false here if person isn't in lock
-    if(role == undefined){
-      return false;
-    }
-      return (role == MEMBER);
+function isMember(username, lockObject) {
+  let member = getMember(username, lockObject);
+  return (member.role == MEMBER);
 }
 
 /**
@@ -240,31 +243,15 @@ function isMember(userObject, lockId) {
  * @return: true if the user is allowed to make this action
  * false if the user is not allowed to make this action
  */
-function withinBounds(userObject, lockId, action) {
-  let lock = undefined;
-  for(let i = 0;  i < userObject.locks.length; i++) {
-    if(userObject.locks[i].lockId == lockId) {
-      lock = userObject.locks[i];
-    }
-  }
-    // returns false here if person isn't in lock
-  if(!lock) {
-    return false;
-  }
-  let currentTime = convertToMilitary(getTime());
-  if (action == "lock") {
-    for(let i = 0; i < lock.lockRestrictions.length; i++) {
+function withinTimeBounds(username, lockObject, action) {
+  getLockObject(lockId, (err, lock) => {
+    let member = getMember(username, lock);
+    for(let i = 0; i < member.lockAccess.length; i++) {
       if (lock.lockRestrictions[i][0] < currentTime && lock.lockRestrictions[i][1] > currentTime) {
         return true;
       }
     }
-  } else {
-    for(let i = 0; i < lock.unlockRestrictions.length; i++) {
-      if (lock.unlockRestrictions[i][0] < currentTime && lock.unlockRestrictions[i][1] > currentTime) {
-        return true;
-      }
-    }
-  }
+  })
   return false;
 }
 
@@ -279,7 +266,7 @@ function withinBounds(userObject, lockId, action) {
   * @param {int} lockId - ID of the lock in question
   */
   function canLock(user, lockId) {
-    return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId, "lock"));
+    return (isOwner(user, lockId) || isAdmin(user, lockId) || withinTimeBounds(user, lockId, "lock"));
   }
 
   /**
@@ -293,8 +280,8 @@ function withinBounds(userObject, lockId, action) {
   * @param {int} lockId - ID of the lock in question
   */
   function canUnlock(user, lockId) {
-    return (isOwner(user, lockId) || isAdmin(user, lockId) || withinBounds(user, lockId, "unlock"));
-    //return (isOwner(username, lockId) || isAdmin(username, lockId) || withinBounds(username, lockId, "unlock"));
+    return (isOwner(user, lockId) || isAdmin(user, lockId) || withinTimeBounds(user, lockId, "unlock"));
+    //return (isOwner(username, lockId) || isAdmin(username, lockId) || withinTimeBounds(username, lockId, "unlock"));
   }
 
   /**
@@ -428,7 +415,7 @@ function withinBounds(userObject, lockId, action) {
 
   /**
   * User A can create event E for lock L for time T
-  *    - if owner(L) or admin(L) or (member(L) and withinBounds(t))
+  *    - if owner(L) or admin(L) or (member(L) and withinTimeBounds(t))
   *
   * @param lockId - the lockId of te lock that will execute the event
   * @param username - the username of the user who is adding this event
@@ -556,25 +543,51 @@ function withinBounds(userObject, lockId, action) {
   *    - we'll need to check if it is an unlock or lock restriction
   *    - use the callback to return the success/failure
   */
-  exports.createRole = function(username, userToChange, lockId, start, end, callback) {
-    /**
-     * THIS IS WAAAAAAY TOO LONG
-     */
+  exports.giveLockAccess = function(username, lockMember, lockId, start, end, callback) {
+    getLockObject(lockId, (err, lock) => {
+      if(err) {
+        callback(err);
+      }
+      else {
+        try {
+          let memberRequestingChange = getMember(username, lock);
+          let memberBeingChanged = getMember(lockMember, lock);
+        }
+        catch(e) {
+          callback(e)
+        }
+        if(isOwner(username, lock) || isAdmin(username, lock)) {
+          if(validateLockAccessInput(memberBeingChanged, start, end)) {
+            memberBeingChanged.lockAccess.push([start, end]);
+          }
+        }
+        else {
+          callback(new Error("You must be an owner or admin of the lock"))
+        }
+      }
+    })
 
   }
 
 /**
-* Gets the members of a specific lock
+* Gets the array of member OBJECTS of a specific lock
 * @param lockId - the lock Id of the lock that we want to get members of
 * @return array of members or message saying there are no members
 */
 exports.getLockMembers = function(lockId, callback) {
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    let members = result[0].members;
-    if(members.length == 0){
-      members.push("There are no members currently associated with this lock");
+  getLockObject(lockId, (err, lock) => {
+    if(err) {
+      callback(err);
     }
-    callback(result[0].members);
+    else {
+      let membersArray = [];
+      for(let i = 0; i < lock.members.length; i++) {
+        if(lock.members[i].role == MEMBER) {
+          membersArray.push(lock.members[i]);
+        }
+      }
+      return membersArray;
+    }
   })
 }
 
@@ -585,32 +598,19 @@ exports.getLockMembers = function(lockId, callback) {
 */
 exports.getLockAdmins = function(lockId, callback) {
   // Validate lock id in case it doesn't exist
-
-  db.collection("locks").find({lockId: lockId}).toArray((err, result) => {
-    let allMembers = result[0].members;
-    let adminArray = [];
-
-    async.each(allMembers, function(member, callback) {
-      db.collection("users").find({"username": member}).toArray((err, result) => {
-        for(let i = 0;  i < result[0].locks.length; i++) {
-          if(result[0].locks[i].lockId == lockId && result[0].locks[i].role == OWNER ) {
-            adminArray.push(member);
-          }
+  getLockObject(lockId, (err, lock) => {
+    if(err) {
+      callback(err);
+    }
+    else {
+      let adminArray = [];
+      for(let i = 0; i < lock.members.length; i++) {
+        if(lock.members[i].role == ADMIN) {
+          adminArray.push(lock.members[i]);
         }
-        callback();
-      })
-    }, function(err) {
-      // if any of the file processing produced an error, err would equal that error
-      if( err ) {
-        console.log("There is some error!");
-      } else {
-        if(adminArray.length == 0){
-          adminArray.push("There are no members currently associated with this lock");
-        }
-        callback(adminArray);
       }
-    });
-
+      return adminArray;
+    }
   })
 }
 
@@ -647,6 +647,17 @@ exports.getLocks = function(username, callback) {
 * @return:true if locked, else false
 */
 exports.lock = function(username, lockId, callback) {
+  getLockObject(lockId, (err, lock) => {
+    if(err) {
+      callback(err);
+    }
+    else {
+      if(isAdmin(username, lock) || isMember(username, lock) 
+         && withinTimeBounds(username, lock)) {
+        
+      }
+    }
+  })
 
   // validate user in case it doesn't exist
   getUserObject(username, function(user) {
