@@ -619,26 +619,30 @@ exports.getLockAdmins = function(lockId, callback) {
 * @param: username, callback
 * @return: locknames
 */
-exports.getLocks = function(username, callback) {
+exports.getUsersLocks = function(username, callback) {
   // validate user in case it doesn't exist
-
-  db.collection("users").find({username: username}).toArray((err, result) => {
-
-
-    var lockIds = [];
-    var lockNames = [];
-    let locksArray = result[0].locks;
-
-    async.each(locksArray, function(file, callback) {
-      db.collection("locks").find({lockId: file}).toArray((err, result) => {
-        lockNames.push(result[0].lockName);
-        lockIds.push(file);;
-        callback();
+  getUserObject(username, (err, user) => {
+    let lockIds = user.locks;
+    let locks = [];
+    async.each(lockIds, (lockId) => {
+      getLockObject(lockId, (err, lock) => {
+        if(err) {
+          callback(err);
+        }
+        else {
+          locks.push(lock);
+        }
       })
-    }, function(err) {
-      callback({locks: lockIds, lockNames: lockNames});
+    }, (err) => {
+      if(err) {
+        callback(err);
+      }
+      else {
+        callback(locks);
+      }
     })
   })
+
 }
 
 /**

@@ -10,7 +10,7 @@ let  d = new Date();
 
 const mod = require("../Module/index.js");
 
-const io = require("socket.io")(server);
+//const io = require("socket.io")(server);
 const assert = require("assert");
 const port = 3000;
 
@@ -42,12 +42,14 @@ app.use(bodyParser.json());
  */
 mongoClient.connect("mongodb://ersp:abc123@ds044917.mlab.com:44917/smart-lock", (err, database) => {
 
-  server.listen(port, function() {
+  app.listen(port, function() {
 
     console.log("listening on " + port);
     mod.connectServer();
   })
 })
+
+/*
 io.on('connection', function (socket){
   mod.getDefaultState(parseInt(socket.handshake.query.lockId), function(state) {
     socket.emit("defaultState", state);
@@ -70,7 +72,7 @@ io.use(function(socket, next) {
     next();
   }
 })
-
+*/
 // Route for accessing the site, sends back the homepage
 app.get("/", (req, res) => {
 
