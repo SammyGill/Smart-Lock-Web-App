@@ -193,11 +193,9 @@ function removeAdmin() {
  * @param: none
  */
 function getMembers() {
-  console.log("hello");
   $.get("/getMembers", function(data) {
     var list = document.getElementById("membersList");
     for(var i = 0; i < data.members.length; i++) {
-      console.log(data.members[i]);
       var member = document.createElement("option");
       member.appendChild(document.createTextNode(data.members[i] /*+ ": " + data.fullnames[i]*/));
       list.appendChild(member);

@@ -144,7 +144,7 @@ app.get("/editAdmins", (req, res) => {
 })
 //gets the locks using username
  app.get("/getLocks", (req, res) => {
-  mod.getLocks(req.session.username, function(data) {
+  mod.getUsersLocks(req.session.username, function(data) {
     res.send(data);
   })
 })
@@ -158,8 +158,12 @@ app.get("/editAdmins", (req, res) => {
 
 //gets the members of a lock using lock id
  app.get("/getMembers", (req, res) => {
-  let id = req.session.lock;
-  mod.getLockMembers(id, function(members) {res.send({members: members});});
+  mod.getLockMembers(req.session.lock, (err, members) => {
+    mod.getLockAdmins(req.session.lock, (err, admins) => {
+      let combinedMembers = members.concat(admins);
+      res.send({members: combinedMembers});
+    })
+  })
 })
 
 //gets the lock admins
