@@ -169,7 +169,7 @@ function addAdmin() {
    $("#edit-admin-form").submit(function(event) {
       event.preventDefault();
       $.post("/addAdmin", {username: document.getElementById("members").value}, function(data) {
-         document.getElementById("response-message-addAdmin").innerHTML= data.message;
+         document.getElementById("response-message-addAdmin").innerHTML= data;
       })
    })
 }

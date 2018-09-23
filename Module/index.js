@@ -94,15 +94,21 @@ function getUserObject(username, callback) {
 function getLockObject(lockId, callback) {
   db.collection("locks").find({"lockId": lockId}).toArray((err, result) => {
     if(!result.length) {
-      callback(new Error("Lock does not exist"))
+      callback(new Error("Lock does not exist"));
+      return;
     }
     else if(result.length > 1) {
-      callback(new Error("There are " + result.length + " instances of this lock"))
+      callback(new Error("There are " + result.length + " instances of this lock"));
+      return;
     }
     else if(err) {
-      callback(err)
+      callback(err);
+      return;
     }
-    else callback(null, result[0]);
+    else {
+      callback(null, result[0]);
+      return;
+    }
   })
 }
 
@@ -153,14 +159,54 @@ function validateLockAccessInput(memberObject, start, end) {
   return (true);
 }
 
-function changeMemberToAdmin(username, membersArray) {
+function changeMemberToAdmin(username, lockId, membersArray, callback) {
   for(let i = 0; i < membersArray.length; i++) {
     if(membersArray[i].username == username) {
       membersArray[i].role = ADMIN;
       membersArray[i].lockAccess = [];
-      break;
+      db.collection("locks").update({lockId: lockId}, {$set: {members: membersArray}}, 
+                                    (err, numberAffected, rawResponse) => {
+        if(err) {
+          callback(err);
+          console.log("1");
+          return;
+        }
+        else {
+          callback(null, {message: username + " is now an admin"});
+          console.log("2");
+          return;
+        }
+      })
     }
   }
+  callback(new Error("Could not make " + username + " an admin"));
+  console.log("3");
+  return;
+}
+
+function changeAdminToMember(username, lockId, membersArray, callback) {
+  for(let i = 0; i < membersArray.length; i++) {
+    if(membersArray[i].username == username) {
+      membersArray[i].role = MEMBER;
+      membersArray[i].lockAccess = [];
+      db.collection("locks").update({lockId: lockId}, {$set: {members: membersArray}}, 
+                                    (err, numberAffected, rawResponse) => {
+        if(err) {
+          callback(err);
+          console.log("1");
+          return;
+        }
+        else {
+          callback(null, {message: username + " is now a member"});
+          console.log("2");
+          return;
+        }
+      })
+    }
+  }
+  callback(new Error("Could not make " + username + " an admin"));
+  console.log("3");
+  return;
 }
 
 /**
@@ -202,14 +248,17 @@ function lockContainsMember(username, lockId, callback) {
   getLockObject(lockId, (err, lock) => {
     if(err) {
       callback(err);
+      return;
     }
     else {
       for(let i = 0; i < lock.members.length; i++) {
         if(username == lock.members[i]) {
           callback(true);
+          return;
         }
       }
       callback(false);
+      return;
     }
   })
 }
@@ -620,7 +669,6 @@ exports.getLockAdmins = function(lockId, callback) {
           adminArray.push(lock.members[i].username);
         }
       }
-      adminArray.push(lock.owner);
       callback(null, adminArray);
     }
   })
@@ -663,24 +711,14 @@ exports.getUsersLocks = function(username, callback) {
 * @return:true if locked, else false
 */
 exports.lock = function(username, lockId, callback) {
-  getUserObject(username, (err, user) => {
-    if(err) {
-      callback(err);
-    }
-    else if(!user) {
-      callback(new Error("Lock request most come from a valid user"));
-    }   
-    else {
-      getLockObject(lockId, (err, lock) => {
-        if(err) {
-          callback(err);
-        }
-        else {
-          if(isAdmin(username, lock) || isMember(username, lock) 
-             && withinTimeBounds(username, lock)) {
-          }
+  getLockObject(lockId, function(err, lock) {
+    if(canLock(username, lock)) {
+      db.collection("locks").update({lockId: lockId}, {$set: {status: "locked"}}, (err, numberAffected, rawResponse) => {
+        if(!err) {
+          callback(null, true);
         }
       })
+
     }
   })
 }
@@ -741,14 +779,31 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
   getLockObject(lockId, (err, lock) => {
     if(err) {
       callback(err);
+      return;
+    }
+    else if(isAdmin(userToAdmin, lock)) {
+      callback(new Error(userToAdmin + " is already an admin"));
+      return;
+      console.log("after error");
     }
     else if(isOwner(username, lock) && isMember(userToAdmin, lock)) {
-      changeMemberToAdmin(userToAdmin, lock.members);
-      callback(null, {message: userToAdmin + " is now an admin"});
+      changeMemberToAdmin(userToAdmin, lockId, lock.members, (err, result) => {
+        if(err) {
+          callback(err);
+          return;
+        }
+        else {
+          console.log("result is " + result);
+          callback(null, result);
+          return;
+        }
+      });
     }
     else {
+      console.log("throwing error");
       callback(new Error("Either " + username + " is not owner or " + userToAdmin +
                          " is not part of lock"));
+      return;
     }
   })
 }
@@ -759,16 +814,14 @@ exports.addAdmins = function(username, userToAdmin, lockId, callback) {
 * @return: false if not unlocked
 */
 exports.unlock = function(username, lockId, callback) {
-
-  // validate user in case it doesn't exist 
-  getUserObject(username, function(user) {
-    if(canUnlock(user, lockId)) {
+  getLockObject(lockId, function(err, lock) {
+    if(canUnlock(username, lock)) {
       db.collection("locks").update({lockId: lockId}, {$set: {status: "unlocked"}}, (err, numberAffected, rawResponse) => {
         if(!err) {
           callback(null, true);
         }
-
       })
+
     }
   })
 }
@@ -870,15 +923,6 @@ exports.authenticate = function(username, fullname,  callback) {
   }
 
   /**
-  * Checks if user can revoke admin priveldges
-  * @param: username, lockId, otherUser
-  * return: true if can remove, else false
-  */
-  function canRevokeAdmin(username, lockId, otherUser) {
-    return (isOwner(username, lockId) && isAdmin(otherUser, lockId));
-  }
-
-  /**
   * Check is user can remove members from lock
   * @param: username, lockId, otherUser
   * retunr: true if can remove, else false
@@ -903,41 +947,34 @@ exports.authenticate = function(username, fullname,  callback) {
   * @param: username lockId, otherUser, callback
   * @return none
   */
-  exports.revokeAdmin = function(username, lockId, otherUser, callback) {
-    getUserObject(username, function(userOne) {
-      getUserObject(otherUser, function(userTwo) {
-        if(userOne == undefined || userTwo == undefined) {
-          callback({message: "ERROR"});
-          return;
-        }
-        if(isOwner(userOne, lockId)) {
-          db.collection("users").find({username: otherUser}).toArray((err, result) => {
-            if(result[0] == undefined) {
-              callback({message: "ERROR"});
-              return;
-            }
-            //loop through the lock to find the specific lock Id
-            for(let i = 0; i < result[0].locks.length; i++) {
-              //Once the lock Id is found, create a new lock object
-              if(result[0].locks[i].lockId == lockId) {
-                let lockObject = {
-                  "lockId": lockId,
-                  "role": 2,
-                  "lockRestrictions": [],
-                  "unlockRestrictions": []
-                };
-                //set the current index to the new lock object
-                result[0].locks[i] = lockObject;
-                //update the database
-                db.collection("users").update({username: otherUser}, {$set:{locks: result[0].locks}}, (err, numberAffected, rawResponse) =>{})
-                //callback message currently doesn't work
-                callback({message: "User is now a member!!!!"});
-                return;
-              }
-            }            
-          })
-        }
-      })
+  exports.revokeAdmin = function(username, lockId, usernameRequested, callback) {
+    getLockObject(lockId, (err, lock) => {
+      console.log("something 1");
+      if(err) {
+        callback(err);
+        return;
+      }
+      else if(isMember(usernameRequested, lock) || isOwner(usernameRequested, lock)) {
+        console.log("something 2");
+        callback(new Error(usernameRequested + " is not an admin"));
+        return;
+      }
+      else if(isOwner(username, lock)) {
+        console.log("something 3");
+        changeAdminToMember(usernameRequested, lockId, lock.members, (err, result) => {
+          if(err) {
+            callback(err);
+          }
+          else {
+            callback(null, result);
+          }
+         // err ? callback(err) : callback(null, result);
+        })
+      }
+      else {
+        callback(new Error("Could not remove " + usernameRequested + " as admin"));
+        return;
+      }
     })
   }
 

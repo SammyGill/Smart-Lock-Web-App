@@ -170,7 +170,7 @@ app.get("/editAdmins", (req, res) => {
  app.get("/getAdmins", (req, res) => {
     let id = req.session.lock;
     //let username = req.body.members;
-  mod.getLockAdmins(id, function(members) {
+  mod.getLockAdmins(id, function(err, members) {
     res.send({members: members});});
  })
 
@@ -298,13 +298,9 @@ app.post("/removeMember", (req, res) => {
 
 //add admin (changes role of user from 2 to 1)
 app.post("/addAdmin", (req, res) => {
-   let username = req.session.username;
-   let userToAdmin = req.body.username;
-   let lockId = req.session.lock;
-
-   mod.addAdmins(username, userToAdmin, lockId, function(result) {
-      res.send(result);
-   });
+  mod.addAdmins(req.session.username, req.body.username, req.session.lock, function(err, result) {
+    err ? res.send(err.message) : (console.log("sendind again"), res.send(result.message));
+  });
 })
 
 app.post("/revokeAdmin", (req,res) => {
@@ -312,8 +308,8 @@ app.post("/revokeAdmin", (req,res) => {
   let otherUser = req.body.username;
   let lockId = req.session.lock;
 
-  mod.revokeAdmin(username, lockId, otherUser, function(result) {
-    res.send(result);
+  mod.revokeAdmin(username, lockId, otherUser, function(err, result) {
+    err ? res.send(err.message) : (console.log("sendind again"), res.send(result.message));
   });
 })
 
@@ -335,12 +331,9 @@ app.post("/createEvent", (req, res) => {
 
 //lock function
 app.post("/lock", (req, res) => {
-  mod.lock(req.session.username, req.session.lock, function(result){
+  mod.lock(req.session.username, req.session.lock, function(err, result){
     if(result){
-      mod.getSocketId(req.session.username, req.session.lock, function(socketId) {
-        io.to(socketId.socketId).emit("lock", "lock message");
-        res.send();
-      })
+      res.send();
     }
     else{
       res.send({error: "You do not have permission to lock!"});
@@ -369,13 +362,9 @@ app.post("/registerLock", (req, res) => {
 
 //unlock function
 app.post("/unlock", (req, res) => {
-  mod.unlock(req.session.username, req.session.lock, function(result) {
+  mod.unlock(req.session.username, req.session.lock, function(err, result) {
     if(result) {
-      mod.getSocketId(req.session.username, req.session.lock, function(socketId) {
-        console.log("sending unlock");
-        io.to(socketId.socketId).emit("unlock", "message for unlock");
-        res.send();
-      })
+      res.send();
     }
     else {
       res.send({error:"You do not have permission to do this!"});
