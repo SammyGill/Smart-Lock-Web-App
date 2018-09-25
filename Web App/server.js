@@ -216,7 +216,6 @@ app.get("/selectDashboard", (req, res) => {
   mod.getSocketId(req.session.username, parseInt(req.session.lock), function(result) {
     if(result.Error) {
       // username that was sent was not valid
-      console.log("NOT A VALID USER");
       res.end();
     }
     if(!result.socketId) {
@@ -299,7 +298,7 @@ app.post("/removeMember", (req, res) => {
 //add admin (changes role of user from 2 to 1)
 app.post("/addAdmin", (req, res) => {
   mod.addAdmins(req.session.username, req.body.username, req.session.lock, function(err, result) {
-    err ? res.send(err.message) : (console.log("sendind again"), res.send(result.message));
+    err ? res.send(err.message) :  res.send(result.message);
   });
 })
 
@@ -309,7 +308,7 @@ app.post("/revokeAdmin", (req,res) => {
   let lockId = req.session.lock;
 
   mod.revokeAdmin(username, lockId, otherUser, function(err, result) {
-    err ? res.send(err.message) : (console.log("sendind again"), res.send(result.message));
+    err ? res.send(err.message) :  res.send(result.message);
   });
 })
 

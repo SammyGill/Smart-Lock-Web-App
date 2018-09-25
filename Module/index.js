@@ -168,20 +168,15 @@ function changeMemberToAdmin(username, lockId, membersArray, callback) {
                                     (err, numberAffected, rawResponse) => {
         if(err) {
           callback(err);
-          console.log("1");
           return;
         }
         else {
           callback(null, {message: username + " is now an admin"});
-          console.log("2");
           return;
         }
       })
     }
   }
-  callback(new Error("Could not make " + username + " an admin"));
-  console.log("3");
-  return;
 }
 
 function changeAdminToMember(username, lockId, membersArray, callback) {
@@ -193,20 +188,15 @@ function changeAdminToMember(username, lockId, membersArray, callback) {
                                     (err, numberAffected, rawResponse) => {
         if(err) {
           callback(err);
-          console.log("1");
           return;
         }
         else {
           callback(null, {message: username + " is now a member"});
-          console.log("2");
           return;
         }
       })
     }
   }
-  callback(new Error("Could not make " + username + " an admin"));
-  console.log("3");
-  return;
 }
 
 /**
@@ -949,18 +939,15 @@ exports.authenticate = function(username, fullname,  callback) {
   */
   exports.revokeAdmin = function(username, lockId, usernameRequested, callback) {
     getLockObject(lockId, (err, lock) => {
-      console.log("something 1");
       if(err) {
         callback(err);
         return;
       }
       else if(isMember(usernameRequested, lock) || isOwner(usernameRequested, lock)) {
-        console.log("something 2");
         callback(new Error(usernameRequested + " is not an admin"));
         return;
       }
       else if(isOwner(username, lock)) {
-        console.log("something 3");
         changeAdminToMember(usernameRequested, lockId, lock.members, (err, result) => {
           if(err) {
             callback(err);
