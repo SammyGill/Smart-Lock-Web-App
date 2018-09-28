@@ -728,22 +728,28 @@ exports.lock = function(username, lockId, callback) {
 * @return: true if added sucessfully, else false
 */
 exports.addMember = function(username, userToAdd, lockId, callback) {
+  console.log("username is " + username);
   getLockObject(lockId, (err, lock) => {
     if(err) {
+      console.log("error getting lock " + err);
       callback(err);
+      return;
     }
     else if(canAddMembers(username, lock)) {
       lockContainsMember(userToAdd, lockId, (err, alreadyAdded) => {
         if(err) {
           callback(err);
+          return;
         }
         else if(alreadyAdded) {
           callback(new Error("User already added"));
+          return;
         }
         else {
           addUserToLock(userToAdd, lockId);
           assignLockToUser(userToAdd, lockId);
           callback({message: "User successfully added!"});
+          return;
         }
       })
     }

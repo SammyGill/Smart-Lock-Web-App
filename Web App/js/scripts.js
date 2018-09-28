@@ -197,7 +197,7 @@ function getMembers() {
     var list = document.getElementById("membersList");
     for(var i = 0; i < data.members.length; i++) {
       var member = document.createElement("option");
-      member.appendChild(document.createTextNode(data.members[i] /*+ ": " + data.fullnames[i]*/));
+      member.appendChild(document.createTextNode("hi " + data.members[i] /*+ ": " + data.fullnames[i]*/));
       list.appendChild(member);
     }
   })

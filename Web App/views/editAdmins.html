@@ -18,8 +18,8 @@
 <link href="../css/sb-admin.css" rel="stylesheet">
 </head>
 
-<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="getMembers();loadSettings(); switchSettings(); loadTimes();
-loadTimesTwo(); getMembersDropDown(); getAdminDropDown();">
+<body class="fixed-nav sticky-footer bg-dark" id="page-top" onload="loadSettings(); switchSettings();
+getMembersDropDown(); getAdminDropDown();">
 <!-- Navigation-->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
     <a class="navbar-brand" href="dashboard">Smart Lock</a>
@@ -69,62 +69,6 @@ loadTimesTwo(); getMembersDropDown(); getAdminDropDown();">
         </li>
       </li>
     </ol>
-    <div class="card">
-        <div id="form" align="center">
-
-        <h5 class="card-header" style="text-align:center;">Add a time restriction</h5>
-        <div class="form-group col-md-4">
-
-        </div>
-        <h2 id='response-message-addTimeRestriction'></h2>
-        <div class="btn-group" data-toggle="buttons">
-          <select class="custom-select" id="membersList" style="display:inline" >
-          </select>
-          <label class="btn btn-primary"style="background-color:grey;">
-            <input type="radio" checked autocomplete="off" disabled > This role can...
-          </label>
-          <br>
-          <label class="btn btn-primary">
-          <input type="radio" autocomplete="off" id="lock"> Lock
-          </label>
-          <label class="btn btn-primary">
-          <input type="radio" autocomplete="off" id="unlock"> Unlock
-          </label>
-        </div>
-
-        <div class="form-group col-md-12">
-        <label for="roleSelect">between</label>
-        <br>
-        <select class="form-control col-md-1" id="hour" style="display:inline">
-
-        </select>
-        <select class="form-control col-md-1" id="minute" style="display:inline">
-
-        </select>
-        <select class="form-control col-md-1"  id="period" style="display:inline">
-        <option> AM </option>
-        <option> PM </option>
-        </select>
-        and
-        <select class="form-control col-md-1" id="hourTwo" style="display:inline">
-
-        </select>
-        <select class="form-control col-md-1" id="minuteTwo" style="display:inline">
-
-        </select>
-        <select class="form-control col-md-1"  id="periodTwo" style="display:inline">
-        <option> AM </option>
-        <option> PM </option>
-        </select>
-        </div>
-        <form id="addingRoles">
-            <button style="text-align:center;" class="btn btn-primary" onclick="addTimeRestriction();">Add Restriction
-            </button>
-            </form>
-            <br>
-        </div>
-
-        </div>
         <br>
         <br>
         <br>
@@ -144,9 +88,7 @@ loadTimesTwo(); getMembersDropDown(); getAdminDropDown();">
           </form>
         </div>
     </div>
-    <br>
-    <br>
-    <br>
+    
     <div class="card">
       <h5 class="card-header" style="text-align:center;">Remove Admin</h5>
       <div class="card-body">

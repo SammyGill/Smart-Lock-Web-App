@@ -261,7 +261,7 @@ app.get("/timeStatus", (req, res) => {
 //signs out of session
 app.get("/signOut", (req, res) => {
  req.session.reset();
- res.send();
+//  res.send();
 })
 
 
@@ -273,8 +273,8 @@ app.post("/addMember", (req, res) => {
   let userToAdd = req.body.username;
   let lockId = req.session.lock;
   //call the module
-  mod.addMember(username, userToAdd, lockId, function(result) {
-    res.send(result);
+  mod.addMember(username, userToAdd, lockId, function(err, result) {
+    err ? res.send(err.message) : res.send(result);
   });
 })
 
