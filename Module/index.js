@@ -489,27 +489,33 @@ function withinTimeBounds(username, lockObject, action) {
   *      is even allowed to perform that action at that time
   */
   exports.createEvent = function(lockId, username, time, callback) {
-    checkEventExists(lockId, username, time, (eventExists) =>{
+    checkEventExists(lockId, username, time, (eventExists) => {
       if(eventExists) {
         callback(new Error("Event already exists"));
+        return;
+
       } 
       else {
         getUsersRole(username, lockId, (err, role) => {
           if(err) {
-            callback(err)
+            callback(err);
+            return;
           }
           else if(role > MEMBER) {
             db.collection("events").insert({lockId: lockId, username: username, time: time}, (err, result) => {
               if(err) {
-                callback(err)
+                callback(err);
+                return;
               }
               else {
                 callback(null, "Event created successfully");
+                return;
               }
             })
           }
           else {
             callback(new Error("You must be an admin or owner in order to create events"));
+            return;
           }
         })
       }
@@ -825,6 +831,7 @@ exports.registerLock = function(lockId, lockName, userName, callback) {
 
   db.collection("users").find({"username": userName, "locks.lockId": lockId}).toArray((err, result) => {
     if(result.length > 0) {
+      console.log("registered");
       // There are people with this lock so it must have been registered
       callback(false);
       return;
@@ -843,6 +850,7 @@ exports.registerLock = function(lockId, lockName, userName, callback) {
       callback(true);
     }
     else {
+      console.log("registered");
       // lock was already registered with someone so we send back a failure
       callback(false);
     }

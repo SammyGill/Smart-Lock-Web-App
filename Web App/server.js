@@ -323,8 +323,10 @@ app.post("/addTimeRestriction", (req, res) => {
 
 //rule for lock
 app.post("/createEvent", (req, res) => {
-  mod.createEvent(req.session.lock, req.session.username, req.body.action, req.body.time, function(result) {
-    res.send(result);
+  mod.createEvent(req.session.lock, req.session.username, req.body.time, function(err, result) {
+    console.log(err);
+    console.log(result);
+    err ? res.send({message: err.message}) : res.send({message: result});
   });
 })
 
